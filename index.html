@@ -115,7 +115,7 @@
     #start-screen {
       display: block;
     }
-    #quiz-container, #scoreboard, #restart-container {
+    #quiz-container, #scoreboard, #restart-container, #lost-container {
       display: none;
     }
     #player-name {
@@ -129,13 +129,18 @@
     #restart-container {
       margin-top: 100px;
     }
+    /* Tela de Perda */
+    #lost-container {
+      margin-top: 100px;
+    }
   </style>
 </head>
 <body>
   <!-- Tela inicial (dentro de um container branco) -->
   <div id="start-screen" class="container">
     <h2>Bem-vindo ao Game Jornada Animal!</h2>
-    <img src="logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;">
+    <img src="logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
+    <br>
     <input type="text" id="player-name" placeholder="Digite seu nome">
     <br>
     <button id="start-button" class="btn" onclick="startGame()">Iniciar</button>
@@ -175,8 +180,16 @@
 
   <!-- Tela de reinício -->
   <div id="restart-container" class="container">
-    <h2>Parabéns! Você completou todas as perguntas! <br><br>🎉🏆</h2>
+    <img src="troféu.png" alt="Troféu" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
+    <h2>Parabéns! Você completou todas as perguntas!</h2>
     <button class="btn" onclick="restartGame()">Jogar Novamente</button>
+  </div>
+
+  <!-- Tela de Perda -->
+  <div id="lost-container" class="container">
+    <img src="gameover.png" alt="Game Over" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
+    <h2>Você perdeu! Que tal tentar novamente?</h2>
+    <button class="btn" onclick="restartGame()">Tentar Novamente</button>
   </div>
 
   <script>
@@ -242,7 +255,7 @@
           { question: "O Camarão vive em terra?", correctAnswer: "não" },
           { question: "O Camarão é um animal aquático?", correctAnswer: "sim" }
         ],
-        explanation: "Os camarões são artrópodes da ordem dos decápodes, podendo ser marinhos ou de água doce. Possuem corpo alongado, exoesqueleto fino e flexível, e se alimentam de restos orgânicos presentes no substrato.\n\nAlgumas espécies possuem hábitos diferentes, mas em geral, são animais necrófagos.",
+        explanation: "Os camarões são artrópodes da ordem dos decápodes, podendo ser marinhos ou de água doce. Possuem corpo alongado, exoesqueleto fino e flexível.\n\nO camarão nada para trás flexionando rapidamente o abdômen e a cauda. Sua alimentação consiste principalmente de pequenas plantas e animais, embora alguns camarões se alimentem de carniça. \n\nA fêmea do camarão pode botar de 1.500 a 14.000 ovos, que ficam presos às pernas nadadoras. As larvas nadadoras passam por cinco estágios de desenvolvimento antes de se tornarem juvenis .",
         explanationImage: "camarão.png"
       },
       {
@@ -252,7 +265,7 @@
           { question: "As salamandras possuem escamas?", correctAnswer: "não" },
           { question: "As salamandras possuem asas?", correctAnswer: "não" }
         ],
-        explanation: "As salamandras são anfíbios de corpo alongado, com cauda e, na maioria das espécies, quatro membros. Embora a maioria seja terrestre, algumas vivem totalmente na água.\n\nExistem cerca de 550 espécies, principalmente no hemisfério Norte. No Brasil, são encontradas cinco espécies, todas na região Amazônica.",
+        explanation: "As salamandras são anfíbios do grupo dos urodelos de corpo alongado, com cauda e, na maioria das espécies, quatro membros. Embora a maioria seja terrestre, algumas vivem totalmente na água.\n\nExistem cerca de 550 espécies, principalmente no hemisfério Norte. No Brasil, são encontradas cinco espécies, todas na região Amazônica. \n\nEsses animais muitas vezes são confundidos, por leigos, com lagartos, entretanto, diferentemente dos répteis, as salamandras possuem uma pele fina e sem escamas.\n\nAs salamandras variam muito em tamanho. Enquanto as salamandras sul-americanas podem medir entre 3 a 12 centímetros, as salamandras encontradas no Japão e na China podem apresentar mais de um metro de comprimento.",
         explanationImage: "salamandra.png"
       },
       {
@@ -262,7 +275,7 @@
           { question: "A avestruz é a maior ave do mundo?", correctAnswer: "sim" },
           { question: "A avestruz é capaz de voar?", correctAnswer: "não" }
         ],
-        explanation: "A avestruz é a maior ave do planeta, podendo atingir três metros de altura. Apesar de seu tamanho, é incapaz de voar, mas compensa com alta velocidade na corrida, chegando a 70 km/h.\n\nSua longa vida e pernas fortes a tornam um animal bastante singular no reino animal.",
+        explanation: "A avestruz é a maior ave do planeta, podendo atingir três metros de altura. Apesar de seu tamanho, é incapaz de voar, mas compensa com alta velocidade na corrida, chegando a 70 km/h.\n\nAs pernas fortes desse animal, além de ajudar na corrida, auxiliam na defesa contra predadores. \n\nAo se sentirem ameaçados, esses animais podem usá-las para deferir golpes contra seus adversários.",
         explanationImage: "avestruz.png"
       }
     ];
@@ -285,18 +298,18 @@
       document.getElementById("quiz-container").style.display = "block";
       generateRound();
     }
-    
+
     function updateScoreboard() {
       document.getElementById("score").innerText = "Pontos: " + score;
       document.getElementById("lives").innerText = "Vidas: " + lives;
     }
-    
+
     function clearMessage() {
       const messageContainer = document.getElementById("message-container");
       messageContainer.innerText = "";
       messageContainer.classList.remove("correct", "incorrect");
     }
-    
+
     function showMessage(message, isCorrect) {
       const messageContainer = document.getElementById("message-container");
       messageContainer.innerText = message;
@@ -307,15 +320,15 @@
         messageContainer.classList.add("incorrect");
       }
     }
-    
+
     function checkAnswer(answer) {
       // Desabilita os botões de resposta após o clique
       document.getElementById("sim-button").disabled = true;
       document.getElementById("nao-button").disabled = true;
-    
+
       const currentAnimal = animals[currentAnimalIndex];
       const currentQuestion = currentAnimal.questions[currentQuestionIndex];
-    
+
       if (answer === currentQuestion.correctAnswer) {
         score += 10;
         showMessage("Muito bem! Resposta correta.", true);
@@ -324,7 +337,7 @@
         showMessage("Ops! Resposta incorreta.", false);
         if (lives === 0) {
           showMessage("VOCÊ PERDEU! Tente novamente.", false);
-          showRestartScreen();
+          showLostScreen(); // Chama a função para exibir a tela de "perdedor"
           return;
         }
       }
@@ -332,7 +345,7 @@
       // Habilita o botão "Próxima Pergunta" somente após a resposta
       document.getElementById("next-question-button").disabled = false;
     }
-    
+
     function nextQuestion() {
       clearMessage();
       // Desabilita o botão "Próxima Pergunta" até que a nova pergunta seja respondida
@@ -340,10 +353,10 @@
       // Reabilita os botões de resposta
       document.getElementById("sim-button").disabled = false;
       document.getElementById("nao-button").disabled = false;
-    
+
       const currentAnimal = animals[currentAnimalIndex];
       currentQuestionIndex++;
-    
+
       // Se terminar as perguntas do animal...
       if (currentQuestionIndex >= currentAnimal.questions.length) {
         // Se o animal tiver explicação, exibe a explicação
@@ -355,14 +368,14 @@
         currentAnimalIndex++;
         currentQuestionIndex = 0;
       }
-    
+
       if (currentAnimalIndex >= animals.length) {
         showRestartScreen();
         return;
       }
       generateRound();
     }
-    
+
     function generateRound() {
       // Garante que o container de explicação esteja escondido
       document.getElementById("explanation-container").style.display = "none";
@@ -370,21 +383,21 @@
       document.getElementById("question-container").style.display = "block";
       document.querySelector(".answer-buttons").style.display = "block";
       document.getElementById("next-question-button").style.display = "block";
-    
+
       const currentAnimal = animals[currentAnimalIndex];
       const currentQuestion = currentAnimal.questions[currentQuestionIndex];
-    
+
       document.getElementById("animal").innerText = currentAnimal.name;
       document.getElementById("question-container").innerText = currentQuestion.question;
     }
-    
+
     function showExplanation() {
       // Esconde os elementos da pergunta
       document.getElementById("animal").style.display = "none";
       document.getElementById("question-container").style.display = "none";
       document.querySelector(".answer-buttons").style.display = "none";
       document.getElementById("next-question-button").style.display = "none";
-    
+
       let currentAnimal = animals[currentAnimalIndex];
       // Atualiza o título da explicação com o nome do animal
       document.getElementById("explanation-title").innerText = currentAnimal.name;
@@ -395,7 +408,7 @@
       // Exibe o container de explicação
       document.getElementById("explanation-container").style.display = "block";
     }
-    
+
     function nextAnimal() {
       // Esconde a explicação e exibe os elementos da pergunta
       document.getElementById("explanation-container").style.display = "none";
@@ -403,24 +416,33 @@
       document.getElementById("question-container").style.display = "block";
       document.querySelector(".answer-buttons").style.display = "block";
       document.getElementById("next-question-button").style.display = "block";
-    
+
       currentAnimalIndex++;
       currentQuestionIndex = 0;
-    
+
       if (currentAnimalIndex >= animals.length) {
         showRestartScreen();
         return;
       }
       generateRound();
     }
-    
+
+    // Exibe a tela de perda quando o jogador perde
+    function showLostScreen() {
+      document.getElementById("quiz-container").style.display = "none";
+      document.getElementById("scoreboard").style.display = "none";
+      // Exibe a tela de perda
+      document.getElementById("lost-container").style.display = "block";
+    }
+
     // Exibe a tela de reinício quando o jogo termina ou o jogador perde
     function showRestartScreen() {
       document.getElementById("quiz-container").style.display = "none";
       document.getElementById("scoreboard").style.display = "none";
+      document.getElementById("lost-container").style.display = "none"; // Esconde a tela de perda, se estiver visível
       document.getElementById("restart-container").style.display = "block";
     }
-    
+
     // Reinicia o jogo
     function restartGame() {
       score = 0;
@@ -429,9 +451,18 @@
       currentQuestionIndex = 0;
       updateScoreboard();
       clearMessage();
+      
+      // Esconde a tela de perda
+      document.getElementById("lost-container").style.display = "none";  // Esconde a tela de "perdeu"
+      
+      // Reabilita os botões de resposta
+      document.getElementById("sim-button").disabled = false;
+      document.getElementById("nao-button").disabled = false;
+      
       // Oculta a tela de reinício e exibe a tela inicial
       document.getElementById("restart-container").style.display = "none";
       document.getElementById("start-screen").style.display = "block";
+      
       // Limpa o campo de nome, se desejar
       document.getElementById("player-name").value = "";
     }
