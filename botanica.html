@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo Botânico</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #d8f3dc;
+      padding: 20px;
+      text-align: center;
+      background-image: url('plantas.png');
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      border: 5px solid #004d00;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .question {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+    .scoreboard {
+      font-size: 20px;
+      padding: 10px;
+      background-color: white;
+      border-radius: 10px;
+      border: 2px solid #004d00;
+      display: inline-block;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .answer-buttons {
+      margin-top: 20px;
+    }
+    .answer-button {
+      font-size: 18px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border: none;
+    }
+    .answer-button:hover {
+      background-color: #0056b3;
+    }
+    .message {
+      margin-top: 20px;
+      font-size: 20px;
+      padding: 10px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .correct {
+      background-color: #28a745;
+      color: white;
+    }
+    .incorrect {
+      background-color: #dc3545;
+      color: white;
+    }
+    #start-screen {
+      display: block;
+    }
+    #quiz-container, #scoreboard, #restart-container, #lost-container {
+      display: none;
+    }
+    #player-name {
+      font-size: 18px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+    /* Container de explicação */
+    #explanation-container {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      border: 2px solid #007bff;
+      border-radius: 10px;
+      background-color: #ffeb3b;
+      font-size: 18px;
+      color: #333;
+      text-align: center; /* Centraliza o conteúdo dentro do container */
+    }
+    /* Estilo da imagem */
+    #explanation-container img {
+      width: 100%;  /* A imagem agora ocupa toda a largura do container */
+      height: auto; /* Mantém a proporção da imagem */
+      margin-bottom: 15px; /* Espaçamento abaixo da imagem */
+      border-radius: 10px; /* Arredonda os cantos da imagem */
+    }
+    /* Estilo do botão "Continuar" */
+    #next-button {
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      display: inline-block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #next-button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div id="start-screen" class="container">
+    <h2>Bem-vindo ao Jogo Botânico!</h2>
+    <input type="text" id="player-name" placeholder="Digite seu nome">
+    <button id="start-button" class="btn" onclick="startGame()">Iniciar</button>
+  </div>
+
+  <div id="scoreboard" class="scoreboard">
+    <span id="player-display"></span>
+    <span id="score">Pontos: 0</span> | <span id="lives">Vidas: 3</span>
+  </div>
+
+  <div id="quiz-container" class="container">
+    <h2 class="question" id="question-text"></h2>
+    <div id="answer-container" class="answer-buttons"></div>
+    <div id="message-container" class="message"></div>
+    <div id="explanation-container"></div> <!-- Container da explicação -->
+  </div>
+
+  <div id="restart-container" class="container">
+    <h2>Parabéns! Você completou todas as perguntas!</h2>
+    <button class="btn" onclick="restartGame()">Jogar Novamente</button>
+  </div>
+
+  <div id="lost-container" class="container">
+    <h2>Você perdeu! Que tal tentar novamente?</h2>
+    <button class="btn" onclick="restartGame()">Tentar Novamente</button>
+  </div>
+
+  <script>
+    let score = 0;
+    let lives = 3;
+    let playerName = "";
+
+    let plants = [
+      { 
+        phrase: "O ___________ é uma planta que cresce principalmente no deserto.",
+        options: ["Girassol", "Cacto", "Lírio"],
+        correct: "Cacto",
+        explanation: "Os cactos caracterizam-se por serem cilíndricos, globosos, angulosos ou achatados, e possuem variados tamanhos. \n\nO mais alto é o Pachycereus pringlei, cuja altura máxima registrada foi a de 19,20 metros. \n\nOs cactos são encontrados nas Américas, desde o Canadá até a Patagônia, como também no Caribe. Possuem expectativa de vida elevada, podendo sobreviver mais de 200 anos. Na região Nordeste do Brasil, é muito comum encontrar o cacto mandacaru (Cereus peruvianus). ",
+        explanationImage: "cacto.jpg"
+    },
+      { 
+        phrase: "A ___________ tem flores exóticas e cresce em regiões tropicais.",
+        options: ["Rosa", "Orquídea", "Alga"],
+        correct: "Orquídea",
+        explanation: "As orquídeas são plantas que compõem a família Orchidaceae (uma das maiores famílias de plantas existentes). \n\nSão mais de 20.000 espécies encontradas na natureza, sendo que aproximadamente 3.500 destas no Brasil. Estão presentes em todos os continentes do planeta (fora a Antártida), mas predominam em áreas tropicais. \n\nAs orquídeas são famosas por terem variadas formas, tamanhos e cores de flores, chegando até a conter formas únicas. \n\nA maior parte das orquídeas na natureza são epífitas, ou seja, elas vivem sobre as árvores ou nas árvores como um apoio, somente para buscar a luz e usar os nutrientes que eventualmente entrem em contato com suas raízes, como material em decomposição. \n\nElas se propagam e reproduzem basicamente por sementes que são carregas pelo vento.",
+        explanationImage: "orquidea.png"
+      },
+      { 
+        phrase: "A ___________ tem espinhos e flores vermelhas.",
+        options: ["Samambaia", "Rosa", "Aloe Vera"],
+        correct: "Rosa",
+        explanation: "A rosa é considerada uma das flores mais bonitas, com suas folhas ovaladas, recortadas em forma de dentes ou planas \n\nAs roseiras, arbustos que alcançam geralmente de 1,50 a 2,00 metros de altura, são cultivadas nos meses outonais, até o começo da Primavera. \n\nAs rosas, que integram a família Rosaceae, no interior da qual é possível encontrar mais de 100 espécimes e inúmeras variedades, são geralmente divididas em silvestres, contemporâneas de jardim ou antigas de jardim."
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+
+    function startGame() {
+      playerName = document.getElementById("player-name").value.trim();
+      if (!playerName) {
+        alert("Por favor, digite seu nome!");
+        return;
+      }
+      document.getElementById("player-display").innerText = "Jogador: " + playerName;
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("scoreboard").style.display = "block";
+      document.getElementById("quiz-container").style.display = "block";
+      generateRound();
+    }
+
+    function updateScoreboard() {
+      document.getElementById("score").innerText = "Pontos: " + score;
+      document.getElementById("lives").innerText = "Vidas: " + lives;
+    }
+
+    function generateRound() {
+      const currentPlant = plants[currentQuestionIndex];
+      document.getElementById("question-text").innerText = currentPlant.phrase;
+      document.getElementById("answer-container").innerHTML = currentPlant.options.map((option, index) => {
+        return `
+          <button class="answer-button" onclick="checkAnswer('${option}')">${option}</button>
+        `;
+      }).join('');
+      document.getElementById("message-container").innerHTML = ''; // Limpa a mensagem
+      document.getElementById("explanation-container").style.display = "none"; // Esconde a explicação
+      document.getElementById("question-text").style.display = "block"; // Exibe a pergunta
+      document.getElementById("answer-container").style.display = "block"; // Exibe as respostas
+    }
+
+    function checkAnswer(selectedOption) {
+      const currentPlant = plants[currentQuestionIndex];
+      if (selectedOption === currentPlant.correct) {
+        score += 10;
+        document.getElementById("message-container").innerHTML = "<span class='correct'>Correto!</span>";
+      } else {
+        lives -= 1;
+        document.getElementById("message-container").innerHTML = "<span class='incorrect'>Errado! Tente novamente.</span>";
+      }
+      updateScoreboard();
+
+      // Exibe a explicação com a imagem
+      if (currentPlant.explanationImage) {
+        document.getElementById("explanation-container").innerHTML = `
+          <strong><p>${currentPlant.correct}</p></strong>  <!-- Exibe o nome da planta correta -->
+          <img src="${currentPlant.explanationImage}" alt="Imagem da planta">
+          <p>${currentPlant.explanation.replace(/\n/g, '<br>')}</p> <!-- Exibe a explicação da planta -->
+          <button id="next-button" class="btn" onclick="nextQuestion()">Continuar</button> <!-- Botão "Continuar" -->
+        `;
+      } else {
+        document.getElementById("explanation-container").innerHTML = `
+          <strong><p>${currentPlant.correct}</p></strong>  <!-- Exibe o nome da planta correta -->
+          <p>${currentPlant.explanation.replace(/\n/g, '<br>')}</p> <!-- Exibe a explicação da planta -->
+          <button id="next-button" class="btn" onclick="nextQuestion()">Continuar</button> <!-- Botão "Continuar" -->
+        `;
+      }
+      document.getElementById("explanation-container").style.display = "block"; // Exibe a explicação
+
+      // Esconde a pergunta e as respostas
+      document.getElementById("question-text").style.display = "none";
+      document.getElementById("answer-container").style.display = "none";
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIndex < plants.length - 1) {
+        currentQuestionIndex++;
+        generateRound();
+      } else {
+        document.getElementById("restart-container").style.display = "block";
+        document.getElementById("quiz-container").style.display = "none";
+      }
+    }
+
+    function restartGame() {
+      score = 0;
+      lives = 3;
+      currentQuestionIndex = 0;
+      document.getElementById("lost-container").style.display = "none";
+      document.getElementById("restart-container").style.display = "none";
+      document.getElementById("quiz-container").style.display = "block";
+      updateScoreboard();
+      generateRound();
+    }
+  </script>
+</body>
+</html>
