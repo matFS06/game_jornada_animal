@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo de Fisiologia</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #d8f3dc;
+      padding: 20px;
+      text-align: center;
+      background-image: url('fisiologia.png');
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      border: 5px solid #d11111;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .question {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+    .scoreboard {
+      font-size: 20px;
+      padding: 10px;
+      background-color: white;
+      border-radius: 10px;
+      border: 2px solid #004d00;
+      display: inline-block;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .answer-buttons {
+      margin-top: 20px;
+    }
+    .answer-button {
+      font-size: 18px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border: none;
+    }
+    .answer-button:hover {
+      background-color: #0056b3;
+    }
+    .message {
+      margin-top: 20px;
+      font-size: 20px;
+      padding: 10px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .correct {
+      background-color: #28a745;
+      color: white;
+    }
+    .incorrect {
+      background-color: #dc3545;
+      color: white;
+    }
+    #start-screen {
+      display: block;
+    }
+    #quiz-container, #scoreboard, #restart-container, #lost-container {
+      display: none;
+    }
+    #player-name {
+      font-size: 18px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+    /* Estilo para o explanation-container */
+    #explanation-container {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      border: 2px solid #d11111;;
+      border-radius: 10px;
+      background-color: #ffeb3b;
+      font-size: 18px;
+      color: #333;
+      text-align: center;
+    }
+    /* Estilo da imagem */
+    #explanation-container img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 15px;
+      border-radius: 10px;
+    }
+    /* Estilo do botão "Continuar" */
+    #next-button {
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 15px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    #next-button:hover {
+      background-color: #218838;
+    }
+    .letter-box {
+      width: 50px;
+      height: 50px;
+      display: inline-block;
+      border: 2px solid #d11111;;
+      margin: 5px;
+      text-align: center;
+      font-size: 24px;
+      line-height: 50px;
+      background-color: #f4f4f4;
+    }
+    #word-container {
+      margin-bottom: 20px;
+    }
+    /* Área para exibir as letras tentadas */
+    .tried-letters {
+      margin-top: 20px;
+      font-size: 18px;
+      text-align: left;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 2px solid #056b05;
+      border-radius: 10px;
+      display: inline-block;
+      width: 80%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tela Inicial -->
+  <div id="start-screen" class="container">
+    <h2>Bem-vindo ao Jogo de Fisiologia!</h2>
+    <input type="text" id="player-name" placeholder="Digite seu nome">
+    <button id="start-button" class="btn" onclick="startGame()">Iniciar</button>
+  </div>
+
+  <!-- Scoreboard com nome e vidas -->
+  <div id="scoreboard" class="scoreboard" style="display: none;">
+    <span id="player-display">Jogador: <strong>...</strong></span>
+    <span id="score">Pontos: 0</span> | <span id="lives">Vidas: 6</span>
+  </div>
+
+  <!-- Tela do Jogo -->
+  <div id="quiz-container" class="container" style="display: none;">
+    <h2 id="question-title" class="question"></h2>
+    <div id="word-container"></div>
+    <input type="text" id="letter-input" maxlength="1" class="form-control" style="width: 100px; margin: 20px auto;">
+    <button id="submit-button" class="btn" onclick="submitLetter()">Submeter Letra</button>
+    <div id="message-container" class="message"></div>
+    <div id="explanation-container"></div> <!-- Container da explicação -->
+    <!-- Área para exibir as letras tentadas -->
+    <div id="tried-letters" class="tried-letters"></div>
+  </div>
+
+  <!-- Tela de Reinício -->
+  <div id="restart-container" class="container" style="display: none;">
+    <h2>Parabéns! Você completou todas as perguntas!</h2>
+    <button class="btn" onclick="restartGame()">Jogar Novamente</button>
+  </div>
+
+  <!-- Tela de Perda -->
+  <div id="lost-container" class="container" style="display: none;">
+    <h2>Você perdeu! Que tal tentar novamente?</h2>
+    <button class="btn" onclick="restartGame()">Tentar Novamente</button>
+  </div>
+
+  <script>
+    let currentQuestionIndex = 0;
+    let playerName = "";
+    let score = 0;
+    let lives = 6; // Aumenta o número de vidas para 6
+    let triedLetters = []; // Array para armazenar as letras tentadas
+
+    const questions = [
+      {
+        question: "O órgão responsável pela circulação do sangue é o: (7 letras).",
+        correctAnswer: "CORAÇÃO",
+        feedbackCorrect: "Muito bem! O coração é o órgão responsável pela circulação do sangue.",
+        feedbackIncorrect: "Ops! O coração é o órgão responsável pela circulação do sangue.",
+        preFilled: [0, 5], // Preenche as letras "c" e "ã"
+        explanation: "O coração é um órgão muscular responsável por bombear o sangue para todo o corpo.",
+        explanationImage: "https://example.com/coracao.jpg" // URL da imagem de explicação
+      },
+      {
+        question: "O sistema que permite a respiração é o sistema: (11 letras).",
+        correctAnswer: "RESPIRATÓRIO",
+        feedbackCorrect: "Correto! O sistema respiratório é responsável pela respiração.",
+        feedbackIncorrect: "Errado! O sistema respiratório é responsável pela respiração.",
+        preFilled: [0, 8], // Preenche as letras "r" e "ó"
+        explanation: "O sistema respiratório é responsável pela troca de gases entre o corpo e o ambiente.",
+        explanationImage: "https://example.com/respiratorio.jpg"
+      },
+      {
+        question: "O órgão onde a digestão dos alimentos começa é a: (4 letras).",
+        correctAnswer: "BOCA",
+        feedbackCorrect: "Isso mesmo! A digestão começa na boca.",
+        feedbackIncorrect: "Não é isso! A digestão começa na boca.",
+        preFilled: [0], // Preenche a letra "b"
+        explanation: "A boca é onde a digestão começa com a mastigação e a saliva.",
+        explanationImage: "https://example.com/boca.jpg"
+      },
+      {
+        question: "O sistema responsável pela produção de hormônios é o sistema: (9 letras).",
+        correctAnswer: "ENDÓCRINO",
+        feedbackCorrect: "Exato! O sistema endócrino é responsável pela produção de hormônios.",
+        feedbackIncorrect: "Errado! O sistema endócrino é responsável pela produção de hormônios.",
+        preFilled: [0, 3], // Preenche as letras "e" e "ó"
+        explanation: "O sistema endócrino é responsável pela produção de hormônios que regulam diversas funções no corpo.",
+        explanationImage: "https://example.com/endocrino.jpg"
+      }
+    ];
+
+    function startGame() {
+      playerName = document.getElementById("player-name").value.trim();
+      if (!playerName) {
+        alert("Por favor, digite seu nome!");
+        return;
+      }
+      document.getElementById("player-display").innerHTML = "Jogador: <strong>" + playerName + "</strong>";
+      document.getElementById("scoreboard").style.display = "block";
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("quiz-container").style.display = "block";
+      generateRound();
+    }
+
+    function updateScoreboard() {
+      document.getElementById("score").innerText = "Pontos: " + score;
+      document.getElementById("lives").innerText = "Vidas: " + lives;
+    }
+
+    function generateRound() {
+      const currentQuestion = questions[currentQuestionIndex];
+      let wordHTML = '';
+      currentQuestion.correctAnswer.split("").forEach((char, index) => {
+        wordHTML += `<div class="letter-box" id="box-${index}">${currentQuestion.preFilled.includes(index) ? char : ''}</div>`;
+      });
+      document.getElementById("word-container").innerHTML = wordHTML;
+      document.getElementById("question-title").innerText = currentQuestion.question;
+      document.getElementById("letter-input").value = '';
+      document.getElementById("message-container").innerText = '';
+      triedLetters = []; // Zera as letras tentadas a cada nova pergunta
+      document.getElementById("tried-letters").innerText = `Letras Tentadas: `;
+      document.getElementById("explanation-container").style.display = "none"; // Esconde a explicação
+      document.getElementById("submit-button").style.display = "inline-block"; // Mostra o botão de submeter letra
+      document.getElementById("letter-input").style.display = "inline-block"; // Mostra o campo de letra
+      document.getElementById("tried-letters").style.display = "inline-block"; // Mostra a área de tentativas
+    }
+
+    function submitLetter() {
+      const letter = document.getElementById("letter-input").value.toUpperCase();
+      if (triedLetters.includes(letter)) {
+        alert("Você já tentou essa letra!");
+        return;
+      }
+      triedLetters.push(letter);
+      document.getElementById("tried-letters").innerText = `Letras Tentadas: ${triedLetters.join(", ")}`;
+      document.getElementById("letter-input").value = '';
+
+      const currentQuestion = questions[currentQuestionIndex];
+      const correctAnswer = currentQuestion.correctAnswer;
+
+      // Limpa qualquer mensagem de erro anterior
+      document.getElementById("message-container").innerText = '';
+      document.getElementById("message-container").classList.remove('incorrect');
+      
+      if (correctAnswer.includes(letter)) {
+        const wordWithBlanks = correctAnswer.split("");
+        wordWithBlanks.forEach((char, index) => {
+          if (char === letter) {
+            document.getElementById(`box-${index}`).innerText = letter;
+          }
+        });
+
+        checkIfCorrectWord();
+      } else {
+        // Mensagem de erro em vermelho para letras incorretas
+        document.getElementById("message-container").innerText = 'A palavra não contém essa letra';
+        document.getElementById("message-container").classList.add('incorrect');
+        
+        lives--; // Diminui uma vida quando a letra estiver errada
+        updateScoreboard();
+        if (lives <= 0) {
+          endGame();
+        }
+      }
+    }
+
+    function checkIfCorrectWord() {
+      const currentQuestion = questions[currentQuestionIndex];
+      const correctAnswer = currentQuestion.correctAnswer;
+      let wordWithBlanks = '';
+      document.querySelectorAll(".letter-box").forEach((box) => {
+        wordWithBlanks += box.innerText;
+      });
+
+      if (wordWithBlanks === correctAnswer) {
+        showExplanation(currentQuestion);
+      }
+    }
+
+    function showExplanation(question) {
+      document.getElementById("explanation-container").innerHTML = `
+        <strong><p>${question.correctAnswer}</p></strong>
+        <img src="${question.explanationImage}" alt="Imagem do sistema">
+        <p>${question.explanation}</p>
+        <button id="next-button" onclick="nextQuestion()">Continuar</button>
+      `;
+      document.getElementById("explanation-container").style.display = "block";
+
+      // Esconde as áreas da pergunta e respostas
+      document.getElementById("question-title").style.display = "none";
+      document.getElementById("word-container").style.display = "none";
+      document.getElementById("submit-button").style.display = "none";
+      document.getElementById("letter-input").style.display = "none";
+      document.getElementById("tried-letters").style.display = "none"; // Esconde as tentativas de letras
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex += 1;
+      if (currentQuestionIndex < questions.length) {
+        // Esconde a explicação e revela novamente a pergunta e os quadrados de letras
+        document.getElementById("explanation-container").style.display = "none";
+        generateRound(); // Gera a próxima pergunta
+
+        // Revela os elementos de pergunta
+        document.getElementById("question-title").style.display = "block";
+        document.getElementById("word-container").style.display = "block";
+        document.getElementById("submit-button").style.display = "inline-block";
+        document.getElementById("letter-input").style.display = "inline-block";
+        document.getElementById("tried-letters").style.display = "inline-block";
+      } else {
+        document.getElementById("quiz-container").style.display = "none";
+        document.getElementById("restart-container").style.display = "block";
+      }
+    }
+
+    function endGame() {
+      document.getElementById("quiz-container").style.display = "none";
+      document.getElementById("lost-container").style.display = "block";
+    }
+
+    function restartGame() {
+      // Resetando os valores iniciais
+      currentQuestionIndex = 0;
+      score = 0;
+      lives = 6;
+      triedLetters = [];
+
+      // Escondendo as telas de derrota e reinício
+      document.getElementById("lost-container").style.display = "none";
+      document.getElementById("restart-container").style.display = "none";
+
+      // Exibindo novamente o placar e o quiz
+      document.getElementById("scoreboard").style.display = "block";
+      document.getElementById("quiz-container").style.display = "block";
+
+      // Gerando a primeira pergunta
+      generateRound();
+      updateScoreboard();
+
+      // Garantindo que as caixas de letras e os botões fiquem visíveis
+      document.getElementById("word-container").style.display = "block"; // Mostra as caixas de letras
+      document.getElementById("submit-button").style.display = "inline-block"; // Mostra o botão de submeter letra
+      document.getElementById("letter-input").style.display = "inline-block"; // Mostra o campo de letra
+      document.getElementById("tried-letters").style.display = "inline-block"; // Mostra a área de letras tentadas
+
+      // Garantir que a explicação não fique visível
+      document.getElementById("explanation-container").style.display = "none";
+    }
+  </script>
+</body>
+</html>
