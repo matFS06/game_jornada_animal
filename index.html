@@ -183,6 +183,7 @@
     <img src="troféu.png" alt="Troféu" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
     <h2>Parabéns! Você completou todas as perguntas!</h2>
     <button class="btn" onclick="restartGame()">Jogar Novamente</button>
+    <button class="btn" onclick="goToNextModule()">Próximo Módulo</button>
   </div>
 
   <!-- Tela de Perda -->
@@ -465,6 +466,9 @@
       
       // Limpa o campo de nome, se desejar
       document.getElementById("player-name").value = "";
+    }
+    function goToNextModule() {
+      window.location.href = "botanica.html";
     }
   </script>
 </body>
