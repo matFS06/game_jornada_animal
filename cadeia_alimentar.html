@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo da Cadeia Alimentar</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #d0f4ff;
+      padding: 20px;
+      text-align: center;
+      background-image: url('cadeia_alimentar.png');
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      border: 5px solid #1177d1;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+    .animal-slot {
+      border: 2px dashed #1177d1;
+      padding: 15px;
+      margin: 10px;
+      min-height: 50px;
+      border-radius: 10px;
+      background-color: #f0f8ff;
+    }
+    .animal {
+      display: inline-block;
+      padding: 8px 12px;
+      margin: 5px;
+      background-color: #ffc107;
+      border-radius: 8px;
+      cursor: move;
+    }
+    .scoreboard {
+      font-size: 18px;
+      margin-top: 15px;
+    }
+    #explanation-container {
+      display: none;
+      margin-top: 20px;
+    }
+    #player-name {
+      font-size: 18px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="start-screen" class="container">
+    <h2>Bem-vindo ao Módulo da Cadeia Alimentar!</h2>
+    <img src="logo_cadeia.png" alt="Logo" style="width: 300px; height: 200px; margin-bottom: 20px; border-radius: 10%;"/>
+    <br>
+    <input type="text" id="player-name" placeholder="Digite seu nome">
+    <br>
+    <button class="btn" onclick="startGame()">Iniciar</button>
+  </div>
+
+  <div id="scoreboard-container" class="container" style="display:none;">
+    <div class="scoreboard">
+      <span id="player-display"></span> | 
+      <span id="score">Pontos: 0</span> | 
+      <span id="lives">Vidas: ❤️❤️❤️❤️❤️</span>
+    </div>
+  </div>
+
+  <div id="game-container" class="container" style="display:none;">
+    <h3 id="question-title">Arraste os animais para suas posições na cadeia alimentar:</h3>
+    <div class="d-flex flex-column align-items-center">
+      <div class="animal-slot" id="consumidor2">Consumidor Secundário</div>
+      <div class="animal-slot" id="consumidor1">Consumidor Primário</div>
+      <div class="animal-slot" id="produtor">Produtor</div>
+    </div>
+    <div id="options" class="mt-4"></div>
+    <button class="btn" onclick="checkAnswer()">Verificar</button>
+    <div id="feedback" class="mt-3"></div>
+  </div>
+
+  <div id="explanation-container" class="container">
+    <h4>Explicação:</h4>
+    <p id="explanation-text"></p>
+    <img id="explanation-image" src="" alt="Explicação Visual" style="max-width: 100%; border-radius: 10px; margin: 10px 0;" />
+    <button class="btn" onclick="nextQuestion()">Continuar</button>
+  </div>
+
+  <script>
+    let currentIndex = 0;
+    let score = 0;
+    let lives = 5;
+    let playerName = "";
+
+    const questions = [
+      {
+        animals: ["Capim", "Gafanhoto", "Sapo"],
+        order: ["produtor", "consumidor1", "consumidor2"],
+        explanation: "O capim é o produtor, o gafanhoto é o consumidor primário e o sapo é o consumidor secundário.",
+        image: "capim_gafanhoto_sapo.png"
+      },
+      {
+        animals: ["Alga", "Peixe pequeno", "Garça"],
+        order: ["produtor", "consumidor1", "consumidor2"],
+        explanation: "A alga produz energia, o peixe pequeno se alimenta dela e a garça se alimenta do peixe.",
+        image: "alga_peixe_garca.png"
+      },
+      {
+        animals: ["Plâncton", "Peixe", "Tubarão"],
+        order: ["produtor", "consumidor1", "consumidor2"],
+        explanation: "O plâncton é o produtor aquático, o peixe consome o plâncton e o tubarão se alimenta do peixe.",
+        image: "plancton_peixe_tubarao.png"
+      }
+    ];
+
+    function startGame() {
+      playerName = document.getElementById("player-name").value;
+      if (!playerName) return alert("Digite seu nome!");
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+      document.getElementById("scoreboard-container").style.display = "block"; // mostra o scoreboard separado
+      document.getElementById("player-display").textContent = `Jogador: ${playerName}`;
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const current = questions[currentIndex];
+      document.getElementById("produtor").innerHTML = "Produtor";
+      document.getElementById("consumidor1").innerHTML = "Consumidor Primário";
+      document.getElementById("consumidor2").innerHTML = "Consumidor Secundário";
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      current.animals.forEach(animal => {
+        const el = document.createElement("div");
+        el.className = "animal";
+        el.textContent = animal;
+        el.setAttribute("draggable", true);
+        el.addEventListener("dragstart", dragStart);
+        optionsDiv.appendChild(el);
+      });
+    }
+
+    function dragStart(e) {
+      e.dataTransfer.setData("text/plain", e.target.textContent);
+    }
+
+    document.querySelectorAll(".animal-slot").forEach(slot => {
+      slot.addEventListener("dragover", e => e.preventDefault());
+      slot.addEventListener("drop", e => {
+        e.preventDefault();
+        const data = e.dataTransfer.getData("text/plain");
+        e.target.textContent = data;
+      });
+    });
+
+    function checkAnswer() {
+      const current = questions[currentIndex];
+      let correct = true;
+      for (let i = 0; i < current.order.length; i++) {
+        const slotId = current.order[i];
+        const expectedAnimal = current.animals[i];
+        const actualAnimal = document.getElementById(slotId).textContent;
+        if (!actualAnimal.includes(expectedAnimal)) correct = false;
+      }
+      const feedback = document.getElementById("feedback");
+      if (correct) {
+        score+=10;
+        feedback.textContent = "Correto! Muito bem!";
+        feedback.style.color = "green";
+        document.getElementById("score").textContent = `Pontos: ${score}`;
+        showExplanation();
+      } else {
+        lives--;
+        updateLives();
+        feedback.textContent = "Algo está errado. Tente novamente.";
+        feedback.style.color = "red";
+        if (lives <= 0) {
+          alert("Fim de jogo! Suas vidas acabaram.");
+          location.reload();
+        }
+      }
+    }
+
+    function updateLives() {
+      const heart = '❤️';
+      document.getElementById("lives").textContent = `Vidas: ${heart.repeat(lives)}`;
+    }
+
+    function showExplanation() {
+      const current = questions[currentIndex];
+      document.getElementById("game-container").style.display = "none";
+      document.getElementById("explanation-container").style.display = "block";
+      document.getElementById("explanation-text").textContent = current.explanation;
+      document.getElementById("explanation-image").src = current.image;
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        document.getElementById("explanation-container").style.display = "none";
+        document.getElementById("feedback").textContent = "";
+        document.getElementById("game-container").style.display = "block";
+        loadQuestion();
+      } else {
+        document.getElementById("explanation-container").innerHTML = `<h3>Parabéns, ${playerName}! Você completou o jogo com ${score} ponto(s)!</h3>`;
+      }
+    }
+  </script>
+</body>
+</html>

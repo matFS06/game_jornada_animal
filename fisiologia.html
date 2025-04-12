@@ -192,6 +192,7 @@
   <div id="restart-container" class="container" style="display: none;">
     <h2>Parabéns! Você completou todas as perguntas!</h2>
     <button class="btn" onclick="restartGame()">Jogar Novamente</button>
+    <button class="btn" onclick="goToNextModule()">Próximo Módulo</button>
   </div>
 
   <!-- Tela de Perda -->
@@ -214,8 +215,8 @@
         feedbackCorrect: "Muito bem! O coração é o órgão responsável pela circulação do sangue.",
         feedbackIncorrect: "Ops! O coração é o órgão responsável pela circulação do sangue.",
         preFilled: [0, 5], // Preenche as letras "c" e "ã"
-        explanation: "O coração é um órgão muscular responsável por bombear o sangue para todo o corpo.",
-        explanationImage: "https://example.com/coracao.jpg" // URL da imagem de explicação
+        explanation: "O coração é um órgão muscular responsável por bombear o sangue para todo o corpo.\n\n O coração possui cinco faces ou superfícies: a base, também conhecida como face ou superfície posterior e as faces diafragmática (inferior), esternocostal (anterior) e pulmonares (laterais) direita e esquerda. Ele possui ainda quatro margens ou bordas:",
+        explanationImage: "coracao.jpg" // URL da imagem de explicação
       },
       {
         question: "O sistema que permite a respiração é o sistema: (11 letras).",
@@ -223,8 +224,8 @@
         feedbackCorrect: "Correto! O sistema respiratório é responsável pela respiração.",
         feedbackIncorrect: "Errado! O sistema respiratório é responsável pela respiração.",
         preFilled: [0, 8], // Preenche as letras "r" e "ó"
-        explanation: "O sistema respiratório é responsável pela troca de gases entre o corpo e o ambiente.",
-        explanationImage: "https://example.com/respiratorio.jpg"
+        explanation: "O sistema respiratório humano é o conjunto dos órgãos responsáveis pela absorção do oxigênio do ar pelo organismo e pela eliminação do gás carbônico retirado das células. \n\nEle é formado pelos pulmões e por uma série de tubos que comunicam esse órgão com o meio externo. \n\nEsses tubos são: cavidades nasais, faringe, laringe, traqueia, brônquios, bronquíolos e alvéolos. As trocas gasosas ocorrem nos alvéolos pulmonares, que são pequenas bolsas de ar nos pulmões",
+        explanationImage: "respiratorio.png"
       },
       {
         question: "O órgão onde a digestão dos alimentos começa é a: (4 letras).",
@@ -232,17 +233,17 @@
         feedbackCorrect: "Isso mesmo! A digestão começa na boca.",
         feedbackIncorrect: "Não é isso! A digestão começa na boca.",
         preFilled: [0], // Preenche a letra "b"
-        explanation: "A boca é onde a digestão começa com a mastigação e a saliva.",
-        explanationImage: "https://example.com/boca.jpg"
+        explanation: "A boca humana é composta por várias estruturas, incluindo lábios, gengivas, dentes, palato, língua e o assoalho da boca. \n\nEssas partes funcionam em conjunto para realizar a parte inicial da digestão e garantir a saúde bucal e a eficiência do processo de digestão",
+        explanationImage: "boca.jpg"
       },
       {
-        question: "O sistema responsável pela produção de hormônios é o sistema: (9 letras).",
-        correctAnswer: "ENDÓCRINO",
-        feedbackCorrect: "Exato! O sistema endócrino é responsável pela produção de hormônios.",
-        feedbackIncorrect: "Errado! O sistema endócrino é responsável pela produção de hormônios.",
-        preFilled: [0, 3], // Preenche as letras "e" e "ó"
-        explanation: "O sistema endócrino é responsável pela produção de hormônios que regulam diversas funções no corpo.",
-        explanationImage: "https://example.com/endocrino.jpg"
+        question: "O sistema responsável pela coordenação das atividades do corpo é o sistema: (7 letras).",
+        correctAnswer: "NERVOSO",
+        feedbackCorrect: "Muito bem! O sistema nervoso coordena as atividades do corpo e responde aos estímulos do ambiente.",
+        feedbackIncorrect: "Não é isso! O sistema nervoso é quem coordena as funções do corpo e responde aos estímulos.",
+        preFilled: [0, 3], // Preenche as letras "N" e "V"
+        explanation: "O sistema nervoso humano é responsável por captar, interpretar e responder a estímulos internos e externos. \n\nEle coordena e regula todas as atividades corporais, elaborando respostas voluntárias ou involuntárias. \n\nO sistema nervoso é composto por órgãos como o encéfalo, a medula espinhal, gânglios e nervos",
+        explanationImage: "nervoso.jpg"
       }
     ];
 
@@ -330,7 +331,9 @@
       });
 
       if (wordWithBlanks === correctAnswer) {
-        showExplanation(currentQuestion);
+        score += 10; // ✅ Adiciona 10 pontos
+        updateScoreboard(); // ✅ Atualiza o placar
+        showExplanation(currentQuestion); // Continua o jogo
       }
     }
 
@@ -338,7 +341,7 @@
       document.getElementById("explanation-container").innerHTML = `
         <strong><p>${question.correctAnswer}</p></strong>
         <img src="${question.explanationImage}" alt="Imagem do sistema">
-        <p>${question.explanation}</p>
+        <p>${question.explanation.replace(/\n/g, '<br>')}</p>  <!-- Exibe a explicação da planta -->
         <button id="next-button" onclick="nextQuestion()">Continuar</button>
       `;
       document.getElementById("explanation-container").style.display = "block";
@@ -402,6 +405,9 @@
 
       // Garantir que a explicação não fique visível
       document.getElementById("explanation-container").style.display = "none";
+    }
+    function goToNextModule() {
+      window.location.href = "cadeia_alimentar.html";
     }
   </script>
 </body>
