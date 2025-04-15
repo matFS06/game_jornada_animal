@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌱 Jogo dos Nutrientes 🌽</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom, #d0f0c0, #fff);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+
+    .quiz-box {
+      max-width: 700px;
+      margin: auto;
+      background: #fff8e7;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 100, 0, 0.2);
+      border: 3px dashed #a3c586;
+    }
+
+    h3, h4 {
+      color: #4e944f;
+    }
+
+    .vidas {
+      color: #d62828;
+      font-weight: bold;
+    }
+
+    .btn-option {
+      margin-bottom: 10px;
+      text-align: left;
+      background-color: #d0ead2;
+      border: 2px solid #4e944f;
+      color: #333;
+      font-weight: bold;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    .btn-option:hover {
+      background-color: #a3c586;
+      transform: scale(1.02);
+    }
+
+    #explicacao {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #explicacao img {
+      max-width: 200px;
+      margin-top: 10px;
+      border-radius: 12px;
+      border: 2px solid #4e944f;
+    }
+
+    .header-box {
+      background-color: #a3c586;
+      padding: 10px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      color: #fff;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .btn-success {
+      background-color: #4e944f;
+      border: none;
+    }
+
+    .btn-success:hover {
+      background-color: #3c7d3c;
+    }
+
+    input.form-control {
+      border: 2px solid #4e944f;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-box">
+    <div class="header-box">🌿 Jogo dos Nutrientes 🍓</div>
+
+    <div id="tela-nome">
+      <h3>👩‍🌾 Digite seu nome para começar:</h3>
+      <input type="text" id="nome-jogador" class="form-control mb-3" placeholder="Seu nome" />
+      <button class="btn btn-success" onclick="iniciarJogo()">Começar</button>
+    </div>
+
+    <div id="jogo" style="display: none;">
+      <div class="d-flex justify-content-between">
+        <div><strong>👤 Jogador:</strong> <span id="jogador"></span></div>
+        <div><strong>⭐ Pontos:</strong> <span id="pontos">0</span></div>
+        <div><strong>❤️ Vidas:</strong> <span id="vidas" class="vidas">5</span></div>
+      </div>
+      <hr />
+      <div>
+        <h4 id="pista">🔍</h4>
+        <div id="opcoes" class="mt-3"></div>
+        <div id="explicacao">
+          <p id="texto-explicacao"></p>
+          <img id="imagem-explicacao" src="" alt="Imagem do alimento">
+          <button class="btn btn-primary mt-3" onclick="proximaPergunta()">🌱 Continuar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript igual ao seu, mantido sem mudanças -->
+  <script>
+    const perguntas = [
+        {
+            pistas: [
+            "1. Sou uma fruta tropical rica em potássio. (10 pts)",
+            "2. Ajudo a prevenir câimbras musculares. (7 pts)",
+            "3. Tenho uma casca amarela e sou muito consumida no Brasil. (5 pts)"
+            ],
+            resposta: "Banana",
+            opcoes: ["Maçã", "Banana", "Laranja", "Abacaxi", "Melão"],
+            explicacao: "A banana é rica em potássio e excelente para os músculos.",
+            imagem: "https://cdn.pixabay.com/photo/2018/03/08/22/21/banana-3216741_1280.jpg"
+        },
+        {
+            pistas: [
+            "1. Sou verde, folhoso e cheio de ferro. (10 pts)",
+            "2. Ajudo na prevenção da anemia. (7 pts)",
+            "3. Sou muito usado em saladas e sucos detox. (5 pts)"
+            ],
+            resposta: "Espinafre",
+            opcoes: ["Alface", "Couve", "Espinafre", "Agrião", "Rúcula"],
+            explicacao: "O espinafre é uma excelente fonte de ferro e outros nutrientes.",
+            imagem: "https://cdn.pixabay.com/photo/2017/07/16/10/43/spinach-2502665_1280.jpg"
+        },
+        {
+            pistas: [
+            "1. Sou um tubérculo e fonte de energia. (10 pts)",
+            "2. Sou rico em carboidratos e vitaminas do complexo B. (7 pts)",
+            "3. Frito, cozido ou purê, estou sempre presente nas refeições. (5 pts)"
+            ],
+            resposta: "Batata",
+            opcoes: ["Inhame", "Batata", "Mandioquinha", "Cenoura", "Cará"],
+            explicacao: "A batata é rica em carboidratos e fornece energia rapidamente.",
+            imagem: "https://cdn.pixabay.com/photo/2017/06/02/18/24/potatoes-2367454_1280.jpg"
+        }
+    ];
+
+    let indice = 0;
+    let pontuacao = 0;
+    let vidas = 5;
+    let etapaPista = 0;
+    let nome = "";
+
+    function iniciarJogo() {
+      nome = document.getElementById("nome-jogador").value;
+      if (!nome) return alert("🌼 Digite seu nome para começar!");
+
+      document.getElementById("tela-nome").style.display = "none";
+      document.getElementById("jogo").style.display = "block";
+      document.getElementById("jogador").textContent = nome;
+
+      carregarPergunta();
+    }
+
+    function carregarPergunta() {
+      const pergunta = perguntas[indice];
+      document.getElementById("pista").textContent = pergunta.pistas[etapaPista];
+      const opcoesContainer = document.getElementById("opcoes");
+      opcoesContainer.innerHTML = "";
+      document.getElementById("explicacao").style.display = "none";
+
+      pergunta.opcoes.forEach(opcao => {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-option w-100";
+        btn.textContent = opcao;
+        btn.onclick = () => verificarResposta(opcao);
+        opcoesContainer.appendChild(btn);
+      });
+    }
+
+    function verificarResposta(opcao) {
+      const pergunta = perguntas[indice];
+
+      if (opcao === pergunta.resposta) {
+        const pontosGanhos = etapaPista === 0 ? 10 : etapaPista === 1 ? 7 : 5;
+        pontuacao += pontosGanhos;
+        document.getElementById("pontos").textContent = pontuacao;
+        mostrarExplicacao(pergunta);
+      } else {
+        etapaPista++;
+        if (etapaPista >= 3) {
+          vidas--;
+          document.getElementById("vidas").textContent = vidas;
+          mostrarExplicacao(pergunta);
+          if (vidas <= 0) fimDeJogo();
+        } else {
+          carregarPergunta();
+        }
+      }
+    }
+
+    function mostrarExplicacao(pergunta) {
+      document.getElementById("opcoes").innerHTML = "";
+      document.getElementById("pista").textContent = `✅ Resposta: ${pergunta.resposta}`;
+      document.getElementById("texto-explicacao").textContent = pergunta.explicacao;
+      document.getElementById("imagem-explicacao").src = pergunta.imagem;
+      document.getElementById("explicacao").style.display = "block";
+    }
+
+    function proximaPergunta() {
+      etapaPista = 0;
+      indice++;
+      if (indice < perguntas.length) {
+        carregarPergunta();
+      } else {
+        alert(`🎉 Parabéns, ${nome}! Você finalizou o jogo com ${pontuacao} pontos.`);
+        location.reload();
+      }
+    }
+
+    function fimDeJogo() {
+      alert(`😢 Fim de jogo, ${nome}! Sua pontuação final foi de ${pontuacao} pontos.`);
+      location.reload();
+    }
+  </script>
+</body>
+</html>
