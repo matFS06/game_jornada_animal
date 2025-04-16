@@ -109,6 +109,13 @@
     <button class="btn" onclick="nextQuestion()">Continuar</button>
   </div>
 
+  <div id="end-screen" class="container text-center" style="display: none;">
+    <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+    <p>Você completou o jogo com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+    <button class="btn btn-success me-2" onclick="restartGame()">🔄 Jogar Novamente</button>
+    <button class="btn btn-primary" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  </div>
+
   <script>
     let currentIndex = 0;
     let score = 0;
@@ -151,6 +158,18 @@
         order: ["produtor", "consumidor1", "consumidor2"],
         explanation: "A flor é a produtora, a abelha consome o néctar e o lagarto se alimenta da abelha.",
         image: "flor_abelha_lagarto.png"
+      },
+      {
+        animals: ["Algodoeiro", "Pulgão", "Joaninha"],
+        order: ["produtor", "consumidor1", "consumidor2"],
+        explanation: "O algodoeiro é a planta produtora, o pulgão se alimenta de sua seiva e a joaninha come os pulgões.",
+        image: "algodoeiro_pulgao_joaninha.png"
+      },
+      {
+        animals: ["Bambu", "Panda", "Leopardo"],
+        order: ["produtor", "consumidor1", "consumidor2"],
+        explanation: "O bambu é uma planta produtora, o panda gigante se alimenta do bambu e o leopardo é o consumidor secundário que pode predar o panda em seu habitat.",
+        image: "bambu_panda_leopardo.png"
       }
     ];
 
@@ -159,19 +178,22 @@
       if (!playerName) return alert("Digite seu nome!");
       document.getElementById("start-screen").style.display = "none";
       document.getElementById("game-container").style.display = "block";
-      document.getElementById("scoreboard-container").style.display = "block"; // mostra o scoreboard separado
+      document.getElementById("scoreboard-container").style.display = "block";
       document.getElementById("player-display").textContent = `Jogador: ${playerName}`;
       loadQuestion();
     }
 
     function loadQuestion() {
       const current = questions[currentIndex];
-      document.getElementById("produtor").innerHTML = "Produtor";
-      document.getElementById("consumidor1").innerHTML = "Consumidor Primário";
-      document.getElementById("consumidor2").innerHTML = "Consumidor Secundário";
+      document.getElementById("produtor").textContent = "Produtor";
+      document.getElementById("consumidor1").textContent = "Consumidor Primário";
+      document.getElementById("consumidor2").textContent = "Consumidor Secundário";
       const optionsDiv = document.getElementById("options");
       optionsDiv.innerHTML = "";
-      current.animals.forEach(animal => {
+
+      // Embaralhar os animais sem alterar a ordem correta original
+      const shuffledAnimals = [...current.animals].sort(() => Math.random() - 0.5);
+      shuffledAnimals.forEach(animal => {
         const el = document.createElement("div");
         el.className = "animal";
         el.textContent = animal;
@@ -205,7 +227,7 @@
       }
       const feedback = document.getElementById("feedback");
       if (correct) {
-        score+=10;
+        score += 10;
         feedback.textContent = "Correto! Muito bem!";
         feedback.style.color = "green";
         document.getElementById("score").textContent = `Pontos: ${score}`;
@@ -243,8 +265,28 @@
         document.getElementById("game-container").style.display = "block";
         loadQuestion();
       } else {
-        document.getElementById("explanation-container").innerHTML = `<h3>Parabéns, ${playerName}! Você completou o jogo com ${score} ponto(s)!</h3>`;
+        document.getElementById("explanation-container").style.display = "none";
+        document.getElementById("scoreboard-container").style.display = "none";
+        document.getElementById("end-screen").style.display = "block";
+        document.getElementById("final-player-name").textContent = playerName;
+        document.getElementById("final-score").textContent = score;
       }
+    }
+
+    function restartGame() {
+      currentIndex = 0;
+      score = 0;
+      lives = 5;
+      document.getElementById("end-screen").style.display = "none";
+      document.getElementById("scoreboard-container").style.display = "block";
+      document.getElementById("game-container").style.display = "block";
+      document.getElementById("score").textContent = `Pontos: ${score}`;
+      updateLives();
+      loadQuestion();
+    }
+
+    function goToNextModule() {
+      window.location.href = "nutrientes.html";
     }
   </script>
 </body>

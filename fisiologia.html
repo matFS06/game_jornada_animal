@@ -214,16 +214,16 @@
         correctAnswer: "CORAÇÃO",
         feedbackCorrect: "Muito bem! O coração é o órgão responsável pela circulação do sangue.",
         feedbackIncorrect: "Ops! O coração é o órgão responsável pela circulação do sangue.",
-        preFilled: [0, 5], // Preenche as letras "c" e "ã"
+        preFilled: [0, 2], // Preenche as letras "C" e "R"
         explanation: "O coração é um órgão muscular responsável por bombear o sangue para todo o corpo.\n\n O coração possui cinco faces ou superfícies: a base, também conhecida como face ou superfície posterior e as faces diafragmática (inferior), esternocostal (anterior) e pulmonares (laterais) direita e esquerda. Ele possui ainda quatro margens ou bordas:",
-        explanationImage: "coracao.jpg" // URL da imagem de explicação
+        explanationImage: "coracao.jpg" 
       },
       {
         question: "O sistema que permite a respiração é o sistema: (11 letras).",
         correctAnswer: "RESPIRATÓRIO",
         feedbackCorrect: "Correto! O sistema respiratório é responsável pela respiração.",
         feedbackIncorrect: "Errado! O sistema respiratório é responsável pela respiração.",
-        preFilled: [0, 8], // Preenche as letras "r" e "ó"
+        preFilled: [1, 7], // Preenche as letras "R" e "T"
         explanation: "O sistema respiratório humano é o conjunto dos órgãos responsáveis pela absorção do oxigênio do ar pelo organismo e pela eliminação do gás carbônico retirado das células. \n\nEle é formado pelos pulmões e por uma série de tubos que comunicam esse órgão com o meio externo. \n\nEsses tubos são: cavidades nasais, faringe, laringe, traqueia, brônquios, bronquíolos e alvéolos. As trocas gasosas ocorrem nos alvéolos pulmonares, que são pequenas bolsas de ar nos pulmões",
         explanationImage: "respiratorio.png"
       },
@@ -232,7 +232,7 @@
         correctAnswer: "BOCA",
         feedbackCorrect: "Isso mesmo! A digestão começa na boca.",
         feedbackIncorrect: "Não é isso! A digestão começa na boca.",
-        preFilled: [0], // Preenche a letra "b"
+        preFilled: [0], // Preenche a letra "B"
         explanation: "A boca humana é composta por várias estruturas, incluindo lábios, gengivas, dentes, palato, língua e o assoalho da boca. \n\nEssas partes funcionam em conjunto para realizar a parte inicial da digestão e garantir a saúde bucal e a eficiência do processo de digestão",
         explanationImage: "boca.jpg"
       },
@@ -244,6 +244,42 @@
         preFilled: [0, 3], // Preenche as letras "N" e "V"
         explanation: "O sistema nervoso humano é responsável por captar, interpretar e responder a estímulos internos e externos. \n\nEle coordena e regula todas as atividades corporais, elaborando respostas voluntárias ou involuntárias. \n\nO sistema nervoso é composto por órgãos como o encéfalo, a medula espinhal, gânglios e nervos",
         explanationImage: "nervoso.jpg"
+      },
+      {
+        question: "Os órgãos que filtram o sangue e produzem a urina são os: (4 letras).",
+        correctAnswer: "RINS",
+        feedbackCorrect: "Muito bem! Os rins filtram o sangue e produzem a urina.",
+        feedbackIncorrect: "Não é isso! O correto é rins, que fazem a filtração do sangue.",
+        preFilled: [3], // Preenche "S"
+        explanation: "Os rins são dois órgãos do sistema urinário que filtram o sangue para remover resíduos e excesso de líquidos, formando a urina. \n\nEles também ajudam a controlar a pressão arterial e produzem hormônios importantes para o corpo.",
+        explanationImage: "rins.jpg"
+      },
+      {
+        question: "Os órgãos onde ocorre a troca gasosa com o sangue. (7 letras).",
+        correctAnswer: "PULMÕES",
+        feedbackCorrect: "Correto! Os pulmões realizam as trocas gasosas com o sangue.",
+        feedbackIncorrect: "Ops! São os pulmões que fazem essa função.",
+        preFilled: [0, 5], // Preenche "P" e "E"
+        explanation: "Os pulmões são órgãos essenciais do sistema respiratório. Eles recebem o ar rico em oxigênio e liberam o gás carbônico através da expiração. \n\nNas estruturas chamadas alvéolos ocorrem as trocas gasosas com o sangue.",
+        explanationImage: "pulmoes.jpg"
+      },
+      {
+        question: "O sistema que transporta sangue, oxigênio e nutrientes é o sistema: (11 letras).",
+        correctAnswer: "CIRCULATÓRIO",
+        feedbackCorrect: "Perfeito! O sistema circulatório distribui sangue por todo o corpo.",
+        feedbackIncorrect: "Errado! O sistema responsável é o circulatório.",
+        preFilled: [4, 7], // Preenche "U" e "T"
+        explanation: "O sistema circulatório é responsável por distribuir oxigênio, nutrientes e hormônios pelo corpo, além de recolher substâncias residuais. \n\nÉ composto pelo coração, vasos sanguíneos (artérias, veias e capilares) e pelo sangue.",
+        explanationImage: "circulatorio.jpg"
+      },
+      {
+        question: "Órgão onde os alimentos são parcialmente digeridos. (8 letras).",
+        correctAnswer: "ESTÔMAGO",
+        feedbackCorrect: "Muito bem! O estômago inicia a digestão dos alimentos.",
+        feedbackIncorrect: "Não é isso! O órgão correto é o estômago.",
+        preFilled: [0, 4], // Preenche "E" e "M"
+        explanation: "O estômago é um órgão do sistema digestório que recebe o alimento da boca através do esôfago. \n\nNele, os alimentos sofrem a ação do suco gástrico, iniciando a digestão de proteínas. Seu ambiente é altamente ácido, ideal para esse processo.",
+        explanationImage: "estomago.jpg"
       }
     ];
 
@@ -283,38 +319,42 @@
       document.getElementById("tried-letters").style.display = "inline-block"; // Mostra a área de tentativas
     }
 
+    function removeAccents(str) {
+      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
     function submitLetter() {
-      const letter = document.getElementById("letter-input").value.toUpperCase();
-      if (triedLetters.includes(letter)) {
-        alert("Você já tentou essa letra!");
+      const input = document.getElementById("letter-input");
+      const letter = input.value.toUpperCase();
+      input.value = "";
+
+      if (!letter || triedLetters.includes(letter)) {
+        alert("Letra inválida ou já tentada!");
         return;
       }
+
       triedLetters.push(letter);
       document.getElementById("tried-letters").innerText = `Letras Tentadas: ${triedLetters.join(", ")}`;
-      document.getElementById("letter-input").value = '';
+      document.getElementById("message-container").innerText = '';
+      document.getElementById("message-container").classList.remove('incorrect');
 
       const currentQuestion = questions[currentQuestionIndex];
       const correctAnswer = currentQuestion.correctAnswer;
 
-      // Limpa qualquer mensagem de erro anterior
-      document.getElementById("message-container").innerText = '';
-      document.getElementById("message-container").classList.remove('incorrect');
-      
-      if (correctAnswer.includes(letter)) {
-        const wordWithBlanks = correctAnswer.split("");
-        wordWithBlanks.forEach((char, index) => {
-          if (char === letter) {
-            document.getElementById(`box-${index}`).innerText = letter;
-          }
-        });
+      let found = false;
+      correctAnswer.split("").forEach((char, index) => {
+        if (removeAccents(char) === removeAccents(letter)) {
+          document.getElementById(`box-${index}`).innerText = char; // mostra a letra com acento
+          found = true;
+        }
+      });
 
+      if (found) {
         checkIfCorrectWord();
       } else {
-        // Mensagem de erro em vermelho para letras incorretas
         document.getElementById("message-container").innerText = 'A palavra não contém essa letra';
         document.getElementById("message-container").classList.add('incorrect');
-        
-        lives--; // Diminui uma vida quando a letra estiver errada
+        lives--;
         updateScoreboard();
         if (lives <= 0) {
           endGame();

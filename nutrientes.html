@@ -10,6 +10,10 @@
       background: linear-gradient(to bottom, #d0f0c0, #fff);
       font-family: 'Comic Sans MS', cursive, sans-serif;
       padding: 20px;
+      background-image: url(nutrientes.png);
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
     }
 
     .quiz-box {
@@ -44,6 +48,11 @@
     .btn-option:hover {
       background-color: #a3c586;
       transform: scale(1.02);
+    }
+
+    .btn-option:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     #explicacao {
@@ -86,7 +95,7 @@
 </head>
 <body>
   <div class="quiz-box">
-    <div class="header-box">🌿 Jogo dos Nutrientes 🍓</div>
+    <div class="header-box">🌿 Módulo dos Nutrientes 🍓</div>
 
     <div id="tela-nome">
       <h3>👩‍🌾 Digite seu nome para começar:</h3>
@@ -107,48 +116,111 @@
         <div id="explicacao">
           <p id="texto-explicacao"></p>
           <img id="imagem-explicacao" src="" alt="Imagem do alimento">
+          <br>
           <button class="btn btn-primary mt-3" onclick="proximaPergunta()">🌱 Continuar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- JavaScript igual ao seu, mantido sem mudanças -->
+  <!-- Tela de Reinício -->
+  <div id="restart-container" class="container text-center" style="display: none; margin-top: 30px;">
+    <h2>🎉 Parabéns! Você completou todas as perguntas!</h2>
+    <p class="mb-4">Pontuação final: <strong><span id="pontuacao-final"></span> pontos</strong></p>
+    <button class="btn btn-success me-2" onclick="restartGame()">🔄 Jogar Novamente</button>
+    <button class="btn btn-primary" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  </div>
+
   <script>
     const perguntas = [
-        {
-            pistas: [
-            "1. Sou uma fruta tropical rica em potássio. (10 pts)",
-            "2. Ajudo a prevenir câimbras musculares. (7 pts)",
-            "3. Tenho uma casca amarela e sou muito consumida no Brasil. (5 pts)"
-            ],
-            resposta: "Banana",
-            opcoes: ["Maçã", "Banana", "Laranja", "Abacaxi", "Melão"],
-            explicacao: "A banana é rica em potássio e excelente para os músculos.",
-            imagem: "https://cdn.pixabay.com/photo/2018/03/08/22/21/banana-3216741_1280.jpg"
-        },
-        {
-            pistas: [
-            "1. Sou verde, folhoso e cheio de ferro. (10 pts)",
-            "2. Ajudo na prevenção da anemia. (7 pts)",
-            "3. Sou muito usado em saladas e sucos detox. (5 pts)"
-            ],
-            resposta: "Espinafre",
-            opcoes: ["Alface", "Couve", "Espinafre", "Agrião", "Rúcula"],
-            explicacao: "O espinafre é uma excelente fonte de ferro e outros nutrientes.",
-            imagem: "https://cdn.pixabay.com/photo/2017/07/16/10/43/spinach-2502665_1280.jpg"
-        },
-        {
-            pistas: [
-            "1. Sou um tubérculo e fonte de energia. (10 pts)",
-            "2. Sou rico em carboidratos e vitaminas do complexo B. (7 pts)",
-            "3. Frito, cozido ou purê, estou sempre presente nas refeições. (5 pts)"
-            ],
-            resposta: "Batata",
-            opcoes: ["Inhame", "Batata", "Mandioquinha", "Cenoura", "Cará"],
-            explicacao: "A batata é rica em carboidratos e fornece energia rapidamente.",
-            imagem: "https://cdn.pixabay.com/photo/2017/06/02/18/24/potatoes-2367454_1280.jpg"
-        }
+      {
+        pistas: [
+          "1. Sou uma fruta tropical rica em potássio. (10 pts)",
+          "2. Ajudo a prevenir câimbras musculares. (7 pts)",
+          "3. Tenho uma casca amarela e sou muito consumida no Brasil. (5 pts)"
+        ],
+        resposta: "Banana",
+        opcoes: ["Maçã", "Banana", "Laranja", "Abacaxi", "Melão"],
+        explicacao: "A banana é rica em potássio e excelente para os músculos.",
+        imagem: "banana.png"
+      },
+      {
+        pistas: [
+          "1. Sou verde, folhoso e cheio de ferro. (10 pts)",
+          "2. Ajudo na prevenção da anemia. (7 pts)",
+          "3. Sou muito usado em saladas e sucos detox. (5 pts)"
+        ],
+        resposta: "Espinafre",
+        opcoes: ["Alface", "Couve", "Espinafre", "Agrião", "Rúcula"],
+        explicacao: "O espinafre é uma excelente fonte de ferro e outros nutrientes.",
+        imagem: "espinafre.png"
+      },
+      {
+        pistas: [
+          "1. Sou um tubérculo e fonte de energia. (10 pts)",
+          "2. Sou rico em carboidratos e vitaminas do complexo B. (7 pts)",
+          "3. Frito, cozido ou purê, estou sempre presente nas refeições. (5 pts)"
+        ],
+        resposta: "Batata",
+        opcoes: ["Inhame", "Batata", "Mandioquinha", "Cenoura", "Cará"],
+        explicacao: "A batata é rica em carboidratos e fornece energia rapidamente.",
+        imagem: "batata.png"
+      },
+      {
+        pistas: [
+          "1. Sou uma leguminosa rica em proteínas vegetais. (10 pts)",
+          "2. Sou muito usada em feijoadas e pratos brasileiros. (7 pts)",
+          "3. Tenho uma casca escura e sou muito popular no Brasil. (5 pts)"
+        ],
+        resposta: "Feijão",
+        opcoes: ["Lentilha", "Grão-de-bico", "Feijão", "Ervilha", "Soja"],
+        explicacao: "O feijão é fonte de proteína vegetal e ferro, essencial na dieta brasileira.",
+        imagem: "feijao.png"
+      },
+      {
+        pistas: [
+          "1. Sou uma fruta cítrica rica em vitamina C. (10 pts)",
+          "2. Ajudar na imunidade é comigo mesmo! (7 pts)",
+          "3. Sou muito usada em sucos no café da manhã. (5 pts)"
+        ],
+        resposta: "Laranja",
+        opcoes: ["Limão", "Tangerina", "Abacaxi", "Laranja", "Caju"],
+        explicacao: "A laranja é excelente fonte de vitamina C, fortalecendo o sistema imunológico.",
+        imagem: "laranja.png"
+      },
+      {
+        pistas: [
+          "1. Sou uma raiz rica em betacaroteno. (10 pts)",
+          "2. Sou boa para a visão e a pele. (7 pts)",
+          "3. Minha cor é laranja vibrante! (5 pts)"
+        ],
+        resposta: "Cenoura",
+        opcoes: ["Abóbora", "Cenoura", "Mandioquinha", "Inhame", "Beterraba"],
+        explicacao: "A cenoura é rica em betacaroteno, essencial para a saúde dos olhos.",
+        imagem: "cenoura.png"
+      },
+      {
+        pistas: [
+          "1. Sou um vegetal roxo e cheio de antioxidantes. (10 pts)",
+          "2. Sou usado em saladas, sucos e até sobremesas. (7 pts)",
+          "3. Posso ajudar na pressão e circulação. (5 pts)"
+        ],
+        resposta: "Beterraba",
+        opcoes: ["Uva", "Cenoura", "Beterraba", "Repolho Roxo", "Amora"],
+        explicacao: "A beterraba é rica em nitratos naturais que ajudam a regular a pressão arterial.",
+        imagem: "beterraba.png"
+      },
+      {
+        pistas: [
+          "1. Sou um cereal integral muito nutritivo. (10 pts)",
+          "2. Ajudo no funcionamento do intestino. (7 pts)",
+          "3. Costumo ser consumido com iogurte ou frutas. (5 pts)"
+        ],
+        resposta: "Aveia",
+        opcoes: ["Granola", "Farinha de trigo", "Centeio", "Aveia", "Quinoa"],
+        explicacao: "A aveia é rica em fibras e ideal para a saúde digestiva e controle de colesterol.",
+        imagem: "aveia.png"
+      }
     ];
 
     let indice = 0;
@@ -156,6 +228,7 @@
     let vidas = 5;
     let etapaPista = 0;
     let nome = "";
+    let opcoesErradas = []; // 👉 NOVO: armazena opções erradas da pergunta atual
 
     function iniciarJogo() {
       nome = document.getElementById("nome-jogador").value;
@@ -179,6 +252,7 @@
         const btn = document.createElement("button");
         btn.className = "btn btn-option w-100";
         btn.textContent = opcao;
+        btn.disabled = opcoesErradas.includes(opcao); // 👉 NOVO: desabilita se já errou
         btn.onclick = () => verificarResposta(opcao);
         opcoesContainer.appendChild(btn);
       });
@@ -193,6 +267,7 @@
         document.getElementById("pontos").textContent = pontuacao;
         mostrarExplicacao(pergunta);
       } else {
+        opcoesErradas.push(opcao); // 👉 NOVO: marca como errada
         etapaPista++;
         if (etapaPista >= 3) {
           vidas--;
@@ -215,19 +290,39 @@
 
     function proximaPergunta() {
       etapaPista = 0;
+      opcoesErradas = [];
       indice++;
       if (indice < perguntas.length) {
         carregarPergunta();
       } else {
-        alert(`🎉 Parabéns, ${nome}! Você finalizou o jogo com ${pontuacao} pontos.`);
-        location.reload();
+        // Mostrar tela de finalização personalizada
+        document.getElementById("jogo").style.display = "none";
+        document.getElementById("restart-container").style.display = "block";
+        document.getElementById("pontuacao-final").textContent = pontuacao;
       }
     }
 
-    function fimDeJogo() {
-      alert(`😢 Fim de jogo, ${nome}! Sua pontuação final foi de ${pontuacao} pontos.`);
-      location.reload();
+    function restartGame() {
+      // Reiniciar o jogo do zero
+      indice = 0;
+      pontuacao = 0;
+      vidas = 5;
+      etapaPista = 0;
+      opcoesErradas = [];
+
+      // Esconde a tela final e mostra o jogo novamente
+      document.getElementById("restart-container").style.display = "none";
+      document.getElementById("jogo").style.display = "block";
+      document.getElementById("pontos").textContent = pontuacao;
+      document.getElementById("vidas").textContent = vidas;
+
+      carregarPergunta();
     }
+
+    function goToNextModule() {
+      window.location.href = "proximo.html"; // Troque para a URL real do próximo módulo
+    }
+
   </script>
 </body>
 </html>
