@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo dos Biomas</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #e0f7fa;
+      text-align: center;
+      background-image: url('biomas_fundo.jpg');
+      background-size: cover;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 15px;
+      border: 5px solid #00695c;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 18px;
+      margin-top: 15px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      background-color: #00796b;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    #memory-game {
+      margin: 20px auto;
+      display: grid;
+      grid-gap: 10px;
+      justify-content: center;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #b2dfdb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 10px;
+      user-select: none;
+    }
+
+    .card.flipped {
+      background-color: #004d40;
+      color: white;
+    }
+
+    #explanation {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff59d;
+      border: 2px solid #fbc02d;
+      border-radius: 10px;
+      display: none;
+    }
+
+    #congrats {
+      display: none;
+      font-size: 20px;
+      color: green;
+      margin-top: 30px;
+    }
+
+    #next-phase {
+      display: none;
+      font-size: 20px;
+      color: white;
+      margin-top: 30px;
+    }
+
+    #score-card {
+      background-color: #e0f2f1;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 2px solid #004d40;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TELA DE BOAS-VINDAS -->
+  <div id="start-screen" class="container">
+    <h2>Bem-vindo ao Módulo dos Biomas!</h2>
+    <img src="biomas_logo.png" alt="Logo Biomas" style="max-width: 200px; margin: 20px; border-radius: 10%;">
+    <br>
+    <input type="text" id="player-name" placeholder="Digite seu nome">
+    <br>
+    <button onclick="startGame()">Iniciar</button>
+  </div>
+
+  <!-- JOGO -->
+  <div id="game-container" class="container" style="display:none;">
+    <div id="score-card">
+      <strong>Jogador:</strong> <span id="player-display"></span> |
+      <strong>Pontuação:</strong> <span id="score">0</span>/100
+    </div>
+    <h3 id="greeting"></h3>
+    <div id="memory-game"></div>
+    <div id="explanation"></div>
+    <div id="congrats">Parabéns! Você completou todas as fases!</div>
+    <button id="next-phase" onclick="nextPhase()">Próxima Fase</button>
+  </div>
+
+  <script>
+    const allBiomas = [
+      { name: "Amazônia", explanation: "Maior bioma do Brasil, rica em biodiversidade e abriga a maior floresta tropical do mundo." },
+      { name: "Caatinga", explanation: "Bioma exclusivamente brasileiro, com clima semiárido e vegetação adaptada à seca." },
+      { name: "Pampas", explanation: "Predomina no sul do Brasil, com campos naturais ideais para a pecuária." },
+      { name: "Cerrado", explanation: "Segundo maior bioma do Brasil, conhecido por sua vegetação retorcida e rica fauna." },
+      { name: "Pantanal", explanation: "Maior planície alagável do planeta, com fauna abundante, especialmente aves e jacarés." },
+      { name: "Mata Atlântica", explanation: "Bioma litorâneo muito devastado, com grande biodiversidade e importância ecológica." },
+      { name: "Manguezal", explanation: "Bioma costeiro com solo lodoso, importante para a reprodução de várias espécies marinhas." },
+      { name: "Campos Rupestres", explanation: "Presente em áreas elevadas, abriga espécies adaptadas ao solo pobre e clima seco." },
+      { name: "Floresta de Araucárias", explanation: "Bioma do sul brasileiro, com clima mais frio e presença da árvore símbolo: araucária." },
+      { name: "Restinga", explanation: "Vegetação litorânea adaptada ao solo arenoso e salinidade elevada." }
+    ];
+
+    const phases = [
+      { pairs: 2, points: 20, columns: 2 },
+      { pairs: 3, points: 30, columns: 3 },
+      { pairs: 5, points: 50, columns: 5 }
+    ];
+
+    let usedBiomas = [];
+    let currentPhase = 0;
+    let playerName = "";
+    let score = 0;
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let matchedPairs = 0;
+
+    function startGame() {
+      playerName = document.getElementById("player-name").value.trim();
+      if (playerName === "") {
+        alert("Por favor, digite seu nome!");
+        return;
+      }
+
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+      document.getElementById("player-display").innerText = playerName;
+      loadPhase();
+    }
+
+    function loadPhase() {
+      const phase = phases[currentPhase];
+      matchedPairs = 0;
+      resetTurn();
+      const availableBiomas = allBiomas.filter(b => !usedBiomas.includes(b.name));
+      const selected = availableBiomas.sort(() => 0.5 - Math.random()).slice(0, phase.pairs);
+      usedBiomas.push(...selected.map(b => b.name));
+      const cards = [...selected, ...selected].sort(() => 0.5 - Math.random());
+      const grid = document.getElementById("memory-game");
+      grid.innerHTML = "";
+      grid.style.gridTemplateColumns = `repeat(${phase.columns}, 100px)`;
+
+      document.getElementById("greeting").innerText = `Fase ${currentPhase + 1}: Encontre os pares dos Biomas!`;
+      document.getElementById("next-phase").style.display = "none";
+      document.getElementById("congrats").style.display = "none";
+
+      cards.forEach((card, index) => {
+        const el = document.createElement("div");
+        el.classList.add("card");
+        el.dataset.name = card.name;
+        el.dataset.index = index;
+        el.textContent = "?";
+        el.addEventListener("click", () => flipCard(el, card));
+        grid.appendChild(el);
+      });
+    }
+
+    function flipCard(cardElement, card) {
+      if (lockBoard || cardElement.classList.contains("flipped")) return;
+
+      cardElement.classList.add("flipped");
+      cardElement.textContent = card.name;
+
+      if (!firstCard) {
+        firstCard = { cardElement, card };
+      } else {
+        secondCard = { cardElement, card };
+        lockBoard = true;
+
+        if (firstCard.card.name === secondCard.card.name &&
+            firstCard.cardElement.dataset.index !== secondCard.cardElement.dataset.index) {
+          matchedPairs++;
+          showExplanation(card.explanation);
+          resetTurn();
+
+          if (matchedPairs === phases[currentPhase].pairs) {
+            score += phases[currentPhase].points;
+            document.getElementById("score").innerText = score;
+            if (currentPhase < phases.length - 1) {
+              document.getElementById("next-phase").style.display = "inline-block";
+            } else {
+              document.getElementById("congrats").style.display = "block";
+            }
+          }
+        } else {
+          setTimeout(() => {
+            firstCard.cardElement.classList.remove("flipped");
+            firstCard.cardElement.textContent = "?";
+            secondCard.cardElement.classList.remove("flipped");
+            secondCard.cardElement.textContent = "?";
+            hideExplanation();
+            resetTurn();
+          }, 1000);
+        }
+      }
+    }
+
+    function resetTurn() {
+      [firstCard, secondCard] = [null, null];
+      lockBoard = false;
+    }
+
+    function showExplanation(text) {
+      const container = document.getElementById("explanation");
+      container.innerText = text;
+      container.style.display = "block";
+    }
+
+    function hideExplanation() {
+      document.getElementById("explanation").style.display = "none";
+    }
+
+    function nextPhase() {
+      currentPhase++;
+      loadPhase();
+    }
+  </script>
+</body>
+</html>

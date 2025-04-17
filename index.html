@@ -2,476 +2,118 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Classificação do Reino Animal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jornada Animal</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      font-family: 'Comic Sans MS', sans-serif;
-      background-color: #f1f8ff;
-      padding: 20px;
-      text-align: center;
-      background-image: url('animais.jpg'); /* Link da imagem de fundo */
+      font-family: 'Comic Sans MS', cursive;
+      background-color: #e0f7fa;
+      background-image: url('fundo-infantil.jpg'); /* opcional */
       background-size: cover;
       background-position: center;
-      height: 100vh;
+      text-align: center;
+      padding: 30px;
     }
     .container {
-      max-width: 600px;
-      margin: 30px auto;
       background-color: white;
-      padding: 20px;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      max-width: 800px;
+    }
+    h1 {
+      color: #ff5722;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+    .subject-button {
+      background-color: #fff8e1;
+      border: 4px solid #ff9800;
       border-radius: 15px;
-      border: 5px solid #007bff;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    .animal {
-      font-size: 24px;
-      font-weight: bold;
-      background-color: #ffeb3b;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      display: inline-block;
-    }
-    .question {
-      font-size: 22px;
-      margin-bottom: 20px;
-    }
-    .btn {
-      font-size: 18px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .btn:hover {
-      background-color: #45a049;
-    }
-    .scoreboard {
-      font-size: 20px;
-      padding: 10px;
-      background-color: white;
-      border-radius: 10px;
-      border: 2px solid #007bff;
-      display: inline-block;
-      max-width: 500px;
-      margin: 20px auto;
-    }
-    .answer-buttons {
-      margin-top: 20px;
-    }
-    .answer-button {
-      font-size: 18px;
-      background-color: #007bff;
-      color: white;
-      border-radius: 5px;
-      padding: 10px 20px;
-      margin: 10px;
-      cursor: pointer;
-      border: none;
-    }
-    .answer-button:hover {
-      background-color: #0056b3;
-    }
-    .message {
-      margin-top: 20px;
-      font-size: 20px;
-      padding: 10px;
-      border-radius: 10px;
-      display: inline-block;
-    }
-    .correct {
-      background-color: #4caf50;
-      color: white;
-    }
-    .incorrect {
-      background-color: #f44336;
-      color: white;
-    }
-    /* Container de explicação */
-    #explanation-container {
-      display: none;
-      margin-top: 20px;
       padding: 15px;
-      border: 2px solid #007bff;
-      border-radius: 10px;
-      background-color: #ffeb3b;
-    }
-    #explanation-container img {
       width: 100%;
-      border-radius: 10px;
+      max-width: 250px;
+      margin: 15px auto;
+      transition: transform 0.2s;
+      cursor: pointer;
+      text-align: center;
+    }
+    .subject-button:hover {
+      transform: scale(1.05);
+      background-color: #ffecb3;
+    }
+    .subject-image {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 50%;
       margin-bottom: 10px;
     }
-    #explanation-title {
-      font-size: 24px;
+    .subject-label {
+      font-size: 22px;
+      color: #ff5722;
       font-weight: bold;
-      margin-bottom: 10px;
     }
-    /* Tela inicial dentro de container */
-    #start-screen {
-      display: block;
+    .more-info {
+      margin-top: 10px;
     }
-    #quiz-container, #scoreboard, #restart-container, #lost-container {
+    .module-list {
       display: none;
+      margin-top: 10px;
+      text-align: left;
+      padding-left: 20px;
+      font-size: 16px;
     }
-    #player-name {
-      font-size: 18px;
-      padding: 8px;
-      width: 80%;
-      max-width: 300px;
-      margin-bottom: 20px;
-    }
-    /* Tela de reinício */
-    #restart-container {
-      margin-top: 100px;
-    }
-    /* Tela de Perda */
-    #lost-container {
-      margin-top: 100px;
+    .module-list li {
+      margin-bottom: 5px;
+      color: #4e342e;
     }
   </style>
 </head>
 <body>
-  <!-- Tela inicial (dentro de um container branco) -->
-  <div id="start-screen" class="container">
-    <h2>Bem-vindo ao Game Jornada Animal!</h2>
-    <img src="logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
-    <br>
-    <input type="text" id="player-name" placeholder="Digite seu nome">
-    <br>
-    <button id="start-button" class="btn" onclick="startGame()">Iniciar</button>
-  </div>
+  <div class="container">
+    <h1>Bem-vindo ao Game Jornada Animal!<br>Escolha sua Aventura!</h1>
+    <div class="row justify-content-center">
+      <!-- Botão Biologia -->
+      <div class="col-6 col-md-4">
+        <div class="subject-button" onclick="window.location.href='zoologia.html'">
+          <img src="img_biologia.png" alt="Biologia" class="subject-image">
+          <div class="subject-label">Biologia</div>
+        </div>
+        <div class="more-info">
+          <button class="btn btn-sm btn-warning" onclick="toggleModules('bio-modules')">Veja os módulos!</button>
+          <ul id="bio-modules" class="module-list">
+            <li>🐾 Zoologia</li>
+            <li>🌿 Botânica</li>
+            <li>🫀 Fisiologia</li>
+            <li>🍽️ Cadeia Alimentar</li>
+            <li>🥦 Nutrientes</li>
+          </ul>
+        </div>
+      </div>
 
-  <!-- Scoreboard -->
-  <div id="scoreboard" class="scoreboard">
-    <span id="player-display"></span>
-    <span id="score">Pontos: 0</span> | <span id="lives">Vidas: 3</span>
-    <span style="font-size: 24px; margin-left: 10px;">❤️</span>
-  </div>
-
-  <!-- Container do Quiz -->
-  <div id="quiz-container" class="container">
-    <h2 class="question">Vamos aprender sobre o animal!</h2>
-    <div id="animal" class="animal"></div>
-    <div id="question-container" class="question"></div>
-    
-    <div class="answer-buttons">
-      <button id="sim-button" class="answer-button" onclick="checkAnswer('sim')">Sim</button>
-      <button id="nao-button" class="answer-button" onclick="checkAnswer('não')">Não</button>
+      <!-- Botão Geografia -->
+      <div class="col-6 col-md-4">
+        <div class="subject-button" onclick="window.location.href='biomas.html'">
+          <img src="img_geografia.png" alt="Geografia" class="subject-image">
+          <div class="subject-label">Geografia</div>
+        </div>
+        <div class="more-info">
+          <button class="btn btn-sm btn-warning" onclick="toggleModules('geo-modules')">Saiba mais</button>
+          <ul id="geo-modules" class="module-list">
+            <li>(aguardando módulos)</li>
+          </ul>
+        </div>
+      </div>
     </div>
-  
-    <!-- Botão "Próxima Pergunta" inicia desabilitado -->
-    <button id="next-question-button" class="btn" onclick="nextQuestion()" disabled>Próxima Pergunta</button>
-  
-    <div id="message-container" class="message"></div>
-    
-    <!-- Container de explicação para os animais que possuem explicação -->
-    <div id="explanation-container">
-      <div id="explanation-title"></div>
-      <img id="explanation-img" src="" alt="Imagem do Animal">
-      <p id="explanation-text"></p>
-      <button id="continue-button" class="btn" onclick="nextAnimal()">Continuar</button>
-    </div>
-  </div>
-
-  <!-- Tela de reinício -->
-  <div id="restart-container" class="container">
-    <img src="troféu.png" alt="Troféu" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
-    <h2>Parabéns! Você completou todas as perguntas!</h2>
-    <button class="btn" onclick="restartGame()">Jogar Novamente</button>
-    <button class="btn" onclick="goToNextModule()">Próximo Módulo</button>
-  </div>
-
-  <!-- Tela de Perda -->
-  <div id="lost-container" class="container">
-    <img src="gameover.png" alt="Game Over" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
-    <h2>Você perdeu! Que tal tentar novamente?</h2>
-    <button class="btn" onclick="restartGame()">Tentar Novamente</button>
   </div>
 
   <script>
-    let score = 0;
-    let lives = 3;
-    let playerName = "";
-    
-    let animals = [
-      {
-        name: "Leão",
-        questions: [
-          { question: "O Leão é vertebrado?", correctAnswer: "sim" },
-          { question: "O habitat natural do Leão é a Savana?", correctAnswer: "sim" },
-          { question: "O Leão é um mamífero?", correctAnswer: "sim" }
-        ],
-        explanation: "O leão é um mamífero pertencente à ordem Carnivora e família Felidae, sendo conhecido como “rei das selvas”. Ele se alimenta de outros animais, como gnus e zebras, e vive em grupos, que apresentam divisões bem marcadas. Segundo maior felino do mundo, o leão perde em tamanho apenas para o tigre. \n\nOs leões apresentam de 1,37 a 2 m de tamanho (corpo e cabeça), e sua cauda pode atingir até 100 cm de comprimento. \n\nOs leões-africanos são encontrados vivendo em planícies ou savanas, habitando, atualmente, o leste e sul da África. Os leões apresentam uma pelagem amarela dourada, a qual é importante para garantir a camuflagem em meio à vegetação da savana.",
-        explanationImage: "leão.png"
-      },
-      {
-        name: "Cobra",
-        questions: [
-          { question: "Todas as cobras são venenosas?", correctAnswer: "não" },
-          { question: "A Cobra vive no mar?", correctAnswer: "não" },
-          { question: "A Cobra é um réptil?", correctAnswer: "sim" }
-        ],
-        explanation: "Cobra é o nome dado a répteis rastejantes, de corpo alongado e sem patas. Elas também são chamadas de “serpentes”.\n\nExistem, somente no Brasil, pelo menos 370 espécies de serpentes, de variados tamanhos, formas e cores.\n\nAo contrário do que muita gente pensa, são poucas as espécies de serpentes capazes de causar danos aos seres humanos. Dentre elas, as que mais despertam medo são as peçonhentas.\n\nAnimais peçonhentos são aqueles que produzem veneno muito concentrado e possuem, em seu corpo, uma estrutura capaz de inocular (“injetar”) essa substância: a peçonha. No caso das serpentes peçonhentas, elas possuem dentes com modificações que permitem com que isso seja feito.",
-        explanationImage: "cobra.png"
-      },
-      {
-        name: "Borboleta",
-        questions: [
-          { question: "A Borboleta é um inseto?", correctAnswer: "sim" },
-          { question: "A Borboleta é vertebrada?", correctAnswer: "não" },
-          { question: "A Borboleta vive em florestas?", correctAnswer: "sim" }
-        ],
-        explanation: "Borboletas são artrópodes pertencentes à Classe Insecta. Assim, apresentam corpo dividido em cabeça, tórax e abdome; um par de antenas, três pares de patas, e também asas, estas encontradas somente nesta classe, embora nem todos os seus representantes as possuam. \n\nExistem cerca de 20 mil espécies de borboletas, encontradas em todo o mundo, com exceção das regiões glaciais. No Brasil, há pelo menos 3.100 espécies diferentes desses insetos. Diferentemente das mariposas, são animais diurnos.",
-        explanationImage: "borboleta.png"
-      },
-      {
-        name: "Elefante",
-        questions: [
-          { question: "O Elefante é um mamífero?", correctAnswer: "sim" },
-          { question: "O Elefante é encontrado em pântanos?", correctAnswer: "não" },
-          { question: "O Elefante é herbívoro?", correctAnswer: "sim" }
-        ],
-        explanation: "Elefantes são animais mamíferos que se destacam pelo seu grande porte, sendo considerados os maiores vertebrados terrestres existentes no mundo na atualidade. Algumas características que chamam a atenção são suas longas presas e uma tromba comprida.\n\nEsses são animais herbívoros que, para terem todas as suas necessidades metabólicas supridas, precisam ingerir vários quilos de alimento todos os dias. Atualmente, os elefantes estão ameaçados de extinção por causa da perda/fragmentação de seu habitat e pela caça.\n\nOs elefantes podem ser encontrados na África e na Ásia, ocupando diferentes habitats de acordo com a espécie analisada.",
-        explanationImage: "elefante.png"
-      },
-      {
-        name: "Lesma",
-        questions: [
-          { question: "A Lesma pode transmitir doenças?", correctAnswer: "sim" },
-          { question: "A Lesma é vertebrada?", correctAnswer: "não" },
-          { question: "A Lesma se desloca usando muco?", correctAnswer: "sim" }
-        ],
-        explanation: "As lesmas são moluscos gastrópodes que andam sobre o abdômen e possuem respiração cutânea. Distinguem-se dos caracóis pela inexistência de concha externa proeminente.\n\nClima frio, chuva e neblina são ideais para elas, pois em climas secos e quentes podem secar.\n\nAlém de causarem danos à agricultura, podem ser prejudiciais à saúde de humanos e animais.",
-        explanationImage: "lesma.png"
-      },
-      {
-        name: "Camarão",
-        questions: [
-          { question: "O Camarão é um crustáceo?", correctAnswer: "sim" },
-          { question: "O Camarão vive em terra?", correctAnswer: "não" },
-          { question: "O Camarão é um animal aquático?", correctAnswer: "sim" }
-        ],
-        explanation: "Os camarões são artrópodes da ordem dos decápodes, podendo ser marinhos ou de água doce. Possuem corpo alongado, exoesqueleto fino e flexível.\n\nO camarão nada para trás flexionando rapidamente o abdômen e a cauda. Sua alimentação consiste principalmente de pequenas plantas e animais, embora alguns camarões se alimentem de carniça. \n\nA fêmea do camarão pode botar de 1.500 a 14.000 ovos, que ficam presos às pernas nadadoras. As larvas nadadoras passam por cinco estágios de desenvolvimento antes de se tornarem juvenis .",
-        explanationImage: "camarão.png"
-      },
-      {
-        name: "Salamandra",
-        questions: [
-          { question: "A salamandra é um anfíbio?", correctAnswer: "sim" },
-          { question: "As salamandras possuem escamas?", correctAnswer: "não" },
-          { question: "As salamandras possuem asas?", correctAnswer: "não" }
-        ],
-        explanation: "As salamandras são anfíbios do grupo dos urodelos de corpo alongado, com cauda e, na maioria das espécies, quatro membros. Embora a maioria seja terrestre, algumas vivem totalmente na água.\n\nExistem cerca de 550 espécies, principalmente no hemisfério Norte. No Brasil, são encontradas cinco espécies, todas na região Amazônica. \n\nEsses animais muitas vezes são confundidos, por leigos, com lagartos, entretanto, diferentemente dos répteis, as salamandras possuem uma pele fina e sem escamas.\n\nAs salamandras variam muito em tamanho. Enquanto as salamandras sul-americanas podem medir entre 3 a 12 centímetros, as salamandras encontradas no Japão e na China podem apresentar mais de um metro de comprimento.",
-        explanationImage: "salamandra.png"
-      },
-      {
-        name: "Avestruz",
-        questions: [
-          { question: "A avestruz é uma ave?", correctAnswer: "sim" },
-          { question: "A avestruz é a maior ave do mundo?", correctAnswer: "sim" },
-          { question: "A avestruz é capaz de voar?", correctAnswer: "não" }
-        ],
-        explanation: "A avestruz é a maior ave do planeta, podendo atingir três metros de altura. Apesar de seu tamanho, é incapaz de voar, mas compensa com alta velocidade na corrida, chegando a 70 km/h.\n\nAs pernas fortes desse animal, além de ajudar na corrida, auxiliam na defesa contra predadores. \n\nAo se sentirem ameaçados, esses animais podem usá-las para deferir golpes contra seus adversários.",
-        explanationImage: "avestruz.png"
-      }
-    ];
-    
-    let currentAnimalIndex = 0;
-    let currentQuestionIndex = 0;
-    
-    // Função para iniciar o jogo
-    function startGame() {
-      playerName = document.getElementById("player-name").value.trim();
-      if (!playerName) {
-        alert("Por favor, digite seu nome!");
-        return;
-      }
-      // Atualiza o display do nome do jogador
-      document.getElementById("player-display").innerText = "Jogador: " + playerName + " | ";
-      // Esconde a tela inicial e exibe o scoreboard e o quiz
-      document.getElementById("start-screen").style.display = "none";
-      document.getElementById("scoreboard").style.display = "block";
-      document.getElementById("quiz-container").style.display = "block";
-      generateRound();
-    }
-
-    function updateScoreboard() {
-      document.getElementById("score").innerText = "Pontos: " + score;
-      document.getElementById("lives").innerText = "Vidas: " + lives;
-    }
-
-    function clearMessage() {
-      const messageContainer = document.getElementById("message-container");
-      messageContainer.innerText = "";
-      messageContainer.classList.remove("correct", "incorrect");
-    }
-
-    function showMessage(message, isCorrect) {
-      const messageContainer = document.getElementById("message-container");
-      messageContainer.innerText = message;
-      messageContainer.classList.remove("correct", "incorrect");
-      if (isCorrect) {
-        messageContainer.classList.add("correct");
-      } else {
-        messageContainer.classList.add("incorrect");
-      }
-    }
-
-    function checkAnswer(answer) {
-      // Desabilita os botões de resposta após o clique
-      document.getElementById("sim-button").disabled = true;
-      document.getElementById("nao-button").disabled = true;
-
-      const currentAnimal = animals[currentAnimalIndex];
-      const currentQuestion = currentAnimal.questions[currentQuestionIndex];
-
-      if (answer === currentQuestion.correctAnswer) {
-        score += 10;
-        showMessage("Muito bem! Resposta correta.", true);
-      } else {
-        lives -= 1;
-        showMessage("Ops! Resposta incorreta.", false);
-        if (lives === 0) {
-          showMessage("VOCÊ PERDEU! Tente novamente.", false);
-          showLostScreen(); // Chama a função para exibir a tela de "perdedor"
-          return;
-        }
-      }
-      updateScoreboard();
-      // Habilita o botão "Próxima Pergunta" somente após a resposta
-      document.getElementById("next-question-button").disabled = false;
-    }
-
-    function nextQuestion() {
-      clearMessage();
-      // Desabilita o botão "Próxima Pergunta" até que a nova pergunta seja respondida
-      document.getElementById("next-question-button").disabled = true;
-      // Reabilita os botões de resposta
-      document.getElementById("sim-button").disabled = false;
-      document.getElementById("nao-button").disabled = false;
-
-      const currentAnimal = animals[currentAnimalIndex];
-      currentQuestionIndex++;
-
-      // Se terminar as perguntas do animal...
-      if (currentQuestionIndex >= currentAnimal.questions.length) {
-        // Se o animal tiver explicação, exibe a explicação
-        if (currentAnimal.explanation) {
-          showExplanation();
-          return;
-        }
-        // Se não tiver explicação, passa para o próximo animal
-        currentAnimalIndex++;
-        currentQuestionIndex = 0;
-      }
-
-      if (currentAnimalIndex >= animals.length) {
-        showRestartScreen();
-        return;
-      }
-      generateRound();
-    }
-
-    function generateRound() {
-      // Garante que o container de explicação esteja escondido
-      document.getElementById("explanation-container").style.display = "none";
-      document.getElementById("animal").style.display = "block";
-      document.getElementById("question-container").style.display = "block";
-      document.querySelector(".answer-buttons").style.display = "block";
-      document.getElementById("next-question-button").style.display = "block";
-
-      const currentAnimal = animals[currentAnimalIndex];
-      const currentQuestion = currentAnimal.questions[currentQuestionIndex];
-
-      document.getElementById("animal").innerText = currentAnimal.name;
-      document.getElementById("question-container").innerText = currentQuestion.question;
-    }
-
-    function showExplanation() {
-      // Esconde os elementos da pergunta
-      document.getElementById("animal").style.display = "none";
-      document.getElementById("question-container").style.display = "none";
-      document.querySelector(".answer-buttons").style.display = "none";
-      document.getElementById("next-question-button").style.display = "none";
-
-      let currentAnimal = animals[currentAnimalIndex];
-      // Atualiza o título da explicação com o nome do animal
-      document.getElementById("explanation-title").innerText = currentAnimal.name;
-      // Atualiza a imagem usando a propriedade explanationImage ou, se não existir, utiliza o nome do animal em minúsculo + .png
-      document.getElementById("explanation-img").src = currentAnimal.explanationImage || (currentAnimal.name.toLowerCase() + ".png");
-      // Atualiza o texto da explicação
-      document.getElementById("explanation-text").innerText = currentAnimal.explanation;
-      // Exibe o container de explicação
-      document.getElementById("explanation-container").style.display = "block";
-    }
-
-    function nextAnimal() {
-      // Esconde a explicação e exibe os elementos da pergunta
-      document.getElementById("explanation-container").style.display = "none";
-      document.getElementById("animal").style.display = "block";
-      document.getElementById("question-container").style.display = "block";
-      document.querySelector(".answer-buttons").style.display = "block";
-      document.getElementById("next-question-button").style.display = "block";
-
-      currentAnimalIndex++;
-      currentQuestionIndex = 0;
-
-      if (currentAnimalIndex >= animals.length) {
-        showRestartScreen();
-        return;
-      }
-      generateRound();
-    }
-
-    // Exibe a tela de perda quando o jogador perde
-    function showLostScreen() {
-      document.getElementById("quiz-container").style.display = "none";
-      document.getElementById("scoreboard").style.display = "none";
-      // Exibe a tela de perda
-      document.getElementById("lost-container").style.display = "block";
-    }
-
-    // Exibe a tela de reinício quando o jogo termina ou o jogador perde
-    function showRestartScreen() {
-      document.getElementById("quiz-container").style.display = "none";
-      document.getElementById("scoreboard").style.display = "none";
-      document.getElementById("lost-container").style.display = "none"; // Esconde a tela de perda, se estiver visível
-      document.getElementById("restart-container").style.display = "block";
-    }
-
-    // Reinicia o jogo
-    function restartGame() {
-      score = 0;
-      lives = 3;
-      currentAnimalIndex = 0;
-      currentQuestionIndex = 0;
-      updateScoreboard();
-      clearMessage();
-      
-      // Esconde a tela de perda
-      document.getElementById("lost-container").style.display = "none";  // Esconde a tela de "perdeu"
-      
-      // Reabilita os botões de resposta
-      document.getElementById("sim-button").disabled = false;
-      document.getElementById("nao-button").disabled = false;
-      
-      // Oculta a tela de reinício e exibe a tela inicial
-      document.getElementById("restart-container").style.display = "none";
-      document.getElementById("start-screen").style.display = "block";
-      
-      // Limpa o campo de nome, se desejar
-      document.getElementById("player-name").value = "";
-    }
-    function goToNextModule() {
-      window.location.href = "botanica.html";
+    function toggleModules(id) {
+      const list = document.getElementById(id);
+      list.style.display = (list.style.display === 'none' || list.style.display === '') ? 'block' : 'none';
     }
   </script>
 </body>
 </html>
-
-
