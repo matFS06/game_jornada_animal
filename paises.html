@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Módulo dos Países</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #e3f2fd;
+      text-align: center;
+      margin: 0;
+      background-image: url('paises.png');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .container {
+      background: white;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 15px;
+      border: 5px solid #1e88e5;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 18px;
+      margin-top: 15px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      background-color: #1976d2;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0d47a1;
+    }
+
+    #score-card {
+      background-color: #bbdefb;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 2px solid #0d47a1;
+    }
+
+    .pistas-titulo {
+      font-size: 1.3em;
+      margin-top: 10px;
+    }
+
+    .pistas-lista {
+      list-style-type: none;
+      padding: 0;
+      font-size: 1.1em;
+    }
+
+    .opcoes-bandeiras {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .opcao {
+      cursor: pointer;
+      margin: 10px;
+      transition: transform 0.2s;
+    }
+
+    .opcao:hover {
+      transform: scale(1.05);
+    }
+
+    .opcao img {
+      width: 150px;
+      height: 100px;
+      border: 2px solid #64b5f6;
+      border-radius: 8px;
+    }
+
+    .opcao p {
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    .feedback {
+      font-size: 1.3em;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- TELA INICIAL -->
+  <div id="start-screen" class="container">
+    <h2>Bem-vindo ao Módulo dos Países</h2>
+    <img src="logo_paises.png" alt="Logo Países" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+    <br>
+    <input type="text" id="player-name" placeholder="Digite seu nome" />
+    <br>
+    <button onclick="startGame()">Iniciar</button>
+  </div>
+
+  <!-- JOGO -->
+  <div id="game-container" class="container" style="display: none;">
+    <div id="score-card">
+      <strong>Jogador:</strong> <span id="player-display"></span> |
+      <strong>Pontuação:</strong> <span id="score">0</span>
+    </div>
+
+    <div id="quiz-area">
+      <h3 class="pistas-titulo">Pistas:</h3>
+      <ul id="dicas" class="pistas-lista"></ul>
+      <div id="opcoes" class="opcoes-bandeiras"></div>
+      <div id="feedback" class="feedback"></div>
+    </div>
+
+    <button id="next-btn" onclick="proximaPergunta()" style="display:none;">Próxima</button>
+  </div>
+
+  <script>
+    const perguntas = [
+      {
+        dicas: [
+          "Sou da América do Sul.",
+          "Minha capital é Quito.",
+          "Sou cortado por uma linha imaginária que tem o meu nome e divide o planeta em dois hemisférios."
+        ],
+        correta: "Equador",
+        opcoes: [
+          { nome: "Equador", imagem: "equador.jpg" },
+          { nome: "Colômbia", imagem: "colombia.jpg" },
+          { nome: "Venezuela", imagem: "venezuela.jpg" }
+        ]
+      },
+      {
+        dicas: [
+          "Sou da Europa.",
+          "Minha capital é Lisboa.",
+           "Meu idioma é falado em vários países, inclusive no Brasil."
+        ],
+        correta: "Portugal",
+        opcoes: [
+          { nome: "Espanha", imagem: "espanha.jpg" },
+          { nome: "Portugal", imagem: "portugal.jpg" },
+          { nome: "Itália", imagem: "italia.jpg" }
+        ]
+      },
+      {
+        dicas: [
+          "Sou da Ásia.",
+          "Minha capital é Tóquio.",
+          "Minha cultura influencia o mundo com animes, tecnologia e culinária."
+        ],
+        correta: "Japão",
+        opcoes: [
+          { nome: "China", imagem: "china.jpg" },
+          { nome: "Coreia do Sul", imagem: "coreia_do_sul.jpg" },
+          { nome: "Japão", imagem: "japao.jpg" }
+        ]
+      },
+      {
+        dicas: [
+          "Sou da América do Norte.",
+          "Minha capital é Ottawa.",
+          "Sou conhecido por minha natureza exuberante, frio intenso e hóquei no gelo."
+        ],
+        correta: "Canadá",
+        opcoes: [
+          { nome: "Estados Unidos", imagem: "usa.jpg" },
+          { nome: "Canadá", imagem: "canada.jpg" },
+          { nome: "México", imagem: "mexico.jpg" }
+        ]
+      },
+      {
+        dicas: [
+          "Sou da Oceania.",
+          "Minha capital é Canberra.",
+          "Sou conhecido por cangurus, coalas e a Grande Barreira de Corais."
+        ],
+        correta: "Austrália",
+        opcoes: [
+          { nome: "Austrália", imagem: "australia.jpg" },
+          { nome: "Nova Zelândia", imagem: "nova_zelandia.jpg" },
+          { nome: "Fiji", imagem: "fiji.jpg" }
+        ]
+      },
+      {
+        dicas: [
+          "Sou da África.",
+          "Minha capital é Cairo.",
+          "Sou famoso por minhas pirâmides antigas e a Esfinge."
+        ],
+        correta: "Egito",
+        opcoes: [
+          { nome: "Marrocos", imagem: "marrocos.jpg" },
+          { nome: "Egito", imagem: "egito.jpg" },
+          { nome: "Nigéria", imagem: "nigeria.jpg" }
+        ]
+      },
+      {
+        dicas: [
+          "Sou da América Central.",
+          "Faço parte da antiga civilização maia, com ruínas como Tikal.",
+          "Tenho um famoso lago rodeado por vulcões chamado Atitlán."
+        ],
+        correta: "Guatemala",
+        opcoes: [
+          { nome: "Honduras", imagem: "honduras.jpg" },
+          { nome: "Costa Rica", imagem: "costa_rica.jpg" },
+          { nome: "Guatemala", imagem: "guatemala.jpg" },
+        ]
+      },
+      {
+        dicas: [
+          "Sou um país europeu.",
+          "Minha capital é Berlim.",
+          "Fui dividido em duas partes durante a Guerra Fria."
+        ],
+        correta: "Alemanha",
+        opcoes: [
+          { nome: "Polônia", imagem: "polonia.jpg" },
+          { nome: "Alemanha", imagem: "alemanha.jpg" },
+          { nome: "Áustria", imagem: "austria.jpg" }
+        ]
+      }
+    ];
+
+    let perguntaAtual = 0;
+    let score = 0;
+    let playerName = "";
+
+    function startGame() {
+      const nameInput = document.getElementById("player-name");
+      playerName = nameInput.value.trim();
+
+      if (playerName === "") {
+        alert("Digite seu nome para começar!");
+        return;
+      }
+
+      document.getElementById("player-display").innerText = playerName;
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+      carregarPergunta();
+    }
+
+    function carregarPergunta() {
+      const pergunta = perguntas[perguntaAtual];
+      const dicasEl = document.getElementById("dicas");
+      const opcoesEl = document.getElementById("opcoes");
+      const feedbackEl = document.getElementById("feedback");
+      const nextBtn = document.getElementById("next-btn");
+
+      dicasEl.innerHTML = "";
+      opcoesEl.innerHTML = "";
+      feedbackEl.innerHTML = "";
+      nextBtn.style.display = "none";
+
+      pergunta.dicas.forEach(dica => {
+        const li = document.createElement("li");
+        li.textContent = dica;
+        dicasEl.appendChild(li);
+      });
+
+      pergunta.opcoes.forEach(opcao => {
+        const div = document.createElement("div");
+        div.className = "opcao";
+        div.onclick = () => verificarResposta(opcao.nome);
+
+        const img = document.createElement("img");
+        img.src = opcao.imagem;
+        img.alt = opcao.nome;
+
+        const p = document.createElement("p");
+        p.textContent = opcao.nome;
+
+        div.appendChild(img);
+        div.appendChild(p);
+        opcoesEl.appendChild(div);
+      });
+    }
+
+    function verificarResposta(resposta) {
+      const correta = perguntas[perguntaAtual].correta;
+      const feedbackEl = document.getElementById("feedback");
+      const nextBtn = document.getElementById("next-btn");
+
+      if (resposta === correta) {
+        feedbackEl.textContent = "✅ Acertou!";
+        feedbackEl.style.color = "green";
+        score += 10;
+        document.getElementById("score").innerText = score;
+      } else {
+        feedbackEl.textContent = `❌ Errou! A resposta certa era ${correta}.`;
+        feedbackEl.style.color = "red";
+      }
+
+      nextBtn.style.display = "inline-block";
+    }
+
+    function proximaPergunta() {
+      perguntaAtual++;
+      if (perguntaAtual < perguntas.length) {
+        carregarPergunta();
+      } else {
+        document.getElementById("quiz-area").innerHTML = `
+          <h2>Fim de jogo!</h2>
+          <p>Parabéns, ${playerName}! Sua pontuação foi <strong>${score}</strong>.</p>
+        `;
+        document.getElementById("next-btn").style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
