@@ -1,0 +1,483 @@
+<!DOCTYPE html>  
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Atividades Econômicas</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #3e358a;
+      padding: 20px;
+      text-align: center;
+      background-image: url('economicas.jpg'); /* Imagem de fundo ajustada */
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      border: 5px solid #0f0066;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .question {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+    .scoreboard {
+      font-size: 20px;
+      padding: 10px;
+      background-color: white;
+      border-radius: 10px;
+      border: 2px solid #004d00;
+      display: inline-block;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .answer-buttons {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .answer-button {
+      font-size: 18px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border: none;
+      flex: 1 1 calc(50% - 20px); /* Duas por linha com espaçamento */
+      max-width: 250px; /* Limita largura máxima */
+      box-sizing: border-box;
+    }
+    .answer-button:hover {
+      background-color: #0056b3;
+    }
+    .message {
+      margin-top: 20px;
+      font-size: 20px;
+      padding: 10px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .correct {
+      background-color: #28a745;
+      color: white;
+    }
+    .incorrect {
+      background-color: #dc3545;
+      color: white;
+    }
+    #start-screen {
+      display: block;
+    }
+    #quiz-container, #scoreboard, #restart-container, #lost-container {
+      display: none;
+    }
+    #player-name {
+      font-size: 18px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+    #explanation-container {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      border: 2px solid #056b05;
+      border-radius: 10px;
+      background-color: #ffeb3b;
+      font-size: 18px;
+      color: #333;
+      text-align: justify;
+      white-space: pre-line; /* Permite quebras de linha dentro do texto */
+    }
+    #explanation-container img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 15px;
+      border-radius: 10px;
+    }
+    #next-button {
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      display: inline-block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #next-button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div id="start-screen" class="container">
+    <h2>Bem-vindo ao Módulo das Atividades Econômicas!</h2>
+    <img src="logo_atividades_economicas.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"/>
+    <br>
+    <input type="text" id="player-name" placeholder="Digite seu nome">
+    <br>
+    <button id="start-button" class="btn" onclick="startGame()">Iniciar</button>
+  </div>
+
+  <div id="scoreboard" class="scoreboard">
+    <span id="player-display"></span>
+    <span id="score">Pontos: 0</span> | <span id="lives">❤️❤️❤️❤️❤️</span>
+  </div>
+
+  <div id="quiz-container" class="container">
+    <h2 class="question" id="question-text"></h2>
+    <div id="answer-container" class="answer-buttons"></div>
+    <div id="message-container" class="message"></div>
+    <div id="explanation-image-container" style="display: none;"></div>
+    <div id="explanation-container"></div>
+    <button id="next-button" onclick="nextQuestion()">Continuar</button>
+  </div>
+
+  <div id="restart-container" class="container text-center" style="display: none; margin-top: 30px;">
+    <h2>🎉 Parabéns! Você completou todas as perguntas!</h2>
+    <p class="mb-4">Pontuação final: <strong><span id="pontuacao-final"></span> pontos</strong></p>
+    <button class="btn btn-success me-2" onclick="restartGame()">🔄 Jogar Novamente</button>
+    <button class="btn btn-primary" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  </div>
+
+  <div id="lost-container" class="container">
+    <h2>Você perdeu! Que tal tentar novamente?</h2>
+    <button class="btn" onclick="restartGame()">Tentar Novamente</button>
+  </div>
+
+  <script>
+    const questions = [
+    {
+        question: "Emojis: 🌾🚜🌽\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Pecuária",
+        "b) Agricultura",
+        "c) Pesca",
+        "d) Silvicultura"
+        ],
+        correct: "b) Agricultura",
+        explanation: `
+    ✅ Resposta correta: b) Agricultura\n
+    Setor: Primário\n  
+    Características: Envolve o cultivo de plantas para produção de alimentos e outros produtos como frutas, legumes, grãos, etc. Utiliza o solo como recurso natural e depende de fatores climáticos.
+        `,
+        explanationImage: "agricultura.jpg"
+    },
+    {
+        question: "Emojis: 🐄🐖🐑\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Pesca",
+        "b) Agricultura",
+        "c) Pecuária",
+        "d) Mineração"
+        ],
+        correct: "c) Pecuária",
+        explanation: `
+    ✅ Resposta correta: c) Pecuária\n
+    Setor: Primário\n  
+    Características: Envolve a criação de animais para produção de carne, leite, couro, entre outros. Exige espaço físico e pode variar em escala e tecnologia utilizada.
+        `,
+        explanationImage: "pecuaria.jpg"
+    },
+    {
+        question: "Emojis: ⛏️🌳💎\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Indústria",
+        "b) Extrativismo",
+        "c) Turismo",
+        "d) Silvicultura"
+        ],
+        correct: "b) Extrativismo",
+        explanation: `
+    ✅ Resposta correta: b) Extrativismo\n
+    Setor: Primário\n  
+    Características: Extração de recursos naturais como minerais (ouro, ferro) e vegetais (madeira, borracha). Pode ser vegetal ou mineral.
+        `,
+        explanationImage: "extrativismo.jpg"
+    },
+    {
+        question: "Emojis: 🐟🦐🚤\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Pecuária",
+        "b) Agricultura",
+        "c) Pesca",
+        "d) Transporte"
+        ],
+        correct: "c) Pesca",
+        explanation: `
+    ✅ Resposta correta: c) Pesca\n
+    Setor: Primário\n 
+    Características: Captura de peixes e outros frutos do mar, podendo ocorrer em rios, lagos ou oceanos. Pode ser artesanal ou industrial.
+        `,
+        explanationImage: "pesca.jpg"
+    },
+    {
+        question: "Emojis: 🌲🪓🪵\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Silvicultura",
+        "b) Agricultura",
+        "c) Extrativismo",
+        "d) Construção Civil"
+        ],
+        correct: "a) Silvicultura",
+        explanation: `
+    ✅ Resposta correta: a) Silvicultura\n
+
+    Setor: Primário\n  
+    Características: Cultivo e manejo de florestas com fins comerciais, como produção de madeira, papel, entre outros derivados florestais.
+        `,
+        explanationImage: "silvicultura.jpg"
+    },
+    {
+        question: "Emojis: 🏭👕🚗\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Comércio",
+        "b) Indústria",
+        "c) Agricultura",
+        "d) Turismo"
+        ],
+        correct: "b) Indústria",
+        explanation: `
+    ✅ Resposta correta: b) Indústria\n
+
+    Setor: Secundário\n  
+    Características: Transforma matérias-primas em produtos finais, como roupas, carros, alimentos processados, etc.
+        `,
+        explanationImage: "industria.jpg"
+    },
+    {
+        question: "Emojis: 🧱🏗️🚧\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Serviços",
+        "b) Transporte",
+        "c) Construção Civil",
+        "d) Comércio"
+        ],
+        correct: "c) Construção Civil",
+        explanation: `
+    ✅ Resposta correta: c) Construção Civil\n
+
+    Setor: Secundário\n  
+    Características: Responsável por obras de infraestrutura como prédios, estradas, pontes e casas.
+        `,
+        explanationImage: "construcao.jpg"
+    },
+    {
+        question: "Emojis: 🛒📦💰\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Agricultura",
+        "b) Indústria",
+        "c) Comércio",
+        "d) Transporte"
+        ],
+        correct: "c) Comércio",
+        explanation: `
+    ✅ Resposta correta: c) Comércio\n
+
+    Setor: Terciário\n  
+    Características: Envolve a compra e venda de bens e serviços, conectando produtores e consumidores.
+        `,
+        explanationImage: "comercio.jpg"
+    },
+    {
+        question: "Emojis: 🚛🚗✈️\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Turismo",
+        "b) Transporte",
+        "c) Indústria",
+        "d) Serviços"
+        ],
+        correct: "b) Transporte",
+        explanation: `
+    ✅ Resposta correta: b) Transporte\n
+
+    Setor: Terciário\n  
+    Características: Movimentação de pessoas e mercadorias, incluindo transportes terrestres, aéreos e aquáticos.
+        `,
+        explanationImage: "transporte.jpg"
+    },
+    {
+        question: "Emojis: 🧑‍🏫👩‍⚕️🏦\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Serviços",
+        "b) Agricultura",
+        "c) Indústria",
+        "d) Turismo"
+        ],
+        correct: "a) Serviços",
+        explanation: `
+    ✅ Resposta correta: a) Serviços\n
+
+    Setor: Terciário\n  
+    Características: Abrange atividades como saúde, educação, finanças, tecnologia e outros serviços essenciais à população.
+        `,
+        explanationImage: "servicos.jpg"
+    },
+    {
+        question: "Emojis: 🏖️🗺️✈️\nQual dessas atividades está representada?\n\n👉 Escolha a opção correta!",
+        answers: [
+        "a) Transporte",
+        "b) Turismo",
+        "c) Comércio",
+        "d) Silvicultura"
+        ],
+        correct: "b) Turismo",
+        explanation: `
+    ✅ Resposta correta: b) Turismo\n
+
+    Setor: Terciário\n  
+    Características: Atividades relacionadas ao lazer, viagens e hospitalidade, movimentando a economia com hospedagem, passeios e serviços locais.
+        `,
+        explanationImage: "turismo.jpg"
+    }
+    ];
+    
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let lives = 5;
+
+    function startGame() {
+        const playerName = document.getElementById("player-name").value;
+        if (!playerName.trim()) {
+        alert("Por favor, digite seu nome antes de começar.");
+        return;
+        }
+
+        document.getElementById("player-display").innerText = `👤 ${playerName}`;
+        document.getElementById("start-screen").style.display = "none";
+        document.getElementById("quiz-container").style.display = "block";
+        document.getElementById("scoreboard").style.display = "block";
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const question = questions[currentQuestionIndex];
+        document.getElementById("question-text").innerText = question.question;
+
+        const answerContainer = document.getElementById("answer-container");
+        answerContainer.innerHTML = "";
+
+        question.answers.forEach((answer) => {
+        const button = document.createElement("button");
+        button.classList.add("answer-button");
+        button.innerText = answer;
+        button.onclick = () => checkAnswer(answer);
+        answerContainer.appendChild(button);
+        });
+
+        document.getElementById("message-container").innerText = "";
+        document.getElementById("explanation-container").style.display = "none";
+        document.getElementById("explanation-container").innerHTML = "";
+        document.getElementById("next-button").style.display = "none";
+    }
+
+    function checkAnswer(selected) {
+        const question = questions[currentQuestionIndex];
+        const message = document.getElementById("message-container");
+        const explanation = document.getElementById("explanation-container");
+
+        if (selected === question.correct) {
+        score += 10;
+        message.innerText = "✅ Correto!";
+        message.className = "message correct";
+        } else {
+        lives--;
+        message.innerText = `❌ Errado! A resposta correta era: ${question.correct}`;
+        message.className = "message incorrect";
+        }
+
+        document.getElementById("score").innerText = `Pontos: ${score}`;
+        document.getElementById("lives").innerText = "❤️".repeat(lives);
+
+        let explanationHTML = "";
+
+        if (question.explanationImage) {
+        explanationHTML += `<img src="${question.explanationImage}" alt="Explicação visual">`;
+        }
+
+        explanationHTML += `<div>${question.explanation}</div>`;
+
+        explanation.innerHTML = explanationHTML;
+        explanation.style.display = "block";
+
+        if (lives <= 0) {
+        document.getElementById("quiz-container").style.display = "none";
+        document.getElementById("lost-container").style.display = "block";
+        return;
+        }
+
+        document.getElementById("next-button").style.display = "inline-block";
+
+        // Desabilita os botões após resposta
+        const buttons = document.querySelectorAll(".answer-button");
+        buttons.forEach(btn => btn.disabled = true);
+    }
+
+    function nextQuestion() {
+        // Ocultar a mensagem antes de passar para a próxima pergunta
+        document.getElementById("message-container").innerText = "";
+        document.getElementById("message-container").className = "message"; // Limpar a classe de mensagem (se estiver colorida)
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+        } else {
+            document.getElementById("quiz-container").style.display = "none";
+            document.getElementById("restart-container").style.display = "block";
+            document.getElementById("pontuacao-final").innerText = score;
+        }
+
+        // Reabilitar os botões de resposta para a próxima pergunta
+        const buttons = document.querySelectorAll(".answer-button");
+        buttons.forEach(btn => btn.disabled = false);
+    }
+
+    function restartGame() {
+        currentQuestionIndex = 0;
+        score = 0;
+        lives = 5;
+        document.getElementById("start-screen").style.display = "block";
+        document.getElementById("quiz-container").style.display = "none";
+        document.getElementById("restart-container").style.display = "none";
+        document.getElementById("lost-container").style.display = "none";
+        document.getElementById("scoreboard").style.display = "none";
+    }
+
+    function goToNextModule() {
+        alert("Próximo módulo em desenvolvimento...");
+        // redirecionar ou outra ação
+    }
+    </script>
+
+</body>
+</html>
