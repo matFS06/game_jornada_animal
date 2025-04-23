@@ -93,6 +93,24 @@
       font-size: 1.3em;
       margin-top: 20px;
     }
+
+    #end-screen {
+      display: none;
+    }
+
+    .heart {
+      font-size: 24px;
+      margin: 5px;
+    }
+
+    .heart-filled {
+      color: red;
+    }
+
+    .heart-empty {
+      color: black;
+    }
+
   </style>
 </head>
 <body>
@@ -113,6 +131,13 @@
       <strong>Pontuação:</strong> <span id="score">0</span>
     </div>
 
+    <div id="lives">
+      <h4>Vidas:</h4>
+      <span id="heart1" class="heart heart-filled">❤️</span>
+      <span id="heart2" class="heart heart-filled">❤️</span>
+      <span id="heart3" class="heart heart-filled">❤️</span>
+    </div>
+
     <div id="quiz-area">
       <h3 class="pistas-titulo">Pistas:</h3>
       <ul id="dicas" class="pistas-lista"></ul>
@@ -121,6 +146,14 @@
     </div>
 
     <button id="next-btn" onclick="proximaPergunta()" style="display:none;">Próxima</button>
+  </div>
+
+  <!-- FIM DE JOGO (Tela Final) -->
+  <div id="end-screen" class="container">
+    <h2>Fim de jogo!</h2>
+    <p>Parabéns, <span id="final-player-name"></span>! Sua pontuação foi <strong><span id="final-score"></span></strong>.</p>
+    <button class="btn btn-success me-2" onclick="restartGame()">🔄 Jogar Novamente</button>
+    <button class="btn btn-primary" onclick="goToNextModule()">➡️ Próximo Módulo</button>
   </div>
 
   <script>
@@ -234,6 +267,7 @@
     let perguntaAtual = 0;
     let score = 0;
     let playerName = "";
+    let vidas = 3;
 
     function startGame() {
       const nameInput = document.getElementById("player-name");
@@ -299,9 +333,27 @@
       } else {
         feedbackEl.textContent = `❌ Errou! A resposta certa era ${correta}.`;
         feedbackEl.style.color = "red";
+        perderVida();
       }
 
       nextBtn.style.display = "inline-block";
+    }
+
+    function perderVida() {
+      vidas--;
+      if (vidas >= 0) {
+        document.getElementById(`heart${3 - vidas}`).classList.replace('heart-filled', 'heart-empty');
+      }
+      if (vidas === 0) {
+        fimDeJogo();
+      }
+    }
+
+    function fimDeJogo() {
+      document.getElementById("game-container").style.display = "none";
+      document.getElementById("end-screen").style.display = "block";
+      document.getElementById("final-player-name").innerText = playerName;
+      document.getElementById("final-score").innerText = score;
     }
 
     function proximaPergunta() {
@@ -309,12 +361,25 @@
       if (perguntaAtual < perguntas.length) {
         carregarPergunta();
       } else {
-        document.getElementById("quiz-area").innerHTML = `
-          <h2>Fim de jogo!</h2>
-          <p>Parabéns, ${playerName}! Sua pontuação foi <strong>${score}</strong>.</p>
-        `;
-        document.getElementById("next-btn").style.display = "none";
+        fimDeJogo();
       }
+    }
+
+    function restartGame() {
+      perguntaAtual = 0;
+      score = 0;
+      vidas = 3;
+      document.getElementById("score").innerText = score;
+      document.getElementById("heart1").classList.replace('heart-empty', 'heart-filled');
+      document.getElementById("heart2").classList.replace('heart-empty', 'heart-filled');
+      document.getElementById("heart3").classList.replace('heart-empty', 'heart-filled');
+      document.getElementById("end-screen").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+      carregarPergunta();
+    }
+
+    function goToNextModule() {
+      window.location.href = "atividades_economicas.html";
     }
   </script>
 </body>
