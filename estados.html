@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Estados e Regiões</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-color: #dcedc8;
+      background-image: url('estados.png');
+      background-size: cover;
+      margin: 0;
+      text-align: center;
+    }
+
+    .container {
+      background: white;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 15px;
+      border: 5px solid #558b2f;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 18px;
+      margin-top: 15px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      background-color: #33691e;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1b5e20;
+    }
+
+    #game-container {
+      display: none;
+    }
+
+    .draggable {
+      padding: 10px 15px;
+      margin: 5px;
+      background-color: #aed581;
+      border-radius: 8px;
+      cursor: grab;
+      display: inline-block;
+    }
+
+    .dropzone {
+      margin: 10px;
+      padding: 20px;
+      border: 2px dashed #33691e;
+      border-radius: 10px;
+      min-height: 80px;
+      background-color: #f1f8e9;
+    }
+
+    .dropzone.correct {
+      background-color: #c8e6c9;
+      border: 2px solid #2e7d32;
+    }
+
+    #score-card {
+      background-color: #f0f4c3;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 2px solid #827717;
+    }
+
+    #feedback {
+      margin-top: 15px;
+      font-size: 18px;
+    }
+
+    #states, #regions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="start-screen" class="container">
+    <h2>Bem-vindo ao Módulo dos Estados e Regiões!</h2>
+    <img src="logo_estados.png" alt="Logo Estados" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+    <br>
+    <input type="text" id="player-name" placeholder="Digite seu nome">
+    <br>
+    <button onclick="startGame()">Iniciar</button>
+  </div>
+
+  <div id="game-container" class="container">
+    <div id="score-card">
+      <strong>Jogador:</strong> <span id="player-display"></span> |
+      <strong>Pontuação:</strong> <span id="score">0</span>/100
+    </div>
+
+    <h3 id="question-title"></h3>
+
+    <div id="states" class="dropzone" data-region="topo">
+      <!-- Estados aparecerão aqui -->
+    </div>
+
+    <div id="regions">
+      <div id="target-dropzone" class="dropzone"></div>
+    </div>
+
+    <button onclick="confirmarResposta()">Confirmar</button>
+
+    <div id="feedback"></div>
+  </div>
+
+  <script>
+    const todasPerguntas = [
+      {
+        regiao: "Norte",
+        estados: ["Acre", "Amazonas", "Rondônia", "Pará", "Tocantins"],
+        explicacao: "A Região Norte é a maior em extensão territorial, rica em biodiversidade, abrigando a Floresta Amazônica."
+      },
+      {
+        regiao: "Nordeste",
+        estados: ["Bahia", "Ceará", "Pernambuco", "Maranhão", "Rio Grande do Norte"],
+        explicacao: "A Região Nordeste tem grande diversidade cultural, clima semiárido e belas praias famosas."
+      },
+      {
+        regiao: "Centro-Oeste",
+        estados: ["Goiás", "Mato Grosso", "Mato Grosso do Sul", "Distrito Federal"],
+        explicacao: "O Centro-Oeste é conhecido pelo agronegócio, cerrado e por abrigar a capital do Brasil, Brasília."
+      },
+      {
+        regiao: "Sudeste",
+        estados: ["São Paulo", "Minas Gerais", "Rio de Janeiro", "Espírito Santo"],
+        explicacao: "A Região Sudeste é a mais populosa e economicamente desenvolvida do país, com grandes metrópoles."
+      },
+      {
+        regiao: "Sul",
+        estados: ["Paraná", "Santa Catarina", "Rio Grande do Sul"],
+        explicacao: "O Sul tem influência europeia, clima mais frio e economia forte na agricultura e indústria."
+      }
+    ];
+
+    let jogador = "";
+    let pontuacao = 0;
+    let faseAtual = 0;
+
+    function startGame() {
+      jogador = document.getElementById("player-name").value.trim();
+      if (jogador === "") {
+        alert("Por favor, digite seu nome!");
+        return;
+      }
+
+      document.getElementById("player-display").textContent = jogador;
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+      carregarPergunta();
+    }
+
+    function carregarPergunta() {
+      const pergunta = todasPerguntas[faseAtual];
+      const todosEstados = pergunta.estados.concat(pegarEstadosAleatorios(pergunta.estados));
+      todosEstados.sort(() => 0.5 - Math.random());
+
+      document.getElementById("question-title").textContent = `Quais estados pertencem à região ${pergunta.regiao}?`;
+      document.getElementById("target-dropzone").dataset.region = pergunta.regiao;
+      document.getElementById("target-dropzone").innerHTML = `<strong>${pergunta.regiao}</strong>`;
+      document.getElementById("states").innerHTML = "";
+      document.getElementById("feedback").innerHTML = "";
+
+      todosEstados.forEach(nome => {
+        const div = document.createElement("div");
+        div.className = "draggable";
+        div.textContent = nome;
+        div.setAttribute("draggable", true);
+        div.addEventListener("dragstart", dragStart);
+        div.addEventListener("dblclick", () => {
+          document.getElementById("states").appendChild(div);
+        });
+        document.getElementById("states").appendChild(div);
+      });
+
+      prepararDropzones();
+    }
+
+    function pegarEstadosAleatorios(exceto) {
+      const todos = [
+        "Acre", "Amazonas", "Rondônia", "Pará", "Tocantins",
+        "Bahia", "Ceará", "Pernambuco", "Maranhão", "Rio Grande do Norte",
+        "Goiás", "Mato Grosso", "Mato Grosso do Sul", "Distrito Federal",
+        "São Paulo", "Minas Gerais", "Rio de Janeiro", "Espírito Santo",
+        "Paraná", "Santa Catarina", "Rio Grande do Sul"
+      ];
+      return todos.filter(e => !exceto.includes(e)).sort(() => 0.5 - Math.random()).slice(0, 4);
+    }
+
+    function dragStart(e) {
+      e.dataTransfer.setData("text/plain", e.target.textContent);
+    }
+
+    function prepararDropzones() {
+      const zonas = document.querySelectorAll(".dropzone");
+      zonas.forEach(zone => {
+        zone.addEventListener("dragover", e => e.preventDefault());
+        zone.addEventListener("drop", e => {
+          e.preventDefault();
+          const nomeEstado = e.dataTransfer.getData("text/plain");
+          const el = [...document.querySelectorAll(".draggable")].find(div => div.textContent === nomeEstado);
+          if (el && zone !== el.parentNode) zone.appendChild(el);
+        });
+      });
+    }
+
+    function confirmarResposta() {
+        const pergunta = todasPerguntas[faseAtual];
+        const dropzone = document.getElementById("target-dropzone");
+        const estadosSelecionados = [...dropzone.querySelectorAll(".draggable")].map(div => div.textContent);
+        const corretos = pergunta.estados;
+
+        let acertos = estadosSelecionados.filter(estado => corretos.includes(estado)).length;
+
+        let feedback = "";
+        let pontosGanhos = 0;
+
+        if (acertos === corretos.length && estadosSelecionados.length === corretos.length) {
+            pontosGanhos = 20;
+            feedback = `🎉 Parabéns! Você acertou todos os estados da região! <strong>(+${pontosGanhos} pts)</strong>`;
+        } else if (acertos > 0) {
+            pontosGanhos = 10;
+            feedback = `🔎 Quase lá! Você acertou alguns, mas não todos. <strong>(+${pontosGanhos} pts)</strong>`;
+        } else {
+            pontosGanhos = 0;
+            feedback = `😢 Que pena! Você não acertou nenhum. <strong>(+${pontosGanhos} pts)</strong>`;
+        }
+
+        pontuacao += pontosGanhos;
+        document.getElementById("score").textContent = pontuacao;
+
+        document.getElementById("feedback").innerHTML = `
+            <p>${feedback}</p>
+            <p><strong>Explicação:</strong> ${pergunta.explicacao}</p>
+            <button onclick="proximaFase()">Continuar</button>
+        `;
+    }
+
+    function proximaFase() {
+        faseAtual++;
+        if (faseAtual < todasPerguntas.length) {
+            carregarPergunta();
+        } else {
+            mostrarFim();
+        }
+    }
+
+    function mostrarFim() {
+        document.getElementById("game-container").innerHTML = `
+        <h2>Fim do jogo!</h2>
+        <p>Parabéns, ${jogador}! Sua pontuação final foi: <strong>${pontuacao}</strong> de 100 pontos.</p>
+        <button onclick="location.reload()">Jogar Novamente</button>
+        <button onclick="goToNextModule()">Ir para o Próximo Módulo</button>
+        `;
+    }
+
+    function goToNextModule() {
+        alert("Próximo módulo em desenvolvimento...");
+    }
+  </script>
+</body>
+</html>
