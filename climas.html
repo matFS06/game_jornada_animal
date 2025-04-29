@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Cruzadinha - Climas do Brasil</title>
+  <style>
+    body {
+      background: #f0f8ff;
+      font-family: 'Comic Sans MS', sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+    .container {
+      background: white;
+      border: 5px solid #007bff;
+      border-radius: 15px;
+      padding: 20px;
+      display: inline-block;
+    }
+    .grid {
+      display: grid;
+      grid-auto-rows: 50px;
+      gap: 5px;
+      margin: 20px auto;
+    }
+    .cell {
+      border: 2px solid #000;
+      text-align: center;
+      font-size: 24px;
+      background-color: #eee;
+    }
+    input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      font-size: 24px;
+      text-align: center;
+      text-transform: uppercase;
+      background: #fff;
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 18px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #0056b3;
+    }
+    #result, #result2 {
+      margin-top: 15px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- FASE 1 -->
+<div class="container" id="fase1">
+  <h2>Fase 1 - Clima Tropical ☀️</h2>
+  <p>Complete a cruzadinha com as dicas:</p>
+  <ul style="text-align:left">
+    <li>🔤 Clima quente e úmido comum no Brasil</li>
+    <li>🌡️ Sensação térmica comum nesse clima</li>
+    <li>☀️ Elemento natural presente em abundância</li>
+  </ul>
+
+  <div class="grid" style="grid-template-columns: repeat(6, 50px);">
+    <!-- CALOR, SOL, TROPICAL -->
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><input maxlength="1" id="1-3"></div><div class="cell"><input maxlength="1" id="1-4"></div><div class="cell"></div>
+    <div class="cell"><input maxlength="1" id="2-0"></div><div class="cell"><input maxlength="1" id="2-1"></div><div class="cell"><input maxlength="1" id="2-2"></div><div class="cell"><input maxlength="1" id="2-3"></div><div class="cell"><input maxlength="1" id="2-4"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><input maxlength="1" id="3-3"></div><div class="cell"><input maxlength="1" id="3-4"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><input maxlength="1" id="4-4"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><input maxlength="1" id="5-4"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><input maxlength="1" id="6-4"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><input maxlength="1" id="7-4"></div><div class="cell"></div>
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><input maxlength="1" id="8-4"></div><div class="cell"></div>
+  </div>
+
+  <button class="btn" onclick="verificar()">Verificar</button>
+  <div id="result"></div>
+  <button class="btn" id="btnProximo" onclick="mostrarFase2()" style="display:none;">Próximo</button>
+</div>
+
+<!-- FASE 2 -->
+<div class="container" id="fase2" style="display:none;">
+  <h2>Fase 2 - Clima Equatorial 🌧️</h2>
+  <p>Complete a cruzadinha com as dicas:</p>
+  <ul style="text-align:left">
+    <li>💧 Alta umidade relativa do ar</li>
+    <li>🌿 Bioma característico da região</li>
+    <li>🌞 Clima quente e chuvoso</li>
+  </ul>
+
+  <div class="grid" style="grid-template-columns: repeat(10, 50px);">
+    <!-- LINHA EQUATORIAL -->
+    <div class="cell"><input maxlength="1" id="e1"></div> <!-- E -->
+    <div class="cell"><input maxlength="1" id="e2"></div> <!-- Q -->
+    <div class="cell"><input maxlength="1" id="e3"></div> <!-- U -->
+    <div class="cell"><input maxlength="1" id="e4"></div> <!-- A -->
+    <div class="cell"><input maxlength="1" id="e5"></div> <!-- T -->
+    <div class="cell"><input maxlength="1" id="e6"></div> <!-- O -->
+    <div class="cell"><input maxlength="1" id="e7"></div> <!-- R -->
+    <div class="cell"><input maxlength="1" id="e8"></div> <!-- I -->
+    <div class="cell"><input maxlength="1" id="e9"></div> <!-- A -->
+    <div class="cell"><input maxlength="1" id="e10"></div> <!-- L -->
+
+    <!-- HUMIDADE (cruzando o U de EQUATORIAL - e3) -->
+    <div class="cell" style="grid-column: 3; grid-row: 2;"><input maxlength="1" id="h1"></div> <!-- H -->
+    <div class="cell" style="grid-column: 3; grid-row: 3;"><input maxlength="1" id="h2"></div> <!-- U -->
+    <div class="cell" style="grid-column: 3; grid-row: 4;"><input maxlength="1" id="h3"></div> <!-- M -->
+    <div class="cell" style="grid-column: 3; grid-row: 5;"><input maxlength="1" id="h4"></div> <!-- I -->
+    <div class="cell" style="grid-column: 3; grid-row: 6;"><input maxlength="1" id="h5"></div> <!-- D -->
+    <div class="cell" style="grid-column: 3; grid-row: 7;"><input maxlength="1" id="h6"></div> <!-- A -->
+    <div class="cell" style="grid-column: 3; grid-row: 8;"><input maxlength="1" id="h7"></div> <!-- D -->
+    <div class="cell" style="grid-column: 3; grid-row: 9;"><input maxlength="1" id="h8"></div> <!-- E -->
+
+    <!-- AMAZÔNICA (cruzando o A na e9) -->
+    <div class="cell" style="grid-column: 9; grid-row: 2;"><input maxlength="1" id="a1"></div> <!-- A -->
+    <div class="cell" style="grid-column: 9; grid-row: 3;"><input maxlength="1" id="a2"></div> <!-- M -->
+    <div class="cell" style="grid-column: 9; grid-row: 4;"><input maxlength="1" id="a3"></div> <!-- A -->
+    <div class="cell" style="grid-column: 9; grid-row: 5;"><input maxlength="1" id="a4"></div> <!-- Z -->
+    <div class="cell" style="grid-column: 9; grid-row: 6;"><input maxlength="1" id="a5"></div> <!-- Ô -->
+    <div class="cell" style="grid-column: 9; grid-row: 7;"><input maxlength="1" id="a6"></div> <!-- N -->
+    <div class="cell" style="grid-column: 9; grid-row: 8;"><input maxlength="1" id="a7"></div> <!-- I -->
+    <div class="cell" style="grid-column: 9; grid-row: 9;"><input maxlength="1" id="a8"></div> <!-- C -->
+    <div class="cell" style="grid-column: 9; grid-row: 10;"><input maxlength="1" id="a9"></div> <!-- A -->
+  </div>
+
+  <button class="btn" onclick="verificarFase2()">Verificar</button>
+  <div id="result2"></div>
+</div>
+
+<script>
+  // Fase 1 - Clima Tropical
+  const respostasFase1 = {
+    "1-3": "S", "1-4": "T", "2-0": "C", "2-1": "A", "2-2": "L",
+    "2-3": "O", "2-4": "R", "3-3": "L", "3-4": "O", "4-4": "P",
+    "5-4": "I", "6-4": "C", "7-4": "A", "8-4": "L"
+  };
+
+  function verificar() {
+    let acertos = 0;
+    let total = Object.keys(respostasFase1).length;
+    for (let id in respostasFase1) {
+      const input = document.getElementById(id);
+      if (input && input.value.toUpperCase() === respostasFase1[id]) {
+        input.style.backgroundColor = "#c8e6c9";
+        acertos++;
+      } else {
+        input.style.backgroundColor = "#ffcdd2";
+      }
+    }
+
+    if (acertos === total) {
+      document.getElementById("result").innerText = "✅ Parabéns! Você completou a cruzadinha!";
+      document.getElementById("btnProximo").style.display = "inline-block";
+    } else {
+      document.getElementById("result").innerText = `Você acertou ${acertos} de ${total}. Continue tentando!`;
+    }
+  }
+
+  function mostrarFase2() {
+    document.getElementById("fase1").style.display = "none";
+    document.getElementById("fase2").style.display = "block";
+  }
+
+  // Fase 2 - Clima Equatorial
+  const respostasFase2 = {
+    "e1": "E", "e2": "Q", "e3": "U", "e4": "A", "e5": "T", "e6": "O",
+    "e7": "R", "e8": "I", "e9": "A", "e10": "L", "h1": "H", "h2": "U", 
+    "h3": "M", "h4": "I", "h5": "D", "h6": "A", "h7": "D", "h8": "E", 
+    "a1": "A", "a2": "M", "a3": "A", "a4": "Z", "a5": "Ô", "a6": "N",
+    "a7": "I", "a8": "C", "a9": "A"
+  };
+
+  function verificarFase2() {
+    let acertos = 0;
+    let total = Object.keys(respostasFase2).length;
+    for (let id in respostasFase2) {
+      const input = document.getElementById(id);
+      if (input && input.value.toUpperCase() === respostasFase2[id]) {
+        input.style.backgroundColor = "#c8e6c9";
+        acertos++;
+      } else {
+        input.style.backgroundColor = "#ffcdd2";
+      }
+    }
+
+    if (acertos === total) {
+      document.getElementById("result2").innerText = "✅ Parabéns! Você completou a cruzadinha da Fase 2!";
+    } else {
+      document.getElementById("result2").innerText = `Você acertou ${acertos} de ${total}. Continue tentando!`;
+    }
+  }
+</script>
+
+</body>
+</html>
