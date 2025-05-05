@@ -181,6 +181,15 @@
   <div id="result4"></div>
 </div>
 
+<!-- NOVA TELA FINAL -->
+<div class="container" id="tela-final" style="display: none;">
+  <h2>🎉 Parabéns!</h2>
+  <p>Você completou todas as fases da cruzadinha sobre os Climas do Brasil!</p>
+  <p>Escolha uma das opções abaixo:</p>
+  <button class="btn" onclick="jogarNovamente()">🔁 Jogar Novamente</button>
+  <a href="pre_historia.html"><button class="btn">➡️ Ir para o próximo módulo</button></a>
+</div>
+
 <script>
   function startGame() {
   const nome = document.getElementById("player-name").value.trim();
@@ -336,9 +345,19 @@
 
     if (acertos === total) {
       document.getElementById("result4").innerText = "✅ Parabéns! Você completou todas as fases!";
+      
+      // Oculta a Fase 4 e mostra a tela final
+      document.getElementById("fase4").style.display = "none";
+      document.getElementById("tela-final").style.display = "block";
     } else {
       document.getElementById("result4").innerText = `Você acertou ${acertos} de ${total}. Continue tentando!`;
     }
+  }
+
+  // Função para reiniciar o jogo
+  function jogarNovamente() {
+    localStorage.removeItem("nomeJogador");
+    location.reload(); // Recarrega a página do zero
   }
 </script>
 

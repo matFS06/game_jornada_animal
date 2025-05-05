@@ -1,0 +1,329 @@
+<!DOCTYPE html> 
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo da Pré-História: Marque com a Cor</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-image: url(pre_historia.png);
+      color: black;
+      text-align: center;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 30px auto;
+      background: #eecac4d0;
+      padding: 25px;
+      border-radius: 15px;
+      border: 4px solid #a1887f;
+    }
+
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .item {
+      background-color: #d7ccc8;
+      color: #000;
+      padding: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      min-height: 60px;
+    }
+
+    .selected {
+      border: 3px solid #000;
+    }
+
+    .color-buttons {
+      margin-top: 20px;
+    }
+
+    .color-button {
+      width: 120px;
+      height: 70px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .brown { background-color: #8D6E63; }
+    .green { background-color: #81C784; }
+    .gray  { background-color: #B0BEC5; }
+
+    #explanation {
+      margin-top: 20px;
+      background-color: #efebe9;
+      color: #3e2723;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+      text-align: left;
+    }
+
+    #score-card {
+      background-color: #d7ccc8;
+      color: black;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 2px solid #4e342e;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 15px 10px 0;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #check-btn {
+      background-color: #6D4C41;
+      color: white;
+    }
+
+    #next-btn {
+      background-color: #4CAF50;
+      color: white;
+      display: none;
+    }
+
+    #final-screen, #end-screen {
+      display: none;
+    }
+    #player-name {
+      font-size: 18px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="start-screen">
+    <h2>Jogo da Pré-História</h2>
+    <img src="logo_pre_historia.png" alt="Logo Países" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+    <br>
+    <input type="text" id="player-name" placeholder="Digite seu nome">
+    <br>
+    <button onclick="startGame()">Iniciar</button>
+  </div>
+
+  <div class="container" id="game-container" style="display: none;">
+    <div id="score-card">
+      <strong>Jogador:</strong> <span id="player-display"></span> |
+      <strong>Pontuação:</strong> <span id="score">0</span>/90
+    </div>
+
+    <h3>Clique em um item e selecione a cor correspondente ao período</h3>
+
+    <div class="item-grid" id="item-grid"></div>
+
+    <div class="color-buttons">
+      <button class="color-button brown" onclick="markColor('Paleolítico')">🟤 Paleolítico</button>
+      <button class="color-button green" onclick="markColor('Neolítico')">🟢 Neolítico</button>
+      <button class="color-button gray" onclick="markColor('Idade dos Metais')">⚙️ Idade dos Metais</button>
+    </div>
+
+    <button id="check-btn" onclick="checkAnswers()">Verificar</button>
+    <button id="next-btn" onclick="nextPhase()">Próxima Fase</button>
+
+    <div id="explanation"></div>
+  </div>
+
+  <!-- TELA FINAL (END SCREEN) -->
+  <div id="end-screen" class="container text-center" style="display: none;">
+    <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+    <p>Você completou o jogo com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+    <button class="btn btn-success me-2" onclick="restartGame()">🔄 Jogar Novamente</button>
+    <button class="btn btn-primary" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  </div>
+
+  <script>
+    const items = [
+      { text: "Uso do fogo", correct: "Paleolítico", explanation: "O fogo foi dominado no Paleolítico, essencial para sobrevivência." },
+      { text: "Ferramentas de pedra lascada", correct: "Paleolítico", explanation: "As primeiras ferramentas feitas de pedra surgiram nesse período." },
+      { text: "Vida nômade", correct: "Paleolítico", explanation: "Os humanos ainda se deslocavam em busca de alimento." },
+      { text: "Pinturas rupestres", correct: "Paleolítico", explanation: "Desenhos em cavernas eram formas de expressão e comunicação." },
+      { text: "Construção de moradias fixas", correct: "Neolítico", explanation: "Com a sedentarização, começaram a construir casas permanentes." },
+      { text: "Agricultura", correct: "Neolítico", explanation: "Começaram a plantar e se fixar em aldeias." },
+      { text: "Cerâmica", correct: "Neolítico", explanation: "A cerâmica servia para armazenar alimentos e líquidos." },
+      { text: "Domesticação de animais", correct: "Neolítico", explanation: "Cães, bois e outros animais passaram a ser criados pelo homem." },
+      { text: "Uso do tear para tecidos", correct: "Neolítico", explanation: "Começaram a produzir tecidos para vestimentas." },
+      { text: "Uso do cobre e ferro", correct: "Idade dos Metais", explanation: "Ferramentas de metal substituíram as de pedra." },
+      { text: "Fundição de metais", correct: "Idade dos Metais", explanation: "O conhecimento de fundir metais permitiu criar ferramentas e armas mais eficazes." },
+      { text: "Criação de exércitos", correct: "Idade dos Metais", explanation: "A organização social levou à formação de forças militares." },
+      { text: "Surgimento das cidades", correct: "Idade dos Metais", explanation: "As primeiras civilizações urbanas aparecem nesse período." },
+      { text: "Criação do comércio", correct: "Idade dos Metais", explanation: "As trocas e rotas comerciais começaram a se formar." },
+      { text: "Construção de monumentos megalíticos", correct: "Neolítico", explanation: "Como Stonehenge, feitos por sociedades já organizadas." },
+      { text: "Uso de lanças e arcos", correct: "Paleolítico", explanation: "Ferramentas de caça evoluíram nesse período." },
+      { text: "Trabalho coletivo organizado", correct: "Neolítico", explanation: "Foi necessário para a agricultura e a construção das aldeias." },
+      { text: "Hierarquia social", correct: "Idade dos Metais", explanation: "Com as cidades, surgiram classes sociais e líderes." }
+    ];
+
+    let currentPhaseIndex = 0;
+    let selectedItemIndex = null;
+    let playerName = "";
+    let score = 0;
+    let fases = [];
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function startGame() {
+      playerName = document.getElementById("player-name").value.trim();
+      if (!playerName) {
+        alert("Digite seu nome para jogar.");
+        return;
+      }
+
+      document.getElementById("player-display").innerText = playerName;
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+      document.getElementById("end-screen").style.display = "none";
+
+      shuffleArray(items);
+      fases = [];
+      for (let i = 0; i < items.length; i += 3) {
+        fases.push(items.slice(i, i + 3));
+      }
+
+      score = 0;
+      currentPhaseIndex = 0;
+      document.getElementById("score").innerText = score;
+
+      loadPhase();
+    }
+
+    function loadPhase() {
+      selectedItemIndex = null;
+      document.getElementById("explanation").style.display = "none";
+      document.getElementById("next-btn").style.display = "none";
+      document.getElementById("check-btn").style.display = "inline-block";
+
+      const grid = document.getElementById("item-grid");
+      grid.innerHTML = "";
+
+      const currentItems = fases[currentPhaseIndex];
+      currentItems.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.classList.add("item");
+        div.textContent = item.text;
+        div.onclick = () => selectItem(index, div);
+        grid.appendChild(div);
+      });
+    }
+
+    function selectItem(index, element) {
+      document.querySelectorAll(".item").forEach(el => el.classList.remove("selected"));
+      element.classList.add("selected");
+      selectedItemIndex = index;
+    }
+
+    function markColor(period) {
+      if (selectedItemIndex === null) {
+        alert("Selecione um item primeiro!");
+        return;
+      }
+
+      const currentItems = fases[currentPhaseIndex];
+      const itemDivs = document.querySelectorAll(".item");
+      const selectedDiv = itemDivs[selectedItemIndex];
+
+      currentItems[selectedItemIndex].player = period;
+
+      switch (period) {
+        case "Paleolítico":
+          selectedDiv.style.backgroundColor = "#8D6E63";
+          break;
+        case "Neolítico":
+          selectedDiv.style.backgroundColor = "#81C784";
+          break;
+        case "Idade dos Metais":
+          selectedDiv.style.backgroundColor = "#B0BEC5";
+          break;
+      }
+
+      selectedDiv.classList.remove("selected");
+      selectedItemIndex = null;
+    }
+
+    function checkAnswers() {
+      const currentItems = fases[currentPhaseIndex];
+
+      if (currentItems.some(item => !item.player)) {
+        alert("Por favor, marque todos os itens antes de verificar.");
+        return;
+      }
+
+      let explanationHTML = "";
+      currentItems.forEach((item) => {
+        const player = item.player || "nenhum";
+        const correct = item.correct;
+        const isCorrect = player === correct;
+
+        if (isCorrect) score += 5;
+
+        explanationHTML += `
+          <p>
+            <strong>${item.text}</strong> — Você marcou: <em>${player}</em>. 
+            Correto: <strong>${correct}</strong>.<br>
+            ${item.explanation}
+          </p>
+          <hr>
+        `;
+      });
+
+      document.getElementById("score").innerText = score;
+      document.getElementById("explanation").innerHTML = explanationHTML;
+      document.getElementById("explanation").style.display = "block";
+      document.getElementById("check-btn").style.display = "none";
+      document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextPhase() {
+      currentPhaseIndex++;
+      if (currentPhaseIndex < fases.length) {
+        loadPhase();
+      } else {
+        showFinalScreen();
+      }
+    }
+
+    function showFinalScreen() {
+      document.getElementById("game-container").style.display = "none";
+      document.getElementById("end-screen").style.display = "block";
+      document.getElementById("final-player-name").innerText = playerName;
+      document.getElementById("final-score").innerText = score;
+    }
+
+    function restartGame() {
+      document.getElementById("start-screen").style.display = "block";
+      document.getElementById("end-screen").style.display = "none";
+      document.getElementById("player-name").value = "";
+    }
+
+    function goToNextModule() {
+      window.location.href = "historia_modulo2.html";
+    }
+  </script>
+</body>
+</html>
