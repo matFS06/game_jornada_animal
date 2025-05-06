@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo de Correspondência: Civilizações Antigas</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', sans-serif;
+      background-image: url('background.png');
+      color: black;
+      text-align: center;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 30px auto;
+      background: #eecac4d0;
+      padding: 25px;
+      border-radius: 15px;
+      border: 4px solid #a1887f;
+    }
+
+    #nickname-card {
+      margin-bottom: 20px;
+    }
+
+    #score-card {
+      background-color: #d7ccc8;
+      color: black;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 2px solid #4e342e;
+    }
+
+    .items-container {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .item, .target {
+      width: 120px;
+      height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+      border: 2px solid #4e342e;
+      border-radius: 10px;
+      background-color: #f1f1f1;
+      cursor: pointer;
+    }
+
+    .drag-item {
+      cursor: grab;
+    }
+
+    .drag-item:active {
+      cursor: grabbing;
+    }
+
+    .target {
+      background-color: #c8e6c9;
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    #explanation {
+      margin-top: 20px;
+      background-color: #efebe9;
+      color: #3e2723;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+      text-align: left;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 15px 10px 0;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #next-btn {
+      background-color: #4CAF50;
+      color: white;
+      margin-top: 20px;
+      width: 200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #final-screen {
+      display: none;
+    }
+
+    #player-name {
+      font-size: 18px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+
+    .item-name {
+      font-weight: bold;
+      font-size: 14px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .item img {
+      max-width: 100%;
+      max-height: 120px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="start-screen">
+    <h2>Jogo das Civilizações Antigas</h2>
+    <img src="logo_civilizacoes.png" alt="Logo Civilizações" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+    <br>
+    <input type="text" id="player-name" placeholder="Digite seu nome">
+    <br>
+    <button onclick="startGame()">Iniciar</button>
+  </div>
+
+  <div class="container" id="game-container" style="display: none;">
+    <div id="nickname-card">
+      <strong>Jogador:</strong> <span id="player-display"></span> |
+      <strong>Pontuação:</strong> <span id="score">0</span>/90
+    </div>
+
+    <h3>Arraste as imagens para as civilizações corretas</h3>
+
+    <div class="items-container" id="items-container">
+      <!-- Aqui serão os itens arrastáveis -->
+    </div>
+
+    <div class="items-container" id="targets-container">
+      <!-- Aqui serão as caixas de destino -->
+    </div>
+
+    <button id="next-btn" onclick="nextPhase()">Próxima Fase</button>
+
+    <div id="explanation"></div>
+  </div>
+
+  <div id="final-screen" class="container text-center" style="display: none;">
+    <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+    <p>Você completou o jogo com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+    <button onclick="restartGame()">🔄 Jogar Novamente</button>
+  </div>
+
+  <script>
+    const phases = [
+      {
+        items: [
+          { name: "Códigos de Hamurabi", image: "codigo_hamurabi.jpg", civilization: "Mesopotâmia", explanation: "O código de Hamurabi foi uma das primeiras leis escritas, que estabeleciam um sistema legal para a Mesopotâmia." },
+          { name: "Pirâmides de Gizé", image: "piramides_gize.jpg", civilization: "Egito", explanation: "As pirâmides de Gizé são uma das Sete Maravilhas do Mundo Antigo, usadas como tumbas para os faraós egípcios." },
+          { name: "Filosofia de Sócrates", image: "filosofia_socrates.jpg", civilization: "Grécia", explanation: "Sócrates é um dos filósofos mais importantes da Grécia, conhecido por seu método de questionamento e busca pela verdade." }
+        ],
+        targets: ["Mesopotâmia", "Egito", "Grécia"]
+      },
+      {
+        items: [
+          { name: "Rios Tigre e Eufrates", image: "rios_tigre_eufrates.jpg", civilization: "Mesopotâmia", explanation: "Os rios Tigre e Eufrates proporcionaram as condições ideais para o surgimento das primeiras civilizações." },
+          { name: "Múmias Egípcias", image: "mumia_egipcia.jpg", civilization: "Egito", explanation: "A mumificação era um ritual importante no Egito, acreditando-se que preservava o corpo para a vida após a morte." },
+          { name: "Teatro Grego", image: "teatro_grego.jpg", civilization: "Grécia", explanation: "O teatro grego foi uma das primeiras formas de expressão artística em grande escala e influenciou toda a cultura ocidental." }
+        ],
+        targets: ["Mesopotâmia", "Egito", "Grécia"]
+      },
+      {
+        items: [
+          { name: "Império Acádio", image: "imperio_acadio.jpg", civilization: "Mesopotâmia", explanation: "O Império Acádio, fundado por Sargão da Acádia, foi o primeiro império multirracial da história, unificando as cidades-estado da Mesopotâmia sob um único governo." },
+          { name: "Esfinge", image: "esfinge.jpg", civilization: "Egito", explanation: "A Esfinge é uma estátua monumental que simboliza o poder do faraó e a relação com os deuses." },
+          { name: "Acrópole de Atenas", image: "acropole_atenas.jpg", civilization: "Grécia", explanation: "A Acrópole de Atenas é um conjunto de monumentos antigos, incluindo o Parthenon, que simboliza a glória da civilização grega clássica." }
+        ],
+        targets: ["Mesopotâmia", "Egito", "Grécia"]
+      },
+      {
+        items: [
+          { name: "Zigurate", image: "zigurate.jpg", civilization: "Mesopotâmia", explanation: "Os zigurates eram templos construídos nas cidades da Mesopotâmia, dedicados aos deuses." },
+          { name: "Cleópatra", image: "cleopatra.jpg", civilization: "Egito", explanation: "Cleópatra VII foi a última rainha do Egito, famosa por sua inteligência e por seus encontros com Júlio César e Marco Antônio." },
+          { name: "Panteão Grego", image: "panteao_grego.jpg", civilization: "Grécia", explanation: "O Panteão Grego é composto pelos deuses da mitologia grega, como Zeus, Atena e Apolo." }
+        ],
+        targets: ["Mesopotâmia", "Egito", "Grécia"]
+      },
+      {
+        items: [
+          { name: "Escrita Cuneiforme", image: "escrita_cuneiforme.jpg", civilization: "Mesopotâmia", explanation: "A escrita cuneiforme é uma das primeiras formas de escrita desenvolvidas na Mesopotâmia." },
+          { name: "Rio Nilo", image: "rio_nilo.jpg", civilization: "Egito", explanation: "O Rio Nilo foi essencial para a sobrevivência e o desenvolvimento do Egito Antigo, fornecendo água, transporte e fertilizando as terras agrícolas." },
+          { name: "Democracia Grega", image: "democracia_grega.jpg", civilization: "Grécia", explanation: "A Grécia Antiga é o berço da democracia, onde cidadãos podiam participar diretamente das decisões do governo." }
+        ],
+        targets: ["Mesopotâmia", "Egito", "Grécia"]
+      },
+      {
+        items: [
+          { name: "A Lei de Ur-Nammu", image: "lei_ur_nammu.jpg", civilization: "Mesopotâmia", explanation: "A Lei de Ur-Nammu é um dos primeiros códigos legais, prefigurando as leis de Hamurabi." },
+          { name: "O Livro dos Mortos", image: "livro_mortos.jpg", civilization: "Egito", explanation: "O Livro dos Mortos era um conjunto de textos usados pelos egípcios para guiar as almas para a vida após a morte." },
+          { name: "A República de Platão", image: "republica_platao.jpg", civilization: "Grécia", explanation: "A 'República' de Platão é uma obra filosófica que discute justiça, política e a natureza do governo ideal." }
+        ],
+        targets: ["Mesopotâmia", "Egito", "Grécia"]
+      }
+    ];
+
+    let currentPhaseIndex = 0;
+    let playerName = "";
+    let score = 0;
+    let correctItemsCount = 0;
+
+    function startGame() {
+      playerName = document.getElementById("player-name").value;
+      if (playerName.trim() === "") {
+        alert("Por favor, insira seu nome!");
+        return;
+      }
+
+      document.getElementById("player-display").innerText = playerName;
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("game-container").style.display = "block";
+
+      loadPhase();
+    }
+
+    function loadPhase() {
+      const phase = phases[currentPhaseIndex];
+      shuffleArray(phase.items);
+      correctItemsCount = 0;
+
+      const itemsContainer = document.getElementById("items-container");
+      itemsContainer.innerHTML = "";
+      const targetsContainer = document.getElementById("targets-container");
+      targetsContainer.innerHTML = "";
+
+      phase.items.forEach(item => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "item drag-item";
+        itemDiv.draggable = true;
+        itemDiv.innerHTML = `
+          <div class="item-name">${item.name}</div>
+          <img src="${item.image}" alt="${item.name}" />
+        `;
+        itemDiv.addEventListener("dragstart", (e) => handleDragStart(e, item));
+        itemsContainer.appendChild(itemDiv);
+      });
+
+      phase.targets.forEach(target => {
+        const targetDiv = document.createElement("div");
+        targetDiv.className = "target";
+        targetDiv.innerText = target;
+        targetDiv.addEventListener("dragover", handleDragOver);
+        targetDiv.addEventListener("drop", (e) => handleDrop(e, target));
+        targetsContainer.appendChild(targetDiv);
+      });
+
+      document.getElementById("next-btn").disabled = false; // Habilitar o botão "Próxima Fase" para esta fase.
+      document.getElementById("next-btn").style.backgroundColor = "#4CAF50";
+      document.getElementById("next-btn").style.pointerEvents = "auto";
+      document.getElementById("explanation").style.display = "none";
+    }
+
+    function handleDragStart(event, item) {
+      event.dataTransfer.setData("item", JSON.stringify(item));
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
+
+    function handleDrop(event, target) {
+      event.preventDefault();
+      const data = event.dataTransfer.getData("item");
+      const item = JSON.parse(data);
+      const targetDiv = event.target;
+
+      if (item.civilization === target) {
+        targetDiv.style.backgroundColor = "#A5D68D";
+        score += 5;
+        document.getElementById("score").innerText = score;
+        correctItemsCount++;
+        showExplanation(item.explanation, true);
+      } else {
+        targetDiv.style.backgroundColor = "#FFCDD2";
+        showExplanation("Ops, você se enganou. Tente novamente.", false);
+      }
+
+      checkPhaseCompletion();
+    }
+
+    function showExplanation(explanation, correct) {
+      const explanationDiv = document.getElementById("explanation");
+      explanationDiv.innerHTML = explanation;
+      explanationDiv.style.display = "block";
+    }
+
+    function checkPhaseCompletion() {
+      if (correctItemsCount === phases[currentPhaseIndex].items.length) {
+        document.getElementById("next-btn").disabled = false; // Habilitar o botão "Próxima Fase" quando tudo estiver correto.
+      } else {
+        document.getElementById("next-btn").disabled = true; // Desabilitar o botão "Próxima Fase" caso algum item ainda esteja incorreto.
+      }
+    }
+
+    function nextPhase() {
+      if (correctItemsCount === phases[currentPhaseIndex].items.length) {
+        currentPhaseIndex++;
+        if (currentPhaseIndex < phases.length) {
+          loadPhase();
+        } else {
+          showFinalScreen();
+        }
+      }
+    }
+
+    function showFinalScreen() {
+      document.getElementById("game-container").style.display = "none";
+      document.getElementById("final-screen").style.display = "block";
+      document.getElementById("final-player-name").innerText = playerName;
+      document.getElementById("final-score").innerText = score;
+    }
+
+    function restartGame() {
+      document.getElementById("final-screen").style.display = "none";
+      document.getElementById("start-screen").style.display = "block";
+      score = 0;
+      currentPhaseIndex = 0;
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; 
+      }
+    }
+  </script>
+
+</body>
+</html>
