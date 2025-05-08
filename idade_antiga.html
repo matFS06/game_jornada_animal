@@ -128,10 +128,8 @@
 
   <div class="container" id="start-screen">
     <h2>Jogo das Civilizações Antigas</h2>
-    <img src="logo_civilizacoes.png" alt="Logo Civilizações" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
-    <br>
-    <input type="text" id="player-name" placeholder="Digite seu nome">
-    <br>
+    <img src="logo_civilizacoes.png" alt="Logo Civilizações" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"><br>
+    <input type="text" id="player-name" placeholder="Digite seu nome"><br>
     <button onclick="startGame()">Iniciar</button>
   </div>
 
@@ -209,7 +207,7 @@
           { name: "A Lei de Ur-Nammu", image: "lei_ur_nammu.jpg", civilization: "Mesopotâmia", explanation: "A Lei de Ur-Nammu é um dos primeiros códigos legais, prefigurando as leis de Hamurabi." },
           { name: "O Livro dos Mortos", image: "livro_mortos.jpg", civilization: "Egito", explanation: "O Livro dos Mortos era um conjunto de textos usados pelos egípcios para guiar as almas para a vida após a morte." },
           { name: "A República de Platão", image: "republica_platao.jpg", civilization: "Grécia", explanation: "A 'República' de Platão é uma obra filosófica que discute justiça, política e a natureza do governo ideal." }
-        ],
+          ],
         targets: ["Mesopotâmia", "Egito", "Grécia"]
       }
     ];
@@ -252,6 +250,7 @@
           <img src="${item.image}" alt="${item.name}" />
         `;
         itemDiv.addEventListener("dragstart", (e) => handleDragStart(e, item));
+        itemDiv.addEventListener("touchstart", (e) => handleTouchStart(e, item)); // Novo
         itemsContainer.appendChild(itemDiv);
       });
 
@@ -261,10 +260,12 @@
         targetDiv.innerText = target;
         targetDiv.addEventListener("dragover", handleDragOver);
         targetDiv.addEventListener("drop", (e) => handleDrop(e, target));
+        targetDiv.addEventListener("touchover", (e) => handleTouchOver(e)); // Novo
+        targetDiv.addEventListener("touchend", (e) => handleTouchDrop(e, target)); // Novo
         targetsContainer.appendChild(targetDiv);
       });
 
-      document.getElementById("next-btn").disabled = false; // Habilitar o botão "Próxima Fase" para esta fase.
+      document.getElementById("next-btn").disabled = false;
       document.getElementById("next-btn").style.backgroundColor = "#4CAF50";
       document.getElementById("next-btn").style.pointerEvents = "auto";
       document.getElementById("explanation").style.display = "none";
@@ -274,8 +275,40 @@
       event.dataTransfer.setData("item", JSON.stringify(item));
     }
 
+    // Novo: Manipulação do toque
+    function handleTouchStart(event, item) {
+      const touch = event.touches[0];
+      const dataTransfer = { setData: (key, value) => {} }; // Mock de dataTransfer
+      handleDragStart({ ...event, dataTransfer }, item);
+    }
+
     function handleDragOver(event) {
       event.preventDefault();
+    }
+
+    // Novo: Manipulação do toque
+    function handleTouchOver(event) {
+      event.preventDefault();
+    }
+
+    // Novo: Manipulação do toque para drop
+    function handleTouchDrop(event, target) {
+      const touch = event.changedTouches[0];
+      const targetDiv = event.target;
+      const item = JSON.parse(localStorage.getItem("draggedItem"));
+
+      if (item.civilization === target) {
+        targetDiv.style.backgroundColor = "#A5D68D";
+        score += 5;
+        document.getElementById("score").innerText = score;
+        correctItemsCount++;
+        showExplanation(item.explanation, true);
+      } else {
+        targetDiv.style.backgroundColor = "#FFCDD2";
+        showExplanation("Ops, você se enganou. Tente novamente.", false);
+      }
+
+      checkPhaseCompletion();
     }
 
     function handleDrop(event, target) {
@@ -306,9 +339,9 @@
 
     function checkPhaseCompletion() {
       if (correctItemsCount === phases[currentPhaseIndex].items.length) {
-        document.getElementById("next-btn").disabled = false; // Habilitar o botão "Próxima Fase" quando tudo estiver correto.
+        document.getElementById("next-btn").disabled = false;
       } else {
-        document.getElementById("next-btn").disabled = true; // Desabilitar o botão "Próxima Fase" caso algum item ainda esteja incorreto.
+        document.getElementById("next-btn").disabled = true;
       }
     }
 
