@@ -53,14 +53,17 @@
       border-radius: 10px;
       background-color: #f1f1f1;
       cursor: pointer;
+      position: relative;
     }
 
     .drag-item {
       cursor: grab;
+      transition: opacity 0.2s ease;
     }
 
     .drag-item:active {
       cursor: grabbing;
+      opacity: 0.6; /* Efeito de "carregando" enquanto a imagem está sendo movida */
     }
 
     .target {
@@ -68,6 +71,7 @@
       text-align: center;
       font-weight: bold;
       font-size: 16px;
+      min-height: 100px;
     }
 
     #explanation {
@@ -207,7 +211,7 @@
           { name: "A Lei de Ur-Nammu", image: "lei_ur_nammu.jpg", civilization: "Mesopotâmia", explanation: "A Lei de Ur-Nammu é um dos primeiros códigos legais, prefigurando as leis de Hamurabi." },
           { name: "O Livro dos Mortos", image: "livro_mortos.jpg", civilization: "Egito", explanation: "O Livro dos Mortos era um conjunto de textos usados pelos egípcios para guiar as almas para a vida após a morte." },
           { name: "A República de Platão", image: "republica_platao.jpg", civilization: "Grécia", explanation: "A 'República' de Platão é uma obra filosófica que discute justiça, política e a natureza do governo ideal." }
-          ],
+        ],
         targets: ["Mesopotâmia", "Egito", "Grécia"]
       }
     ];
@@ -216,6 +220,10 @@
     let playerName = "";
     let score = 0;
     let correctItemsCount = 0;
+
+    let draggedItem = null;
+    let draggedItemElement = null;
+    let draggedTarget = null;
 
     function startGame() {
       playerName = document.getElementById("player-name").value;
@@ -243,14 +251,14 @@
 
       phase.items.forEach(item => {
         const itemDiv = document.createElement("div");
-        itemDiv.className = "item drag-item";
-        itemDiv.draggable = true;
+        itemDiv.className = "item";
+        itemDiv.dataset.civilization = item.civilization;
         itemDiv.innerHTML = `
           <div class="item-name">${item.name}</div>
-          <img src="${item.image}" alt="${item.name}" />
+          <img src="${item.image}" alt="${item.name}" class="drag-item"/>
         `;
-        itemDiv.addEventListener("dragstart", (e) => handleDragStart(e, item));
-        itemDiv.addEventListener("touchstart", (e) => handleTouchStart(e, item)); // Novo
+        itemDiv.addEventListener("mousedown", (e) => handleMouseDown(e, item));
+        itemDiv.addEventListener("touchstart", (e) => handleTouchStart(e, item));
         itemsContainer.appendChild(itemDiv);
       });
 
@@ -258,76 +266,82 @@
         const targetDiv = document.createElement("div");
         targetDiv.className = "target";
         targetDiv.innerText = target;
-        targetDiv.addEventListener("dragover", handleDragOver);
+        targetDiv.addEventListener("dragover", (e) => e.preventDefault());
         targetDiv.addEventListener("drop", (e) => handleDrop(e, target));
-        targetDiv.addEventListener("touchover", (e) => handleTouchOver(e)); // Novo
-        targetDiv.addEventListener("touchend", (e) => handleTouchDrop(e, target)); // Novo
         targetsContainer.appendChild(targetDiv);
       });
 
-      document.getElementById("next-btn").disabled = false;
-      document.getElementById("next-btn").style.backgroundColor = "#4CAF50";
-      document.getElementById("next-btn").style.pointerEvents = "auto";
+      document.getElementById("next-btn").disabled = true;
+      document.getElementById("next-btn").style.backgroundColor = "#bdbdbd";  // Botão desabilitado
+      document.getElementById("next-btn").style.pointerEvents = "none";
       document.getElementById("explanation").style.display = "none";
     }
 
-    function handleDragStart(event, item) {
-      event.dataTransfer.setData("item", JSON.stringify(item));
+    function handleMouseDown(event, item) {
+      event.preventDefault();
+      draggedItem = item;
+      draggedItemElement = event.target;
+      draggedTarget = null;
+
+      draggedItemElement.style.opacity = 0.6; // Adiciona efeito visual de "carregando"
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
     }
 
-    // Novo: Manipulação do toque
+    function onMouseMove(event) {
+      draggedItemElement.style.left = event.pageX - draggedItemElement.offsetWidth / 2 + "px";
+      draggedItemElement.style.top = event.pageY - draggedItemElement.offsetHeight / 2 + "px";
+    }
+
+    function onMouseUp(event) {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      draggedItemElement.style.opacity = 1; // Restaura a opacidade após soltar
+
+      const targetArea = document.elementFromPoint(event.clientX, event.clientY);
+      handleDropInTarget(targetArea);
+    }
+
     function handleTouchStart(event, item) {
-      const touch = event.touches[0];
-      const dataTransfer = { setData: (key, value) => {} }; // Mock de dataTransfer
-      handleDragStart({ ...event, dataTransfer }, item);
-    }
-
-    function handleDragOver(event) {
       event.preventDefault();
+      draggedItem = item;
+      draggedItemElement = event.target;
+      draggedTarget = null;
+
+      draggedItemElement.style.opacity = 0.6; // Efeito de "carregando"
+      document.addEventListener("touchmove", onTouchMove);
+      document.addEventListener("touchend", onTouchEnd);
     }
 
-    // Novo: Manipulação do toque
-    function handleTouchOver(event) {
+    function onTouchMove(event) {
+      draggedItemElement.style.left = event.touches[0].pageX - draggedItemElement.offsetWidth / 2 + "px";
+      draggedItemElement.style.top = event.touches[0].pageY - draggedItemElement.offsetHeight / 2 + "px";
+    }
+
+    function onTouchEnd(event) {
       event.preventDefault();
+      draggedItemElement.style.opacity = 1; // Restaura a opacidade após soltar
+
+      const targetArea = document.elementFromPoint(event.changedTouches[0].pageX, event.changedTouches[0].pageY);
+      handleDropInTarget(targetArea);
     }
 
-    // Novo: Manipulação do toque para drop
-    function handleTouchDrop(event, target) {
-      const touch = event.changedTouches[0];
-      const targetDiv = event.target;
-      const item = JSON.parse(localStorage.getItem("draggedItem"));
+    function handleDropInTarget(targetArea) {
+      if (targetArea && targetArea.classList.contains("target")) {
+        draggedTarget = targetArea;
 
-      if (item.civilization === target) {
-        targetDiv.style.backgroundColor = "#A5D68D";
-        score += 5;
-        document.getElementById("score").innerText = score;
-        correctItemsCount++;
-        showExplanation(item.explanation, true);
-      } else {
-        targetDiv.style.backgroundColor = "#FFCDD2";
-        showExplanation("Ops, você se enganou. Tente novamente.", false);
+        if (draggedItem.civilization === draggedTarget.innerText) {
+          draggedTarget.style.backgroundColor = "#A5D68D"; // Verde de sucesso
+          draggedItemElement.style.backgroundColor = "#A5D68D"; // Verde
+          score += 5;
+          correctItemsCount++;
+          showExplanation(draggedItem.explanation, true);
+        } else {
+          draggedTarget.style.backgroundColor = "#FFCDD2"; // Vermelho de erro
+          draggedItemElement.style.backgroundColor = "#FFCDD2"; // Vermelho
+          showExplanation("Ops, você se enganou. Tente novamente.", false);
+        }
       }
-
-      checkPhaseCompletion();
-    }
-
-    function handleDrop(event, target) {
-      event.preventDefault();
-      const data = event.dataTransfer.getData("item");
-      const item = JSON.parse(data);
-      const targetDiv = event.target;
-
-      if (item.civilization === target) {
-        targetDiv.style.backgroundColor = "#A5D68D";
-        score += 5;
-        document.getElementById("score").innerText = score;
-        correctItemsCount++;
-        showExplanation(item.explanation, true);
-      } else {
-        targetDiv.style.backgroundColor = "#FFCDD2";
-        showExplanation("Ops, você se enganou. Tente novamente.", false);
-      }
-
       checkPhaseCompletion();
     }
 
@@ -340,8 +354,8 @@
     function checkPhaseCompletion() {
       if (correctItemsCount === phases[currentPhaseIndex].items.length) {
         document.getElementById("next-btn").disabled = false;
-      } else {
-        document.getElementById("next-btn").disabled = true;
+        document.getElementById("next-btn").style.backgroundColor = "#4CAF50";
+        document.getElementById("next-btn").style.pointerEvents = "auto";
       }
     }
 
@@ -373,10 +387,9 @@
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]]; 
+        [array[i], array[j]] = [array[j], array[i]];
       }
     }
   </script>
-
 </body>
 </html>
