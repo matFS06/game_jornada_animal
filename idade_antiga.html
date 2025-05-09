@@ -52,18 +52,7 @@
       border: 2px solid #4e342e;
       border-radius: 10px;
       background-color: #f1f1f1;
-      cursor: pointer;
       position: relative;
-    }
-
-    .drag-item {
-      cursor: grab;
-      transition: opacity 0.2s ease;
-    }
-
-    .drag-item:active {
-      cursor: grabbing;
-      opacity: 0.6; /* Efeito de "carregando" enquanto a imagem está sendo movida */
     }
 
     .target {
@@ -91,6 +80,7 @@
       border-radius: 5px;
       font-size: 14px;
       cursor: pointer;
+      touch-action: manipulation;
     }
 
     #next-btn {
@@ -126,6 +116,22 @@
       max-height: 120px;
       object-fit: contain;
     }
+
+    input[type="number"] {
+      width: 60px;
+      padding: 5px;
+      text-align: center;
+    }
+
+    .correct {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .incorrect {
+      background-color: #f44336;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -143,14 +149,14 @@
       <strong>Pontuação:</strong> <span id="score">0</span>/90
     </div>
 
-    <h3>Arraste as imagens para as civilizações corretas</h3>
+    <h3>Digite o número correspondente das imagens para cada civilização</h3>
 
     <div class="items-container" id="items-container">
-      <!-- Aqui serão os itens arrastáveis -->
+      <!-- Aqui serão os itens com imagens -->
     </div>
 
     <div class="items-container" id="targets-container">
-      <!-- Aqui serão as caixas de destino -->
+      <!-- Aqui serão as caixas de resposta -->
     </div>
 
     <button id="next-btn" onclick="nextPhase()">Próxima Fase</button>
@@ -194,7 +200,7 @@
         items: [
           { name: "Zigurate", image: "zigurate.jpg", civilization: "Mesopotâmia", explanation: "Os zigurates eram templos construídos nas cidades da Mesopotâmia, dedicados aos deuses." },
           { name: "Cleópatra", image: "cleopatra.jpg", civilization: "Egito", explanation: "Cleópatra VII foi a última rainha do Egito, famosa por sua inteligência e por seus encontros com Júlio César e Marco Antônio." },
-          { name: "Panteão Grego", image: "panteao_grego.jpg", civilization: "Grécia", explanation: "O Panteão Grego é composto pelos deuses da mitologia grega, como Zeus, Atena e Apolo." }
+          { name: "Jogos Olímpicos", image: "jogos_olimpicos.jpg", civilization: "Grécia", explanation: "Os Jogos Olímpicos surgiram na Grécia Antiga como competições em honra aos deuses, especialmente Zeus." }
         ],
         targets: ["Mesopotâmia", "Egito", "Grécia"]
       },
@@ -208,22 +214,18 @@
       },
       {
         items: [
-          { name: "A Lei de Ur-Nammu", image: "lei_ur_nammu.jpg", civilization: "Mesopotâmia", explanation: "A Lei de Ur-Nammu é um dos primeiros códigos legais, prefigurando as leis de Hamurabi." },
-          { name: "O Livro dos Mortos", image: "livro_mortos.jpg", civilization: "Egito", explanation: "O Livro dos Mortos era um conjunto de textos usados pelos egípcios para guiar as almas para a vida após a morte." },
+          { name: "Sistema Sexagesimal", image: "sistema_sexagesimal.jpg", civilization: "Mesopotâmia", explanation: "O sistema sexagesimal, baseado no número 60, foi criado na Mesopotâmia e é usado até hoje na medição do tempo e dos ângulos." },
+          { name: "Hieróglifos Egípcios", image: "hieroglifos.jpg", civilization: "Egito", explanation: "Os hieróglifos eram o sistema de escrita do Egito Antigo, usados em templos, túmulos e monumentos." },
           { name: "A República de Platão", image: "republica_platao.jpg", civilization: "Grécia", explanation: "A 'República' de Platão é uma obra filosófica que discute justiça, política e a natureza do governo ideal." }
         ],
         targets: ["Mesopotâmia", "Egito", "Grécia"]
       }
     ];
 
+    let shuffledItems = []; // <- Adicionado no topo
     let currentPhaseIndex = 0;
     let playerName = "";
     let score = 0;
-    let correctItemsCount = 0;
-
-    let draggedItem = null;
-    let draggedItemElement = null;
-    let draggedTarget = null;
 
     function startGame() {
       playerName = document.getElementById("player-name").value;
@@ -240,137 +242,108 @@
     }
 
     function loadPhase() {
-      const phase = phases[currentPhaseIndex];
-      shuffleArray(phase.items);
-      correctItemsCount = 0;
-
-      const itemsContainer = document.getElementById("items-container");
-      itemsContainer.innerHTML = "";
-      const targetsContainer = document.getElementById("targets-container");
-      targetsContainer.innerHTML = "";
-
-      phase.items.forEach(item => {
-        const itemDiv = document.createElement("div");
-        itemDiv.className = "item";
-        itemDiv.dataset.civilization = item.civilization;
-        itemDiv.innerHTML = `
-          <div class="item-name">${item.name}</div>
-          <img src="${item.image}" alt="${item.name}" class="drag-item"/>
-        `;
-        itemDiv.addEventListener("mousedown", (e) => handleMouseDown(e, item));
-        itemDiv.addEventListener("touchstart", (e) => handleTouchStart(e, item));
-        itemsContainer.appendChild(itemDiv);
-      });
-
-      phase.targets.forEach(target => {
-        const targetDiv = document.createElement("div");
-        targetDiv.className = "target";
-        targetDiv.innerText = target;
-        targetDiv.addEventListener("dragover", (e) => e.preventDefault());
-        targetDiv.addEventListener("drop", (e) => handleDrop(e, target));
-        targetsContainer.appendChild(targetDiv);
-      });
-
-      document.getElementById("next-btn").disabled = true;
-      document.getElementById("next-btn").style.backgroundColor = "#bdbdbd";  // Botão desabilitado
-      document.getElementById("next-btn").style.pointerEvents = "none";
       document.getElementById("explanation").style.display = "none";
+      document.getElementById("explanation").innerHTML = "";
+  const phase = phases[currentPhaseIndex];
+  shuffledItems = [...phase.items]; // Copiamos os itens
+  shuffleArray(shuffledItems);      // Embaralhamos os itens
+
+  const itemsContainer = document.getElementById("items-container");
+  itemsContainer.innerHTML = "";
+  const targetsContainer = document.getElementById("targets-container");
+  targetsContainer.innerHTML = "";
+
+  // Criar os itens com as imagens embaralhadas
+  shuffledItems.forEach((item) => {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "item";
+    itemDiv.innerHTML = ` 
+      <img src="${item.image}" alt="${item.name}" />
+      <div class="item-name">${item.name}</div>
+    `;
+    itemsContainer.appendChild(itemDiv);
+  });
+
+  // Criar os targets com a ordem fixa das civilizações
+  phase.targets.forEach((target, index) => {
+    const targetDiv = document.createElement("div");
+    targetDiv.className = "target";
+    targetDiv.innerHTML = `
+      <input type="number" min="1" max="3" id="target-${index}" placeholder="Número">
+      <div class="item-name">${target}</div>
+    `;
+    targetsContainer.appendChild(targetDiv);
+
+    // Evento de verificação com base na civilização esperada
+    const inputElement = document.getElementById(`target-${index}`);
+    inputElement.addEventListener('input', () => checkAnswer(inputElement, target));
+  });
+
+  document.getElementById("next-btn").disabled = true;
+}
+
+
+function checkAnswer(inputElement, expectedCivilization) {
+  const answer = inputElement.value.trim();
+  const index = parseInt(answer) - 1;
+
+  if (isNaN(index) || index < 0 || index >= shuffledItems.length) {
+    inputElement.classList.remove('correct', 'incorrect');
+    return;
+  }
+
+  const selectedItem = shuffledItems[index];
+
+  if (selectedItem.civilization === expectedCivilization) {
+    inputElement.classList.add('correct');
+    inputElement.classList.remove('incorrect');
+  } else {
+    inputElement.classList.add('incorrect');
+    inputElement.classList.remove('correct');
+  }
+
+  checkAllAnswers();
+}
+
+
+function checkAllAnswers() {
+  const inputs = document.querySelectorAll('input[type="number"]');
+  let allCorrect = true;
+
+  inputs.forEach(input => {
+    if (!input.classList.contains('correct')) {
+      allCorrect = false;
     }
+  });
 
-    function handleMouseDown(event, item) {
-      event.preventDefault();
-      draggedItem = item;
-      draggedItemElement = event.target;
-      draggedTarget = null;
+  if (allCorrect) {
+    score += 15;
+    document.getElementById("score").innerText = score;
+    document.getElementById("next-btn").disabled = false;
+    document.getElementById("next-btn").style.backgroundColor = "#4CAF50";
 
-      draggedItemElement.style.opacity = 0.6; // Adiciona efeito visual de "carregando"
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-    }
-
-    function onMouseMove(event) {
-      draggedItemElement.style.left = event.pageX - draggedItemElement.offsetWidth / 2 + "px";
-      draggedItemElement.style.top = event.pageY - draggedItemElement.offsetHeight / 2 + "px";
-    }
-
-    function onMouseUp(event) {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-      draggedItemElement.style.opacity = 1; // Restaura a opacidade após soltar
-
-      const targetArea = document.elementFromPoint(event.clientX, event.clientY);
-      handleDropInTarget(targetArea);
-    }
-
-    function handleTouchStart(event, item) {
-      event.preventDefault();
-      draggedItem = item;
-      draggedItemElement = event.target;
-      draggedTarget = null;
-
-      draggedItemElement.style.opacity = 0.6; // Efeito de "carregando"
-      document.addEventListener("touchmove", onTouchMove);
-      document.addEventListener("touchend", onTouchEnd);
-    }
-
-    function onTouchMove(event) {
-      draggedItemElement.style.left = event.touches[0].pageX - draggedItemElement.offsetWidth / 2 + "px";
-      draggedItemElement.style.top = event.touches[0].pageY - draggedItemElement.offsetHeight / 2 + "px";
-    }
-
-    function onTouchEnd(event) {
-      event.preventDefault();
-      draggedItemElement.style.opacity = 1; // Restaura a opacidade após soltar
-
-      const targetArea = document.elementFromPoint(event.changedTouches[0].pageX, event.changedTouches[0].pageY);
-      handleDropInTarget(targetArea);
-    }
-
-    function handleDropInTarget(targetArea) {
-      if (targetArea && targetArea.classList.contains("target")) {
-        draggedTarget = targetArea;
-
-        if (draggedItem.civilization === draggedTarget.innerText) {
-          draggedTarget.style.backgroundColor = "#A5D68D"; // Verde de sucesso
-          draggedItemElement.style.backgroundColor = "#A5D68D"; // Verde
-          score += 5;
-          correctItemsCount++;
-          showExplanation(draggedItem.explanation, true);
-        } else {
-          draggedTarget.style.backgroundColor = "#FFCDD2"; // Vermelho de erro
-          draggedItemElement.style.backgroundColor = "#FFCDD2"; // Vermelho
-          showExplanation("Ops, você se enganou. Tente novamente.", false);
-        }
-      }
-      checkPhaseCompletion();
-    }
-
-    function showExplanation(explanation, correct) {
-      const explanationDiv = document.getElementById("explanation");
-      explanationDiv.innerHTML = explanation;
-      explanationDiv.style.display = "block";
-    }
-
-    function checkPhaseCompletion() {
-      if (correctItemsCount === phases[currentPhaseIndex].items.length) {
-        document.getElementById("next-btn").disabled = false;
-        document.getElementById("next-btn").style.backgroundColor = "#4CAF50";
-        document.getElementById("next-btn").style.pointerEvents = "auto";
-      }
-    }
+    // Exibir as explicações
+    const explanationDiv = document.getElementById("explanation");
+    explanationDiv.innerHTML = "<h4>Explicações:</h4>";
+    shuffledItems.forEach(item => {
+      const p = document.createElement("p");
+      p.innerText = `🔸 ${item.name}: ${item.explanation}`;
+      explanationDiv.appendChild(p);
+    });
+    explanationDiv.style.display = "block";
+  }
+}
 
     function nextPhase() {
-      if (correctItemsCount === phases[currentPhaseIndex].items.length) {
-        currentPhaseIndex++;
-        if (currentPhaseIndex < phases.length) {
-          loadPhase();
-        } else {
-          showFinalScreen();
-        }
+      currentPhaseIndex++;
+      if (currentPhaseIndex < phases.length) {
+        loadPhase();
+      } else {
+        finishGame();
       }
     }
 
-    function showFinalScreen() {
+    function finishGame() {
       document.getElementById("game-container").style.display = "none";
       document.getElementById("final-screen").style.display = "block";
       document.getElementById("final-player-name").innerText = playerName;
@@ -378,10 +351,11 @@
     }
 
     function restartGame() {
+      currentPhaseIndex = 0;
+      score = 0;
       document.getElementById("final-screen").style.display = "none";
       document.getElementById("start-screen").style.display = "block";
-      score = 0;
-      currentPhaseIndex = 0;
+      document.getElementById("player-name").value = "";
     }
 
     function shuffleArray(array) {
@@ -393,3 +367,4 @@
   </script>
 </body>
 </html>
+
