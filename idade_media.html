@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo da Idade Média</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      color: #333;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+    .question-box {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      text-align: left;
+    }
+    .question-box p {
+      font-size: 20px;
+      font-weight: normal;
+    }
+    .question-box .actor {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .alternatives {
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+    }
+    .alternatives button {
+      padding: 12px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px 0;
+    }
+    .alternatives button:hover {
+      background-color: #45a049;
+    }
+    #start-screen {
+      text-align: center;
+    }
+    .card {
+      background-color: #333;
+      color: white;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+    }
+    .card .label {
+      font-weight: bold;
+    }
+    .card img {
+      border-radius: 50%;
+      max-width: 60px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Tela inicial (dentro de um container branco) -->
+<div id="start-screen" class="container">
+  <h2>Bem-vindo ao Jogo da Idade Média</h2>
+  <img src="logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;" />
+  <br>
+  <input type="text" id="player-name" placeholder="Digite seu nome" />
+  <br>
+  <button id="start-button" class="btn" onclick="startGame()">Iniciar</button>
+</div>
+
+<!-- Tela de jogo -->
+<div id="game-screen" class="container" style="display: none;">
+  <div id="player-card" class="card">
+    <span class="label">Jogador:</span> <span id="player-name-display"></span>
+    <br>
+    <span class="label">Pontos:</span> <span id="score">0</span>
+    <br>
+    <span class="label">Vidas:</span> <span id="lives">3</span>
+  </div>
+
+  <div class="question-box">
+    <p id="actor"></p>
+    <p id="question"></p>
+
+    <div id="alternatives" class="alternatives">
+      <!-- Alternativas dinâmicas vão aqui -->
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dados do jogador
+  let playerName = '';
+  let score = 0;
+  let lives = 3;
+
+  // Atores e suas perguntas
+  const actors = [
+    { actor: 'Camponês', image: 'campones.png', question: 'Sua contribuição para a economia se baseava principalmente em:', correct: 'Agricultura', wrong1: 'Comércio', wrong2: 'Batalhas' },
+    { actor: 'Soldado', image: 'soldado.png', question: 'Sua principal função na sociedade medieval era:', correct: 'Proteger o feudo', wrong1: 'Comerciar mercadorias', wrong2: 'Construir castelos' },
+    { actor: 'Transportador', image: 'transportador.png', question: 'O principal papel de um transportador era:', correct: 'Levar mercadorias entre feudos', wrong1: 'Administrar terras', wrong2: 'Cuidar de doentes' },
+    { actor: 'Ferreiro', image: 'ferreiro.png', question: 'Os ferreiros eram responsáveis por:', correct: 'Fazer armas e ferramentas', wrong1: 'Construir igrejas', wrong2: 'Pastorear ovelhas' },
+    { actor: 'Mercador', image: 'mercador.png', question: 'O principal trabalho de um mercador era:', correct: 'Trocar mercadorias entre regiões', wrong1: 'Cuidar da agricultura', wrong2: 'Lutar em batalhas' },
+    { actor: 'Clero', image: 'clero.png', question: 'O clero tinha a função de:', correct: 'Ensinar e difundir a religião', wrong1: 'Cultivar alimentos', wrong2: 'Proteger o feudo' },
+    { actor: 'Cavaleiro', image: 'cavaleiro.png', question: 'Qual era a principal função de um cavaleiro?', correct: 'Proteger o reino e lutar em batalhas', wrong1: 'Cuidar dos camponeses', wrong2: 'Comerciar com outros feudos' },
+    { actor: 'Nobre', image: 'nobre.png', question: 'O nobre possuía terras e sua função principal era:', correct: 'Administrar e proteger suas terras', wrong1: 'Construir fortificações', wrong2: 'Estudar religião' }
+  ];
+
+  // Inicialização do jogo
+  function startGame() {
+    playerName = document.getElementById('player-name').value;
+    if (!playerName) {
+      alert('Por favor, insira seu nome');
+      return;
+    }
+    document.getElementById('player-name-display').textContent = playerName;
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    nextQuestion();
+  }
+
+  // Função para mostrar a próxima pergunta
+  function nextQuestion() {
+    if (actors.length === 0 || lives <= 0) {
+      alert('Fim do jogo!');
+      return;
+    }
+
+    // Escolher uma pergunta aleatória
+    const actor = actors[Math.floor(Math.random() * actors.length)];
+    document.getElementById('actor').innerHTML = `<strong>Agora você é: </strong><img src="${actor.image}" alt="${actor.actor}" style="max-width: 50px;"/> ${actor.actor}`;
+    document.getElementById('question').textContent = actor.question;
+
+    // Alternativas
+    const alternatives = [
+      { text: actor.correct, isCorrect: true },
+      { text: actor.wrong1, isCorrect: false },
+      { text: actor.wrong2, isCorrect: false }
+    ];
+
+    // Embaralhar as alternativas
+    alternatives.sort(() => Math.random() - 0.5);
+
+    const alternativesContainer = document.getElementById('alternatives');
+    alternativesContainer.innerHTML = ''; // Limpar as alternativas anteriores
+
+    alternatives.forEach(alt => {
+      const button = document.createElement('button');
+      button.textContent = alt.text;
+      button.onclick = function() {
+        if (alt.isCorrect) {
+          score += 10;
+          document.getElementById('score').textContent = score;
+          alert('Resposta correta!');
+        } else {
+          lives--;
+          document.getElementById('lives').textContent = lives;
+          alert('Resposta errada!');
+        }
+        nextQuestion();
+      };
+      alternativesContainer.appendChild(button);
+    });
+
+    // Remover o ator escolhido da lista
+    actors.splice(actors.indexOf(actor), 1);
+  }
+</script>
+
+</body>
+</html>
