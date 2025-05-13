@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: 'Comic Sans MS', sans-serif;
-      background-image: url('background.png');
+      background-image: url('idade_antiga.png');
       color: black;
       text-align: center;
       margin: 0;
@@ -138,7 +138,7 @@
 
   <div class="container" id="start-screen">
     <h2>Jogo das Civilizações Antigas</h2>
-    <img src="logo_civilizacoes.png" alt="Logo Civilizações" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"><br>
+    <img src="logo_idade_antiga.png" alt="Logo Civilizações" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"><br>
     <input type="text" id="player-name" placeholder="Digite seu nome"><br>
     <button onclick="startGame()">Iniciar</button>
   </div>
@@ -168,6 +168,7 @@
     <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
     <p>Você completou o jogo com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
     <button onclick="restartGame()">🔄 Jogar Novamente</button>
+    <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
   </div>
 
   <script>
@@ -364,6 +365,11 @@ function checkAllAnswers() {
         [array[i], array[j]] = [array[j], array[i]];
       }
     }
+
+    function goToNextModule() {
+      window.location.href = "idade_media.html";  // Redireciona para a próxima página
+    }
+
   </script>
 </body>
 </html>

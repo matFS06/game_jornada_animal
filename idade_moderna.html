@@ -1,0 +1,297 @@
+<!DOCTYPE html>  
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idade Moderna – Linha do Tempo</title>
+  <style>
+    body {
+      font-family: 'Garamond', serif;
+      background-image: url('papel_antigo.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      background-color: #fdf6e3;
+      color: #1a1a1a;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      border: 2px solid #a77d2f;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 18px;
+      background-color: #a77d2f;
+      color: white;
+      border: 2px solid #d4af37;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px;
+      font-family: 'Garamond', serif;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 70%;
+      border: 1px solid #a77d2f;
+      border-radius: 5px;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      background-color: #fff7e6;
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border: 2px solid #d4af37;
+    }
+
+    .timeline, .drop-zone {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .event, .drop-slot {
+      width: 180px;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      margin: 5px;
+      touch-action: manipulation;
+    }
+
+    .event {
+      background-color: #edd9a3;
+      cursor: pointer;
+    }
+
+    .drop-slot {
+      min-height: 60px;
+      background-color: #fff3c4;
+      border: 2px dashed #a77d2f;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5px;
+      word-wrap: break-word;
+      overflow: hidden;
+      border-radius: 6px;
+    }
+
+
+    .correct {
+      background-color: #a8e6a3 !important;
+    }
+
+    .wrong {
+      background-color: #f7a9a9 !important;
+    }
+  </style>
+</head>
+<body>
+
+<div id="start-screen" class="container">
+  <h2>🧭 Jornada pela Idade Moderna</h2>
+  <img src="logo_idade_moderna.png" style="max-width: 200px; margin-bottom: 20px; border-radius: 10%;" />
+  <input type="text" id="player-name" placeholder="Digite seu nome">
+  <br>
+  <button class="btn" onclick="startGame()">Iniciar</button>
+</div>
+
+<div id="scoreboard" class="scoreboard" style="display: none;">
+  <span id="player-display">Jogador:</span>
+  <span id="score">Pontos: 0</span>
+  <span id="lives">Vidas: 5</span>
+</div>
+
+<div id="game-screen" class="container" style="display: none;">
+  <h2>Arraste os eventos para a ordem correta</h2>
+  <div id="event-list" class="timeline"></div>
+  <div id="drop-zone" class="drop-zone"></div>
+  <button class="btn" onclick="checkOrder()">Verificar</button>
+</div>
+
+<div id="end-screen" class="container" style="display: none;">
+  <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+  <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+  <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+  <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+</div>
+
+<script>
+  let playerName = '';
+  let score = 0;
+  let lives = 5;
+  let round = 0;
+  let selectedItem = null;
+
+  const allPhases = [
+    [
+      { year: 1492, text: 'Descobrimento da América' },
+      { year: 1517, text: 'Reforma Protestante' },
+      { year: 1600, text: 'Revolução Científica' },
+      { year: 1789, text: 'Revolução Francesa' }
+    ],
+    [
+      { year: 1450, text: 'Invenção da Imprensa' },
+      { year: 1500, text: 'Expansão Marítima' },
+      { year: 1700, text: 'Iluminismo' },
+      { year: 1776, text: 'Independência dos EUA' }
+    ],
+    [
+      { year: 1534, text: 'Fundação da Companhia de Jesus' },
+      { year: 1588, text: 'Derrota da Armada Espanhola' },
+      { year: 1610, text: 'Galileu aponta telescópio ao céu' },
+      { year: 1648, text: 'Fim da Guerra dos 30 Anos' }
+    ],
+    [
+      { year: 1687, text: 'Newton publica as Leis da Física' },
+      { year: 1750, text: 'Início da Revolução Industrial' },
+      { year: 1804, text: 'Napoleão se torna imperador' },
+      { year: 1822, text: 'Independência do Brasil' }
+    ]
+  ];
+
+  function startGame() {
+    const input = document.getElementById('player-name');
+    playerName = input.value.trim();
+    if (!playerName) return alert('Digite seu nome!');
+    document.getElementById('player-display').textContent = `Jogador: ${playerName}`;
+    document.getElementById('score').textContent = `Pontos: ${score}`;
+    document.getElementById('lives').textContent = `Vidas: ${lives}`;
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'flex';
+    document.getElementById('game-screen').style.display = 'block';
+    startRound();
+  }
+
+  function startRound() {
+  if (round >= allPhases.length) return endGame();
+  const currentEvents = [...allPhases[round]].sort(() => Math.random() - 0.5);
+  const eventList = document.getElementById('event-list');
+  const dropZone = document.getElementById('drop-zone');
+  eventList.innerHTML = '';
+  dropZone.innerHTML = '';
+  selectedItem = null;
+
+  currentEvents.forEach(event => {
+    const div = document.createElement('div');
+    div.className = 'event';
+    div.textContent = event.text;
+    div.dataset.year = event.year;
+
+    div.addEventListener('click', () => {
+      selectedItem = div;
+      document.querySelectorAll('.event').forEach(e => e.style.border = 'none');
+      div.style.border = '2px solid #333';
+    });
+
+    eventList.appendChild(div);
+  });
+
+  for (let i = 0; i < currentEvents.length; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'drop-slot';
+
+    slot.addEventListener('click', () => {
+      // Se o slot já estiver preenchido, devolver para a lista
+      if (slot.dataset.year) {
+        const returnedDiv = document.createElement('div');
+        returnedDiv.className = 'event';
+        returnedDiv.textContent = slot.textContent;
+        returnedDiv.dataset.year = slot.dataset.year;
+        returnedDiv.addEventListener('click', () => {
+          selectedItem = returnedDiv;
+          document.querySelectorAll('.event').forEach(e => e.style.border = 'none');
+          returnedDiv.style.border = '2px solid #333';
+        });
+        eventList.appendChild(returnedDiv);
+        slot.textContent = '';
+        delete slot.dataset.year;
+        return;
+      }
+
+      // Colocar item no slot se houver algo selecionado
+      if (selectedItem) {
+        slot.textContent = selectedItem.textContent;
+        slot.dataset.year = selectedItem.dataset.year;
+        selectedItem.remove();
+        selectedItem = null;
+      }
+    });
+
+    dropZone.appendChild(slot);
+  }
+}
+  function checkOrder() {
+    const slots = Array.from(document.querySelectorAll('.drop-slot'));
+    if (slots.some(slot => !slot.dataset.year)) {
+      alert('Complete todos os espaços!');
+      return;
+    }
+
+    const correctOrder = [...slots]
+      .map(slot => ({ year: parseInt(slot.dataset.year), text: slot.textContent }))
+      .sort((a, b) => a.year - b.year)
+      .map(item => item.text);
+
+    let pointsThisRound = 0;
+
+    slots.forEach((slot, index) => {
+      slot.classList.remove('correct', 'wrong');
+      const currentText = slot.textContent;
+      if (currentText === correctOrder[index]) {
+        slot.classList.add('correct');
+        pointsThisRound += 5;
+      } else {
+        slot.classList.add('wrong');
+      }
+    });
+
+    score += pointsThisRound;
+    if (pointsThisRound < slots.length * 5) {
+      lives--;
+    }
+
+    document.getElementById('score').textContent = `Pontos: ${score}`;
+    document.getElementById('lives').textContent = `Vidas: ${lives}`;
+
+    setTimeout(() => {
+      if (lives <= 0) return endGame();
+      round++;
+      startRound();
+    }, 2000);
+  }
+
+  function endGame() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'block';
+    document.getElementById('final-player-name').textContent = playerName;
+    document.getElementById('final-score').textContent = score;
+  }
+
+  function goToNextModule() {
+    alert('Indo para o próximo módulo: Idade Contemporânea!');
+  }
+</script>
+</body>
+</html>

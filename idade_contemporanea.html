@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idade Contemporânea – Fato ou Fake</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #00aaff, #2a2a72); 
+      background-size: cover;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 30px;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn {
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: #00aaff;
+      color: white;
+      border: 2px solid #0088cc;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+      font-family: 'Arial', sans-serif;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #0088cc;
+      transform: scale(1.1);
+    }
+
+    input[type="text"] {
+      padding: 15px;
+      font-size: 18px;
+      width: 80%;
+      border: 2px solid #00aaff;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background-color: rgba(255, 255, 255, 0.3);
+      padding: 15px;
+      border-radius: 12px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border: 2px solid #00aaff;
+    }
+
+    .question-container {
+      margin: 20px 0;
+    }
+
+    .question {
+      font-size: 26px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .explanation {
+      background-color: #fff;
+      color: #333;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 18px;
+      margin: 20px 0;
+      display: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .correct {
+      background-color: #00ff99;
+    }
+
+    .wrong {
+      background-color: #ff4d4d;
+    }
+
+    h2 {
+      font-size: 36px;
+      color: #ffcc00;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      font-weight: normal;
+      color: #ffcc00;
+    }
+
+    #game-screen {
+      display: none;
+    }
+
+    #end-screen {
+      display: none;
+    }
+
+    .futuristic-background {
+      background-image: url('https://www.example.com/path-to-modern-image.jpg');
+      background-size: cover;
+      background-position: center;
+      padding: 20px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="start-screen" class="container">
+  <h2>⚡ Fato ou Fake – Idade Contemporânea</h2>
+  <img src="logo_idade_contemporanea.png" style="max-width: 180px; margin-bottom: 20px; border-radius: 12px;" />
+  <input type="text" id="player-name" placeholder="Digite seu nome">
+  <br>
+  <button class="btn" onclick="startGame()">Iniciar</button>
+</div>
+
+<div id="scoreboard" class="scoreboard" style="display: none;">
+  <span id="player-display">Jogador:</span>
+  <span id="score">Pontos: 0</span>
+  <span id="lives">Vidas: 5</span>
+</div>
+
+<div id="game-screen" class="container futuristic-background">
+  <div class="question-container">
+    <h3 class="question" id="question-text">Carregando...</h3>
+    <div class="btn-container">
+      <button class="btn" onclick="answerQuestion(true)">✅ Fato</button>
+      <button class="btn" onclick="answerQuestion(false)">❌ Fake</button>
+    </div>
+  </div>
+  <div id="explanation" class="explanation">
+    <p id="explanation-text">Explicação aqui...</p>
+    <button class="btn" onclick="nextQuestion()">Continuar</button>
+  </div>
+</div>
+
+<div id="end-screen" class="container" style="display: none;">
+  <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+  <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+  <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+  <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+</div>
+
+<script>
+  let playerName = '';
+  let score = 0;
+  let lives = 5;
+  let currentQuestionIndex = 0;
+
+  const questions = [
+    { text: "A Revolução Industrial começou no século XVIII.", answer: true, explanation: "A Revolução Industrial teve início no final do século XVIII, marcando grandes mudanças econômicas e sociais." },
+    { text: "O homem pisou na lua pela primeira vez em 1945.", answer: false, explanation: "O homem pisou na lua pela primeira vez em 1969, na missão Apollo 11." },
+    { text: "O muro de Berlim foi derrubado em 1989.", answer: true, explanation: "Em 1989, o Muro de Berlim foi derrubado, simbolizando o fim da Guerra Fria." },
+    { text: "A Primeira Guerra Mundial ocorreu entre 1939 e 1945.", answer: false, explanation: "A Primeira Guerra Mundial ocorreu de 1914 a 1918, enquanto a Segunda Guerra Mundial foi de 1939 a 1945." },
+    // Adicione mais questões aqui
+  ];
+
+  function startGame() {
+    const input = document.getElementById('player-name');
+    playerName = input.value.trim();
+    if (!playerName) return alert('Digite seu nome!');
+    document.getElementById('player-display').textContent = `Jogador: ${playerName}`;
+    document.getElementById('score').textContent = `Pontos: ${score}`;
+    document.getElementById('lives').textContent = `Vidas: ${lives}`;
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'flex';
+    document.getElementById('game-screen').style.display = 'block';
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    const currentQuestion = questions[currentQuestionIndex];
+    document.getElementById('question-text').textContent = currentQuestion.text;
+    document.getElementById('explanation').style.display = 'none';
+  }
+
+  function answerQuestion(isTrue) {
+    const currentQuestion = questions[currentQuestionIndex];
+    const isCorrect = currentQuestion.answer === isTrue;
+
+    if (isCorrect) {
+      score += 10;
+      document.getElementById('score').textContent = `Pontos: ${score}`;
+    } else {
+      lives--;
+      document.getElementById('lives').textContent = `Vidas: ${lives}`;
+    }
+
+    document.getElementById('explanation-text').textContent = currentQuestion.explanation;
+    document.getElementById('explanation').style.display = 'block';
+
+    if (lives <= 0) {
+      endGame();
+    }
+  }
+
+  function nextQuestion() {
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex >= questions.length) {
+      endGame();
+    } else {
+      loadQuestion();
+    }
+  }
+
+  function endGame() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'block';
+    document.getElementById('final-player-name').textContent = playerName;
+    document.getElementById('final-score').textContent = score;
+  }
+
+  function goToNextModule() {
+    alert('Indo para o próximo módulo: Idade Contemporânea!');
+  }
+</script>
+
+</body>
+</html>

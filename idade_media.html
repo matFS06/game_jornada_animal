@@ -1,133 +1,161 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jogo da Idade Média</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
+      font-family: 'Georgia', serif;
+      background-image: url('idade_media.png'); /* papel antigo */
+      background-color: #f2e6c9;
+      color: #3e2f1c;
       text-align: center;
+      margin: 0;
+      padding: 0;
     }
+
     .container {
       max-width: 800px;
-      margin: 20px auto;
+      margin: 30px auto;
       padding: 20px;
-      background-color: white;
+      background-color: rgba(255, 248, 220, 0.9);
+      border: 2px solid #b89c66;
       border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
+
     h2 {
-      color: #333;
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #5a3e1b;
     }
+
     .btn {
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-size: 18px;
-      background-color: #4CAF50;
+      background-color: #7b4f23;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      margin-top: 10px;
+      margin: 5px;
     }
+
     .btn:hover {
-      background-color: #45a049;
+      background-color: #5e3b18;
     }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 70%;
+      margin-top: 10px;
+      border: 1px solid #a67c52;
+      border-radius: 5px;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      background-color: #fff8dc;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .score-item {
+      display: flex;
+      align-items: center;
+    }
+
     .question-box {
-      background-color: #f9f9f9;
+      background-color: #fcf5e5;
       padding: 20px;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-top: 20px;
       text-align: left;
+      border: 1px solid #b89c66;
     }
+
     .question-box p {
       font-size: 20px;
-      font-weight: normal;
-    }
-    .question-box .actor {
-      font-size: 24px;
-      font-weight: bold;
       margin-bottom: 10px;
     }
+
     .alternatives {
       display: flex;
       flex-direction: column;
-      margin-top: 20px;
+      margin-top: 15px;
     }
+
     .alternatives button {
       padding: 12px;
       font-size: 18px;
-      background-color: #4CAF50;
+      background-color: #7b4f23;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
       margin: 5px 0;
     }
+
     .alternatives button:hover {
-      background-color: #45a049;
-    }
-    #start-screen {
-      text-align: center;
-    }
-    .card {
-      background-color: #333;
-      color: white;
-      padding: 10px;
-      margin: 10px;
-      border-radius: 8px;
-    }
-    .card .label {
-      font-weight: bold;
-    }
-    .card img {
-      border-radius: 50%;
-      max-width: 60px;
+      background-color: #5e3b18;
     }
   </style>
 </head>
 <body>
 
-<!-- Tela inicial (dentro de um container branco) -->
+<!-- Tela inicial -->
 <div id="start-screen" class="container">
-  <h2>Bem-vindo ao Jogo da Idade Média</h2>
-  <img src="logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;" />
+  <h2>Bem-vindo a Jornada pela Idade Média</h2>
+  <img src="logo_idade_media.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px; border-radius: 10%;" />
   <br>
   <input type="text" id="player-name" placeholder="Digite seu nome" />
   <br>
-  <button id="start-button" class="btn" onclick="startGame()">Iniciar</button>
+  <button class="btn" onclick="startGame()">Iniciar</button>
+</div>
+
+<!-- Scoreboard -->
+<div id="scoreboard" class="scoreboard" style="display: none;">
+  <span id="player-display" class="score-item"></span>
+  <span id="score" class="score-item">Pontos: 0</span>
+  <span id="lives" class="score-item">Vidas: 3</span>
+  <span class="score-item" style="font-size: 24px;">❤️</span>
 </div>
 
 <!-- Tela de jogo -->
 <div id="game-screen" class="container" style="display: none;">
-  <div id="player-card" class="card">
-    <span class="label">Jogador:</span> <span id="player-name-display"></span>
-    <br>
-    <span class="label">Pontos:</span> <span id="score">0</span>
-    <br>
-    <span class="label">Vidas:</span> <span id="lives">3</span>
-  </div>
-
   <div class="question-box">
     <p id="actor"></p>
     <p id="question"></p>
-
     <div id="alternatives" class="alternatives">
-      <!-- Alternativas dinâmicas vão aqui -->
+      <!-- Botões de alternativas aparecem aqui -->
     </div>
   </div>
 </div>
 
+<!-- Tela final -->
+<div id="end-screen" class="container text-center" style="display: none;">
+  <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+  <p>Você completou o jogo com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+  <button class="btn" onclick="restartGame()">🔄 Jogar Novamente</button>
+  <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+</div>
+
 <script>
-  // Dados do jogador
   let playerName = '';
   let score = 0;
   let lives = 3;
+  let actors = [];
 
-  // Atores e suas perguntas
-  const actors = [
+  const originalActors = [
     { actor: 'Camponês', image: 'campones.png', question: 'Sua contribuição para a economia se baseava principalmente em:', correct: 'Agricultura', wrong1: 'Comércio', wrong2: 'Batalhas' },
     { actor: 'Soldado', image: 'soldado.png', question: 'Sua principal função na sociedade medieval era:', correct: 'Proteger o feudo', wrong1: 'Comerciar mercadorias', wrong2: 'Construir castelos' },
     { actor: 'Transportador', image: 'transportador.png', question: 'O principal papel de um transportador era:', correct: 'Levar mercadorias entre feudos', wrong1: 'Administrar terras', wrong2: 'Cuidar de doentes' },
@@ -138,64 +166,106 @@
     { actor: 'Nobre', image: 'nobre.png', question: 'O nobre possuía terras e sua função principal era:', correct: 'Administrar e proteger suas terras', wrong1: 'Construir fortificações', wrong2: 'Estudar religião' }
   ];
 
-  // Inicialização do jogo
   function startGame() {
-    playerName = document.getElementById('player-name').value;
+    playerName = document.getElementById('player-name').value.trim();
     if (!playerName) {
       alert('Por favor, insira seu nome');
       return;
     }
-    document.getElementById('player-name-display').textContent = playerName;
+
+    score = 0;
+    lives = 3;
+    actors = [...originalActors];
+
+    document.getElementById('player-display').textContent = `Jogador: ${playerName}`;
+    document.getElementById('score').textContent = `Pontos: ${score}`;
+    document.getElementById('lives').textContent = `Vidas: ${lives}`;
+
     document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'flex';
     document.getElementById('game-screen').style.display = 'block';
+
     nextQuestion();
   }
 
-  // Função para mostrar a próxima pergunta
   function nextQuestion() {
-    if (actors.length === 0 || lives <= 0) {
-      alert('Fim do jogo!');
-      return;
-    }
+  if (actors.length === 0 || lives <= 0) {
+    endGame();
+    return;
+  }
 
-    // Escolher uma pergunta aleatória
-    const actor = actors[Math.floor(Math.random() * actors.length)];
-    document.getElementById('actor').innerHTML = `<strong>Agora você é: </strong><img src="${actor.image}" alt="${actor.actor}" style="max-width: 50px;"/> ${actor.actor}`;
-    document.getElementById('question').textContent = actor.question;
+  const index = Math.floor(Math.random() * actors.length);
+  const actor = actors[index];
+  document.getElementById('actor').innerHTML = `<strong>Agora você é:</strong> <img src="${actor.image}" alt="${actor.actor}" style="max-width: 50px;" /> ${actor.actor}`;
+  document.getElementById('question').textContent = actor.question;
 
-    // Alternativas
-    const alternatives = [
-      { text: actor.correct, isCorrect: true },
-      { text: actor.wrong1, isCorrect: false },
-      { text: actor.wrong2, isCorrect: false }
-    ];
+  const alternatives = [
+    { text: actor.correct, isCorrect: true },
+    { text: actor.wrong1, isCorrect: false },
+    { text: actor.wrong2, isCorrect: false }
+  ];
+  alternatives.sort(() => Math.random() - 0.5);
 
-    // Embaralhar as alternativas
-    alternatives.sort(() => Math.random() - 0.5);
+  const container = document.getElementById('alternatives');
+  container.innerHTML = '';
 
-    const alternativesContainer = document.getElementById('alternatives');
-    alternativesContainer.innerHTML = ''; // Limpar as alternativas anteriores
+  const explanation = document.createElement('p');
+  explanation.id = 'explanation';
+  explanation.style.marginTop = '15px';
+  explanation.style.fontWeight = 'bold';
+  explanation.style.display = 'none';
+  container.appendChild(explanation);
 
-    alternatives.forEach(alt => {
-      const button = document.createElement('button');
-      button.textContent = alt.text;
-      button.onclick = function() {
-        if (alt.isCorrect) {
-          score += 10;
-          document.getElementById('score').textContent = score;
-          alert('Resposta correta!');
-        } else {
-          lives--;
-          document.getElementById('lives').textContent = lives;
-          alert('Resposta errada!');
-        }
+  alternatives.forEach(alt => {
+    const btn = document.createElement('button');
+    btn.textContent = alt.text;
+    btn.onclick = function () {
+      // Desativa todos os botões
+      const buttons = container.querySelectorAll('button');
+      buttons.forEach(b => b.disabled = true);
+
+      if (alt.isCorrect) {
+        score += 10;
+        btn.style.backgroundColor = '#4CAF50'; // verde
+        explanation.style.color = '#4CAF50';
+        explanation.textContent = '✅ Resposta correta!';
+      } else {
+        lives--;
+        btn.style.backgroundColor = '#e74c3c'; // vermelho
+        explanation.style.color = '#e74c3c';
+        explanation.textContent = `❌ Resposta errada. A correta era: "${actor.correct}".`;
+      }
+
+      document.getElementById('score').textContent = `Pontos: ${score}`;
+      document.getElementById('lives').textContent = `Vidas: ${lives}`;
+      explanation.style.display = 'block';
+
+      setTimeout(() => {
+        actors.splice(index, 1);
         nextQuestion();
-      };
-      alternativesContainer.appendChild(button);
-    });
+      }, 2000);
+    };
+    container.appendChild(btn);
+  });
+}
 
-    // Remover o ator escolhido da lista
-    actors.splice(actors.indexOf(actor), 1);
+
+  function endGame() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'block';
+
+    document.getElementById('final-player-name').textContent = playerName;
+    document.getElementById('final-score').textContent = score;
+  }
+
+  function restartGame() {
+    location.reload();
+  }
+
+  function goToNextModule() {
+    window.location.href = "idade_moderna.html";
   }
 </script>
 
