@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: 'Garamond', serif;
-      background-image: url('papel_antigo.jpg');
+      background-image: url('idade_moderna.png');
       background-size: cover;
       background-attachment: fixed;
       background-color: #fdf6e3;
@@ -104,6 +104,16 @@
     .wrong {
       background-color: #f7a9a9 !important;
     }
+
+    #phase-title {
+      font-size: 1.2em;
+      margin: 10px 0;
+      text-align: center;
+      padding: 10px;
+      color: #333;
+      word-wrap: break-word;
+    }
+
   </style>
 </head>
 <body>
@@ -146,78 +156,80 @@
 
   const allPhases = [
     {
-      title: '1️⃣ Grandes Descobertas: Era das Expansões Marítimas',
+      title: 'Fase 1 – Início da Idade Moderna',
       events: [
         { year: 1453, text: 'Queda de Constantinopla' },
-        { year: 1488, text: 'Bartolomeu Dias dobra o Cabo da Boa Esperança' },
+        { year: 1450, text: 'Gutenberg inventa a imprensa' },
         { year: 1492, text: 'Cristóvão Colombo chega à América' },
-        { year: 1498, text: 'Vasco da Gama chega às Índias' }
+        { year: 1500, text: 'Descobrimento do Brasil' }
       ]
     },
     {
-      title: '2️⃣ Mudanças Religiosas: Reforma e Contrarreforma',
+      title: 'Fase 2 – Reforma Religiosa',
       events: [
-        { year: 1517, text: 'Lutero publica as 95 teses' },
-        { year: 1521, text: 'Lutero é excomungado' },
-        { year: 1545, text: 'Concílio de Trento inicia' },
-        { year: 1540, text: 'Fundação da Companhia de Jesus' }
+        { year: 1517, text: 'Martinho Lutero inicia a Reforma Protestante' },
+        { year: 1534, text: 'Henrique VIII rompe com a Igreja Católica' },
+        { year: 1540, text: 'Fundação da Companhia de Jesus' },
+        { year: 1588, text: 'Derrota da Armada Invencível' }
       ]
     },
     {
-      title: '3️⃣ O Saber se Revoluciona: Ciência Moderna',
+      title: 'Fase 3 – Exploração e Conhecimento',
       events: [
-        { year: 1543, text: 'Copérnico publica teoria heliocêntrica' },
-        { year: 1609, text: 'Galileu aperfeiçoa o telescópio' },
-        { year: 1610, text: 'Descoberta das luas de Júpiter' },
-        { year: 1687, text: 'Newton publica as Leis da Física' }
+        { year: 1521, text: 'Viagem de Fernão de Magalhães chega às Filipinas' },
+        { year: 1609, text: 'Galileu usa o telescópio pela primeira vez' },
+        { year: 1610, text: 'Galileu observa luas de Júpiter' },
+        { year: 1648, text: 'Fim da Guerra dos 30 Anos' }
       ]
     },
     {
-      title: '4️⃣ Ideias Iluminando o Mundo: O Século das Luzes',
+      title: 'Fase 4 – Ciência e Racionalismo',
       events: [
-        { year: 1690, text: 'Locke publica "Segundo Tratado sobre o Governo"' },
-        { year: 1748, text: 'Montesquieu publica "O Espírito das Leis"' },
-        { year: 1751, text: 'Primeiro volume da Enciclopédia' },
-        { year: 1762, text: 'Rousseau publica "O Contrato Social"' }
+        { year: 1687, text: 'Newton publica as Leis do Movimento' },
+        { year: 1700, text: 'Surge o pensamento iluminista' },
+        { year: 1750, text: 'Início da Revolução Industrial' },
+        { year: 1776, text: 'Independência dos Estados Unidos' }
       ]
     },
     {
-      title: '5️⃣ Independência em Movimento: EUA e Revolução Americana',
+      title: 'Fase 5 – Revoluções',
       events: [
-        { year: 1765, text: 'Lei do Selo imposta às colônias' },
-        { year: 1773, text: 'Festa do Chá de Boston' },
-        { year: 1776, text: 'Declaração de Independência dos EUA' },
-        { year: 1787, text: 'Constituição dos EUA é adotada' }
+        { year: 1789, text: 'Revolução Francesa' },
+        { year: 1804, text: 'Napoleão vira imperador da França' },
+        { year: 1815, text: 'Queda de Napoleão Bonaparte' },
+        { year: 1822, text: 'Independência do Brasil' }
       ]
     },
     {
-      title: '6️⃣ A Revolução Francesa: Liberdade, Igualdade, Fraternidade',
+      title: 'Fase 6 – Absolutismo e Estados',
       events: [
-        { year: 1789, text: 'Queda da Bastilha' },
-        { year: 1791, text: 'Constituição Francesa' },
-        { year: 1793, text: 'Execução de Luís XVI' },
-        { year: 1799, text: 'Golpe de 18 de Brumário por Napoleão' }
+        { year: 1598, text: 'Luís XIV se torna rei da França' },
+        { year: 1643, text: 'Início do Absolutismo de Luís XIV' },
+        { year: 1688, text: 'Revolução Gloriosa na Inglaterra' },
+        { year: 1701, text: 'Guerra da Sucessão Espanhola' }
       ]
     },
     {
-      title: '7️⃣ Ascensão e Queda de Napoleão Bonaparte',
+      title: 'Fase 7 – Missões e Colonização',
       events: [
+        { year: 1534, text: 'Fundação da Companhia de Jesus' },
+        { year: 1549, text: 'Chegada dos jesuítas ao Brasil' },
+        { year: 1600, text: 'Colonização das Américas avança' },
+        { year: 1654, text: 'Expulsão dos holandeses do Brasil' }
+      ]
+    },
+    {
+      title: 'Fase 8 – Final da Idade Moderna',
+      events: [
+        { year: 1776, text: 'Independência dos Estados Unidos' },
+        { year: 1789, text: 'Revolução Francesa' },
         { year: 1804, text: 'Napoleão se torna imperador' },
-        { year: 1812, text: 'Fracasso da campanha à Rússia' },
-        { year: 1815, text: 'Batalha de Waterloo' },
-        { year: 1821, text: 'Morte de Napoleão' }
-      ]
-    },
-    {
-      title: '8️⃣ Novos Rumos: Independência da América Latina',
-      events: [
-        { year: 1810, text: 'Início dos movimentos de independência' },
-        { year: 1816, text: 'Independência da Argentina' },
-        { year: 1821, text: 'Independência do México' },
         { year: 1822, text: 'Independência do Brasil' }
       ]
     }
   ];
+
+    
 
   function startGame() {
     const input = document.getElementById('player-name');
@@ -341,7 +353,7 @@
   }
 
   function goToNextModule() {
-    alert('Indo para o próximo módulo: Idade Contemporânea!');
+    window.location.href = "idade_contemporanea.html";
   }
 </script>
 </body>
