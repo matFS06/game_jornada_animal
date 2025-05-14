@@ -111,6 +111,7 @@
 <div id="start-screen" class="container">
   <h2>🧭 Jornada pela Idade Moderna</h2>
   <img src="logo_idade_moderna.png" style="max-width: 200px; margin-bottom: 20px; border-radius: 10%;" />
+  <br>
   <input type="text" id="player-name" placeholder="Digite seu nome">
   <br>
   <button class="btn" onclick="startGame()">Iniciar</button>
@@ -123,7 +124,7 @@
 </div>
 
 <div id="game-screen" class="container" style="display: none;">
-  <h2>Arraste os eventos para a ordem correta</h2>
+  <h2 id="phase-title">Arraste os eventos para a ordem correta</h2>
   <div id="event-list" class="timeline"></div>
   <div id="drop-zone" class="drop-zone"></div>
   <button class="btn" onclick="checkOrder()">Verificar</button>
@@ -144,30 +145,78 @@
   let selectedItem = null;
 
   const allPhases = [
-    [
-      { year: 1492, text: 'Descobrimento da América' },
-      { year: 1517, text: 'Reforma Protestante' },
-      { year: 1600, text: 'Revolução Científica' },
-      { year: 1789, text: 'Revolução Francesa' }
-    ],
-    [
-      { year: 1450, text: 'Invenção da Imprensa' },
-      { year: 1500, text: 'Expansão Marítima' },
-      { year: 1700, text: 'Iluminismo' },
-      { year: 1776, text: 'Independência dos EUA' }
-    ],
-    [
-      { year: 1534, text: 'Fundação da Companhia de Jesus' },
-      { year: 1588, text: 'Derrota da Armada Espanhola' },
-      { year: 1610, text: 'Galileu aponta telescópio ao céu' },
-      { year: 1648, text: 'Fim da Guerra dos 30 Anos' }
-    ],
-    [
-      { year: 1687, text: 'Newton publica as Leis da Física' },
-      { year: 1750, text: 'Início da Revolução Industrial' },
-      { year: 1804, text: 'Napoleão se torna imperador' },
-      { year: 1822, text: 'Independência do Brasil' }
-    ]
+    {
+      title: '1️⃣ Grandes Descobertas: Era das Expansões Marítimas',
+      events: [
+        { year: 1453, text: 'Queda de Constantinopla' },
+        { year: 1488, text: 'Bartolomeu Dias dobra o Cabo da Boa Esperança' },
+        { year: 1492, text: 'Cristóvão Colombo chega à América' },
+        { year: 1498, text: 'Vasco da Gama chega às Índias' }
+      ]
+    },
+    {
+      title: '2️⃣ Mudanças Religiosas: Reforma e Contrarreforma',
+      events: [
+        { year: 1517, text: 'Lutero publica as 95 teses' },
+        { year: 1521, text: 'Lutero é excomungado' },
+        { year: 1545, text: 'Concílio de Trento inicia' },
+        { year: 1540, text: 'Fundação da Companhia de Jesus' }
+      ]
+    },
+    {
+      title: '3️⃣ O Saber se Revoluciona: Ciência Moderna',
+      events: [
+        { year: 1543, text: 'Copérnico publica teoria heliocêntrica' },
+        { year: 1609, text: 'Galileu aperfeiçoa o telescópio' },
+        { year: 1610, text: 'Descoberta das luas de Júpiter' },
+        { year: 1687, text: 'Newton publica as Leis da Física' }
+      ]
+    },
+    {
+      title: '4️⃣ Ideias Iluminando o Mundo: O Século das Luzes',
+      events: [
+        { year: 1690, text: 'Locke publica "Segundo Tratado sobre o Governo"' },
+        { year: 1748, text: 'Montesquieu publica "O Espírito das Leis"' },
+        { year: 1751, text: 'Primeiro volume da Enciclopédia' },
+        { year: 1762, text: 'Rousseau publica "O Contrato Social"' }
+      ]
+    },
+    {
+      title: '5️⃣ Independência em Movimento: EUA e Revolução Americana',
+      events: [
+        { year: 1765, text: 'Lei do Selo imposta às colônias' },
+        { year: 1773, text: 'Festa do Chá de Boston' },
+        { year: 1776, text: 'Declaração de Independência dos EUA' },
+        { year: 1787, text: 'Constituição dos EUA é adotada' }
+      ]
+    },
+    {
+      title: '6️⃣ A Revolução Francesa: Liberdade, Igualdade, Fraternidade',
+      events: [
+        { year: 1789, text: 'Queda da Bastilha' },
+        { year: 1791, text: 'Constituição Francesa' },
+        { year: 1793, text: 'Execução de Luís XVI' },
+        { year: 1799, text: 'Golpe de 18 de Brumário por Napoleão' }
+      ]
+    },
+    {
+      title: '7️⃣ Ascensão e Queda de Napoleão Bonaparte',
+      events: [
+        { year: 1804, text: 'Napoleão se torna imperador' },
+        { year: 1812, text: 'Fracasso da campanha à Rússia' },
+        { year: 1815, text: 'Batalha de Waterloo' },
+        { year: 1821, text: 'Morte de Napoleão' }
+      ]
+    },
+    {
+      title: '8️⃣ Novos Rumos: Independência da América Latina',
+      events: [
+        { year: 1810, text: 'Início dos movimentos de independência' },
+        { year: 1816, text: 'Independência da Argentina' },
+        { year: 1821, text: 'Independência do México' },
+        { year: 1822, text: 'Independência do Brasil' }
+      ]
+    }
   ];
 
   function startGame() {
@@ -184,63 +233,65 @@
   }
 
   function startRound() {
-  if (round >= allPhases.length) return endGame();
-  const currentEvents = [...allPhases[round]].sort(() => Math.random() - 0.5);
-  const eventList = document.getElementById('event-list');
-  const dropZone = document.getElementById('drop-zone');
-  eventList.innerHTML = '';
-  dropZone.innerHTML = '';
-  selectedItem = null;
+    if (round >= allPhases.length) return endGame();
+    const phase = allPhases[round];
+    const currentEvents = [...phase.events].sort(() => Math.random() - 0.5);
 
-  currentEvents.forEach(event => {
-    const div = document.createElement('div');
-    div.className = 'event';
-    div.textContent = event.text;
-    div.dataset.year = event.year;
+    document.getElementById('phase-title').textContent = phase.title;
 
-    div.addEventListener('click', () => {
-      selectedItem = div;
-      document.querySelectorAll('.event').forEach(e => e.style.border = 'none');
-      div.style.border = '2px solid #333';
+    const eventList = document.getElementById('event-list');
+    const dropZone = document.getElementById('drop-zone');
+    eventList.innerHTML = '';
+    dropZone.innerHTML = '';
+    selectedItem = null;
+
+    currentEvents.forEach(event => {
+      const div = document.createElement('div');
+      div.className = 'event';
+      div.textContent = event.text;
+      div.dataset.year = event.year;
+
+      div.addEventListener('click', () => {
+        selectedItem = div;
+        document.querySelectorAll('.event').forEach(e => e.style.border = 'none');
+        div.style.border = '2px solid #333';
+      });
+
+      eventList.appendChild(div);
     });
 
-    eventList.appendChild(div);
-  });
+    for (let i = 0; i < currentEvents.length; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'drop-slot';
 
-  for (let i = 0; i < currentEvents.length; i++) {
-    const slot = document.createElement('div');
-    slot.className = 'drop-slot';
+      slot.addEventListener('click', () => {
+        if (slot.dataset.year) {
+          const returnedDiv = document.createElement('div');
+          returnedDiv.className = 'event';
+          returnedDiv.textContent = slot.textContent;
+          returnedDiv.dataset.year = slot.dataset.year;
+          returnedDiv.addEventListener('click', () => {
+            selectedItem = returnedDiv;
+            document.querySelectorAll('.event').forEach(e => e.style.border = 'none');
+            returnedDiv.style.border = '2px solid #333';
+          });
+          eventList.appendChild(returnedDiv);
+          slot.textContent = '';
+          delete slot.dataset.year;
+          return;
+        }
 
-    slot.addEventListener('click', () => {
-      // Se o slot já estiver preenchido, devolver para a lista
-      if (slot.dataset.year) {
-        const returnedDiv = document.createElement('div');
-        returnedDiv.className = 'event';
-        returnedDiv.textContent = slot.textContent;
-        returnedDiv.dataset.year = slot.dataset.year;
-        returnedDiv.addEventListener('click', () => {
-          selectedItem = returnedDiv;
-          document.querySelectorAll('.event').forEach(e => e.style.border = 'none');
-          returnedDiv.style.border = '2px solid #333';
-        });
-        eventList.appendChild(returnedDiv);
-        slot.textContent = '';
-        delete slot.dataset.year;
-        return;
-      }
+        if (selectedItem) {
+          slot.textContent = selectedItem.textContent;
+          slot.dataset.year = selectedItem.dataset.year;
+          selectedItem.remove();
+          selectedItem = null;
+        }
+      });
 
-      // Colocar item no slot se houver algo selecionado
-      if (selectedItem) {
-        slot.textContent = selectedItem.textContent;
-        slot.dataset.year = selectedItem.dataset.year;
-        selectedItem.remove();
-        selectedItem = null;
-      }
-    });
-
-    dropZone.appendChild(slot);
+      dropZone.appendChild(slot);
+    }
   }
-}
   function checkOrder() {
     const slots = Array.from(document.querySelectorAll('.drop-slot'));
     if (slots.some(slot => !slot.dataset.year)) {

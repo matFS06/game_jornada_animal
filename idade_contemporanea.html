@@ -173,10 +173,16 @@
   let currentQuestionIndex = 0;
 
   const questions = [
-    { text: "A Revolução Industrial começou no século XVIII.", answer: true, explanation: "A Revolução Industrial teve início no final do século XVIII, marcando grandes mudanças econômicas e sociais." },
-    { text: "O homem pisou na lua pela primeira vez em 1945.", answer: false, explanation: "O homem pisou na lua pela primeira vez em 1969, na missão Apollo 11." },
-    { text: "O muro de Berlim foi derrubado em 1989.", answer: true, explanation: "Em 1989, o Muro de Berlim foi derrubado, simbolizando o fim da Guerra Fria." },
-    { text: "A Primeira Guerra Mundial ocorreu entre 1939 e 1945.", answer: false, explanation: "A Primeira Guerra Mundial ocorreu de 1914 a 1918, enquanto a Segunda Guerra Mundial foi de 1939 a 1945." },
+    { text: "A Revolução Francesa começou em 1789 e marcou o início da Idade Contemporânea.", answer: true, explanation: "A Revolução Francesa de 1789 é considerada o marco inicial da Idade Contemporânea." },
+    { text: "O homem pisou na lua pela primeira vez em 1945.", answer: false, explanation: "O pouso na Lua ocorreu em 1969, durante a missão Apollo 11." },
+    { text: "O Muro de Berlim foi derrubado em 1989.", answer: true, explanation: "A queda do muro simbolizou o fim da Guerra Fria e a reunificação da Alemanha." },
+    { text: "A Primeira Guerra Mundial ocorreu entre 1939 e 1945.", answer: false, explanation: "Esse período foi da Segunda Guerra; a Primeira foi de 1914 a 1918." },
+    { text: "A Segunda Guerra Mundial terminou em 1945.", answer: true, explanation: "O conflito acabou com a rendição da Alemanha e do Japão em 1945." },
+    { text: "A Revolução Francesa marcou o fim da Idade Média.", answer: false, explanation: "Ela marcou o fim da Idade Moderna e o início da Idade Contemporânea." },
+    { text: "A Guerra Fria foi uma disputa ideológica entre o capitalismo e o socialismo.", answer: true, explanation: "Estados Unidos e União Soviética representaram esses blocos após a Segunda Guerra." },
+    { text: "A ONU foi criada após a Primeira Guerra Mundial para promover a paz.", answer: false, explanation: "A ONU surgiu em 1945, após a Segunda Guerra Mundial." },
+    { text: "A queda do Muro de Berlim simbolizou o fim da Guerra Fria.", answer: true, explanation: "O evento de 1989 marcou o colapso do bloco socialista europeu." },
+    { text: "A escravidão foi abolida no Brasil em 1888 com a assinatura da Lei Áurea.", answer: true, explanation: "A Lei Áurea foi assinada em 1888, pondo fim à escravidão no Brasil durante a Idade Contemporânea." }
     // Adicione mais questões aqui
   ];
 
@@ -203,21 +209,31 @@
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = currentQuestion.answer === isTrue;
 
+    const explanationBox = document.getElementById('explanation');
+    const explanationText = document.getElementById('explanation-text');
+
+    // Resetando estilos
+    explanationBox.classList.remove('correct', 'wrong');
+
     if (isCorrect) {
       score += 10;
       document.getElementById('score').textContent = `Pontos: ${score}`;
+      explanationBox.classList.add('correct');
+      explanationText.textContent = "✅ Você acertou! " + currentQuestion.explanation;
     } else {
       lives--;
       document.getElementById('lives').textContent = `Vidas: ${lives}`;
+      explanationBox.classList.add('wrong');
+      explanationText.textContent = "❌ Você errou! " + currentQuestion.explanation;
     }
 
-    document.getElementById('explanation-text').textContent = currentQuestion.explanation;
-    document.getElementById('explanation').style.display = 'block';
+    explanationBox.style.display = 'block';
 
     if (lives <= 0) {
-      endGame();
+      setTimeout(endGame, 1500); // espera um pouco antes de encerrar
     }
   }
+
 
   function nextQuestion() {
     currentQuestionIndex++;
