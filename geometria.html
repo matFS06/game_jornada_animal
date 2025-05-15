@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jogo de Geometria – Módulo 2</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f4ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .game-container {
+      width: 90%;
+      max-width: 700px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 20px 30px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    .figure {
+      margin: 20px 0 10px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #34495e;
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      margin: 20px 0;
+    }
+
+    .option {
+      background-color: #007acc;
+      color: white;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin: 8px;
+      width: 45%;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s;
+    }
+
+    .option:hover {
+      background-color: #005fa3;
+    }
+
+    .option.correct {
+      background-color: #4caf50 !important;
+    }
+
+    .option.incorrect {
+      background-color: #e74c3c !important;
+    }
+
+    .btn {
+      margin-top: 25px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #005fa3;
+    }
+
+    #start-screen {
+      text-align: center;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 70%;
+      margin-top: 10px;
+      border: 1px solid #007acc;
+      border-radius: 5px;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 15px;
+      background-color: #63b2d6;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    #scoreboard {
+      display: none;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Tela inicial -->
+<div id="start-screen" class="game-container">
+  <h2>Bem-vindo ao Desafio das Operações!</h2>
+  <img src="logo_geometria.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;" />
+  <input type="text" id="player-name" placeholder="Digite seu nome" />
+  <br><br>
+  <button class="btn" onclick="startGame()">Iniciar</button>
+</div>
+
+<!-- Scoreboard -->
+<div id="scoreboard" class="scoreboard">
+  <span id="player-display">Jogador: </span>
+  <span id="score">Pontos: 0</span>
+  <span id="lives">Vidas: 5 ❤️</span>
+</div>
+
+<div class="game-container" id="game" style="display: none;">
+  <h1>📐 Jogo de Geometria – Módulo 2</h1>
+  <div id="game-stage">
+    <div class="figure" id="figure-name">Figura: </div>
+    <div id="question"></div>
+    <div class="options" id="options-zone"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn" id="next-btn" onclick="nextLevel()" style="display: none;">➡️ Próxima Fase</button>
+  </div>
+</div>
+
+<!-- Tela final -->
+<div id="end-screen" class="game-container" style="display: none;">
+  <h2>🏁 Fim de Jogo, <span id="final-player-name"></span>!</h2>
+  <p>Você marcou <strong><span id="final-score"></span> ponto(s)</strong>.</p>
+  <button class="btn" onclick="restartGame()">🔄 Jogar Novamente</button>
+  <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+</div>
+
+<script>
+  let currentLevel = 0;
+  let playerName = '';
+  let score = 0;
+  let lives = 5;
+
+  const levels = [
+     // Fase 1: Fórmula do quadrado
+    {
+        type: "formula",
+        figure: "Quadrado",
+        question: "Qual a fórmula de cálculo da figura geométrica Quadrado?",
+        correctAnswer: "Área = lado²",
+        options: ["Área = base × altura", "Área = lado²", "4 lados diferentes", "Área = π × raio²"]
+    },
+
+    // Fase 2: Cálculo da área do quadrado
+    {
+        type: "area",
+        figure: "Quadrado",
+        question: "Qual a área de um quadrado de lado 5cm?",
+        correctAnswer: 25,
+        options: [12, 16, 20, 25]
+    },
+
+    // Fase 3: Triângulo equilátero
+    {
+        type: "formula",
+        figure: "Triângulo Equilátero",
+        question: "Sobre o Triângulo Equilátero, é correto afirmar que:",
+        correctAnswer: "Possui três angulos de 60°",
+        options: ["Área = (base x altura) / 4", "Possui três lados com medidas diferentes", "Possui três angulos de 60°", "Área = π × raio²"]
+    },
+
+    // Fase 4: Triângulo escaleno
+    {
+        type: "formula",
+        figure: "Triângulo Escaleno",
+        question: "Sobre o Triângulo Equilátero, é correto afirmar que:",
+        correctAnswer: "Possui três lados com medidas diferentes",
+        options: ["A soma dos seus ângulos equivale a 360°", "Possui três lados com medidas diferentes", "Possui dois lados de medidas iguais e um terceiro lado que é sempre a base", "Área = base² x altura²"]
+    },
+
+    // Fase 5: Triângulo isósceles
+    {
+        type: "formula",
+        figure: "Triângulo Isósceles",
+        question: "Sobre o Triângulo Isósceles, é correto afirmar que:",
+        correctAnswer: "Assim como para os outros triângulos: Área = (base x altura) / 2",
+        options: ["Assim como para os outros triângulos: Área = (base x altura) / 2", "Possui os três lados com medidas iguais", "Possui os três lados com medidas diferentes", "Pussi obrigatoriamente um ângulo de 25°"]
+    },
+
+    // Fase 6: Área do triângulo
+    {
+        type: "area",
+        figure: "Triângulo",
+        question: "Qual a área de um triângulo de base 7cm e altura 4cm?",
+        correctAnswer: 14,
+        options: [12, 28, 14, 16]
+    },
+
+    // Fase 7: Fórmula do retângulo
+    {
+        type: "formula",
+        figure: "Retângulo",
+        question: "Qual a fórmula de cálculo da figura geométrica Retângulo?",
+        correctAnswer: "Área = base × altura",
+        options: ["Área = lado²", "Área = π × raio²", "Área = base × altura", "Área = (base × altura) / 2"]
+    },
+    
+    // Fase 8: Área do retângulo
+    {
+        type: "area",
+        figure: "Retângulo",
+        question: "Qual a área de um Retângulo de base 8cm e altura 5cm?",
+        correctAnswer: 40,
+        options: [26, 40, 13, 17]
+    },
+
+    // Fase 9: Fórmula do círculo
+    {
+        type: "formula",
+        figure: "Círculo",
+        question: "Qual a fórmula de cálculo da figura geométrica Círculo?",
+        correctAnswer: "Área = π × raio²",
+        options: ["Área = π × raio²", "Área = base × altura", "Área = lado²", "Área = (base × altura) / 2"]
+    },
+
+    // Fase 10: Área do círculo
+    {
+        type: "area",
+        figure: "Círculo",
+        question: "Qual a área de um círculo de raio 3cm (use π ≈ 3,14)?",
+        correctAnswer: 28.26,
+        options: [28.26, 18.84, 25.12, 30.00]
+    },
+
+    // Fase 11: Fórmula do losango
+    {
+        type: "formula",
+        figure: "Losango",
+        question: "Qual a fórmula de cálculo da figura geométrica Losango?",
+        correctAnswer: "Área = (diagonal maior × diagonal menor) / 2",
+        options: ["Área = base × altura", "Área = (base × altura) / 2", "Área = (diagonal maior × diagonal menor) / 2", "Área = lado²"]
+    },
+
+    // Fase 12: Área do losango
+    {
+        type: "area",
+        figure: "Losango",
+        question: "Qual a área de um losango com diagonal maior de 10cm e diagonal menor de 6cm?",
+        correctAnswer: 30,
+        options: [25, 28, 30, 32]
+    },
+
+    // Fase 13: Fórmula do trapézio
+    {
+        type: "formula",
+        figure: "Trapézio",
+        question: "Qual a fórmula de cálculo da figura geométrica Trapézio?",
+        correctAnswer: "Área = (base maior + base menor) × altura / 2",
+        options: [
+        "Área = base × altura",
+        "Área = (base maior + base menor) × altura / 2",
+        "Área = lado²",
+        "Área = π × raio²"
+        ]
+    },
+
+    // Fase 14: Área do trapézio
+    {
+        type: "area",
+        figure: "Trapézio",
+        question: "Qual a área de um trapézio com base maior 10cm, base menor 6cm e altura 4cm?",
+        correctAnswer: 32,
+        options: [28, 30, 32, 36]
+    }
+  ];
+
+  function startGame() {
+    playerName = document.getElementById("player-name").value;
+    if (!playerName) {
+      alert("Por favor, insira um nome para começar.");
+      return;
+    }
+    document.getElementById("player-display").textContent = `Jogador: ${playerName}`;
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("scoreboard").style.display = "flex";
+    document.getElementById("game").style.display = "block";
+    loadLevel();
+  }
+
+  function loadLevel() {
+    const level = levels[currentLevel];
+    const optionsZone = document.getElementById("options-zone");
+    const question = document.getElementById("question");
+    const feedback = document.getElementById("feedback");
+
+    document.getElementById("figure-name").textContent = `Figura: ${level.figure}`;
+    document.getElementById("next-btn").style.display = "none";
+    optionsZone.innerHTML = "";
+    feedback.textContent = "";
+
+    level.options.forEach(optionText => {
+      const div = document.createElement("div");
+      div.className = "option";
+      div.textContent = optionText;
+      div.addEventListener("click", () => checkAnswer(div, level));
+      optionsZone.appendChild(div);
+    });
+
+    question.textContent = level.question;
+  }
+
+  function checkAnswer(element, level) {
+    const allOptions = document.querySelectorAll(".option");
+    allOptions.forEach(opt => opt.classList.remove("correct", "incorrect"));
+
+    let selected = element.textContent;
+    let correct = level.correctAnswer;
+
+    if (level.type === "area") {
+      selected = parseFloat(selected);
+    }
+
+    const feedback = document.getElementById("feedback");
+
+    if (selected === correct) {
+      element.classList.add("correct");
+      feedback.textContent = "✅ Correto!";
+      score += level.type === "area" ? 20 : 10;
+      document.getElementById("score").textContent = `Pontos: ${score}`;
+      document.getElementById("next-btn").style.display = "inline-block";
+    } else {
+        element.classList.add("incorrect");
+        feedback.textContent = "❌ Tente novamente!";
+        
+        lives--;
+        document.getElementById("lives").textContent = `Vidas: ${lives} ❤️`;
+
+        if (lives <= 0) {
+        document.getElementById("game").style.display = "none";
+        document.getElementById("scoreboard").style.display = "none";
+        document.getElementById("end-screen").style.display = "block";
+        document.getElementById("final-player-name").textContent = playerName;
+        document.getElementById("final-score").textContent = score;
+        }
+    }
+  }
+
+  function nextLevel() {
+    currentLevel++;
+    if (currentLevel < levels.length) {
+        loadLevel();
+    } else {
+        // Finaliza o jogo corretamente
+        document.getElementById("game").style.display = "none";
+        document.getElementById("scoreboard").style.display = "none";
+        document.getElementById("end-screen").style.display = "block";
+        document.getElementById("final-player-name").textContent = playerName;
+        document.getElementById("final-score").textContent = score;
+    }
+  }
+
+
+    function restartGame() {
+        location.reload(); // simples recarregamento
+    }
+
+    function goToNextModule() {
+        // substitua pela URL do próximo módulo, se houver
+        window.location.href = "proximo_modulo.html";
+    }
+</script>
+
+</body>
+</html>
