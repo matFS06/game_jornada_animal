@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Módulo 5: Álgebra – Balanceamento Visual</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #eef7ff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 30px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #0077cc;
+      margin-bottom: 20px;
+    }
+
+    .equation {
+      font-size: 36px;
+      margin: 20px 0;
+    }
+
+    .options {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .btn {
+      padding: 12px 25px;
+      font-size: 18px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #005fa3;
+    }
+
+    .feedback {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+
+    .correct {
+      color: green;
+    }
+
+    .wrong {
+      color: red;
+    }
+
+    #next-btn {
+      display: none;
+      margin-top: 20px;
+    }
+
+    #end-screen, #game-screen {
+      display: none;
+    }
+
+    #dashboard {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    #lives {
+      color: red;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px 0;
+      width: 60%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="start-screen">
+  <h2>👤 Digite seu apelido para começar:</h2>
+  <input type="text" id="nickname" placeholder="Seu nome ou apelido" />
+  <br>
+  <button class="btn" onclick="startGame()">Iniciar</button>
+</div>
+
+<div class="container" id="game-screen">
+  <h2>Módulo 5: Álgebra – Encontre o valor de x</h2>
+  <div id="dashboard">👤 <span id="player-name"></span> | ✅ Acertos: <span id="score">0</span> | ❤️ Vidas: <span id="lives">3</span></div>
+  <div class="equation" id="equation"></div>
+  <div class="options" id="options-container"></div>
+  <div class="feedback" id="feedback"></div>
+  <button class="btn" id="next-btn" onclick="nextQuestion()">Próxima</button>
+</div>
+
+<div class="container" id="end-screen">
+  <h2>🎉 Fim do Jogo!</h2>
+  <p><strong id="final-name"></strong>, você acertou <strong id="final-score"></strong> de <strong id="total"></strong> questões!</p>
+  <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+  <button class="btn" onclick="window.location.href='modulo6.html'">➡️ Próximo Módulo</button>
+</div>
+
+<script>
+  const questions = [
+    { equation: 'x + 2 = 5', options: ['1', '2', '3', '4'], answer: '3' },
+    { equation: '2x = 6', options: ['2', '3', '4', '5'], answer: '3' },
+    { equation: 'x - 4 = 1', options: ['3', '4', '5', '6'], answer: '5' },
+    { equation: 'x + 5 = 10', options: ['4', '5', '6', '7'], answer: '5' },
+    { equation: '3x = 9', options: ['2', '3', '4', '5'], answer: '3' },
+    { equation: 'x / 2 = 4', options: ['6', '7', '8', '9'], answer: '8' },
+    { equation: 'x + 3 = 12', options: ['8', '9', '10', '11'], answer: '9' },
+    { equation: 'x - 2 = 6', options: ['6', '7', '8', '9'], answer: '8' },
+    { equation: '5x = 20', options: ['3', '4', '5', '6'], answer: '4' },
+    { equation: 'x / 3 = 5', options: ['12', '13', '14', '15'], answer: '15' },
+    { equation: '2x + 1 = 9', options: ['3', '4', '5', '6'], answer: '4' },
+    { equation: '3x - 2 = 7', options: ['2', '3', '4', '5'], answer: '3' }
+  ];
+
+  let current = 0;
+  let correct = 0;
+  let lives = 3;
+
+  function startGame() {
+    const name = document.getElementById('nickname').value.trim();
+    if (!name) return alert("Digite seu apelido!");
+    document.getElementById('player-name').textContent = name;
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    const q = questions[current];
+    document.getElementById('equation').textContent = '⚖️ ' + q.equation;
+    const optionsContainer = document.getElementById('options-container');
+    optionsContainer.innerHTML = '';
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('next-btn').style.display = 'none';
+
+    q.options.forEach(option => {
+      const btn = document.createElement('button');
+      btn.textContent = option;
+      btn.className = 'btn';
+      btn.onclick = () => checkAnswer(option);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(selected) {
+    const q = questions[current];
+    const feedback = document.getElementById('feedback');
+    if (selected === q.answer) {
+      feedback.textContent = '✅ Correto!';
+      feedback.className = 'feedback correct';
+      correct++;
+      document.getElementById('score').textContent = correct;
+    } else {
+      lives--;
+      document.getElementById('lives').textContent = lives;
+      feedback.textContent = `❌ Errado. A resposta correta é: ${q.answer}`;
+      feedback.className = 'feedback wrong';
+      if (lives <= 0) {
+        return endGame();
+      }
+    }
+    document.getElementById('next-btn').style.display = 'inline-block';
+  }
+
+  function nextQuestion() {
+    current++;
+    if (current < questions.length) {
+      loadQuestion();
+    } else {
+      endGame();
+    }
+  }
+
+  function endGame() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'block';
+    document.getElementById('final-score').textContent = correct;
+    document.getElementById('total').textContent = questions.length;
+    document.getElementById('final-name').textContent = document.getElementById('player-name').textContent;
+  }
+</script>
+
+</body>
+</html>

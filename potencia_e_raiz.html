@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raízes e Potenciação – Quebra-Código</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-image: url('potencia_e_raiz.png'); 
+      background-size: cover;
+      color: #000000;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 30px;
+      background-color: rgba(240, 209, 255, 0.5);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn {
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: #6a00ff;
+      color: white;
+      border: 2px solid #4700b3;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #4700b3;
+      transform: scale(1.1);
+    }
+
+    input[type="text"] {
+      padding: 15px;
+      font-size: 18px;
+      width: 80%;
+      border: 2px solid #6a00ff;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background-color: rgba(240, 209, 255, 0.75);
+      padding: 15px;
+      border-radius: 12px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border: 2px solid #6a00ff;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .question {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .explanation {
+      background-color: #fff;
+      color: #333;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 18px;
+      margin: 20px 0;
+      display: none;
+    }
+
+    .correct { background-color: #00ff99; }
+    .wrong { background-color: #ff4d4d; }
+
+    h2 { font-size: 36px; color: #be5f05; margin-bottom: 20px; }
+    h3 { font-size: 28px; margin-bottom: 20px; font-weight: normal; color: #ffcc00; }
+
+    #game-screen, #end-screen { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="start-screen" class="container">
+  <h2>Potência e Raiz</h2>
+  <img src="logo_potencia_e_raiz.png" alt="Logo Raiz e Potência" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+  <input type="text" id="player-name" placeholder="Digite seu nome">
+  <br>
+  <button class="btn" onclick="startGame()">Iniciar</button>
+</div>
+
+<div id="scoreboard" class="scoreboard hidden">
+  <span id="player-display">Jogador:</span>
+  <span id="score">Pontos: 0</span>
+  <span id="lives">Tentativas: 5</span>
+</div>
+
+<div id="game-screen" class="container">
+  <div class="question" id="question-text">Carregando questão...</div>
+  <div class="btn-container" id="answers-container">
+    <!-- Botões serão gerados dinamicamente -->
+  </div>
+  <div id="explanation" class="explanation">
+    <p id="explanation-text">Explicação aparecerá aqui...</p>
+    <button class="btn" onclick="nextQuestion()">Próxima</button>
+  </div>
+</div>
+
+<div id="end-screen" class="container">
+  <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+  <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+  <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+  <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+</div>
+
+<script>
+  let playerName = '';
+  let score = 0;
+  let lives = 5;
+  let currentQuestionIndex = 0;
+
+  const questions = [
+    { text: "√49 =", options: [6, 7, 8, 9], answer: 7, explanation: "A raiz quadrada de 49 é 7 porque 7² = 49." },
+    { text: "√64 =", options: [6, 7, 8, 9], answer: 8, explanation: "8² = 64, então √64 = 8." },
+    { text: "3² =", options: [6, 9, 12, 8], answer: 9, explanation: "3² significa 3 x 3, que é 9." },
+    { text: "√81 =", options: [7, 8, 9, 10], answer: 9, explanation: "9 x 9 = 81, então √81 = 9." },
+    { text: "5² =", options: [15, 20, 25, 30], answer: 25, explanation: "5² é 25, pois 5 x 5 = 25." },
+    { text: "√36 =", options: [5, 6, 7, 8], answer: 6, explanation: "A raiz quadrada de 36 é 6." },
+    { text: "2³ =", options: [6, 8, 4, 9], answer: 8, explanation: "2³ = 2 x 2 x 2 = 8." },
+    { text: "3³ =", options: [27, 18, 24, 21], answer: 27, explanation: "3³ = 3 x 3 x 3 = 27." },
+    { text: "2⁴ =", options: [8, 16, 12, 14], answer: 16, explanation: "2⁴ = 2 x 2 x 2 x 2 = 16." },
+    { text: "Raiz cúbica de 27 = ", options: [2, 3, 4, 5], answer: 3, explanation: "3 x 3 x 3 = 27, então a raiz cúbica de 27 é 3." },
+    { text: "4² + 3² =", options: [25, 49, 16, 12], answer: 25, explanation: "4² + 3² = 16 + 9 = 25." },
+    { text: "√(121) =", options: [10, 11, 12, 13], answer: 11, explanation: "11 x 11 = 121, então √121 = 11." },
+    { text: "5³ =", options: [125, 100, 75, 25], answer: 125, explanation: "5³ = 5 x 5 x 5 = 125." },
+    { text: "Raiz cúbica de 8 =", options: [2, 3, 4, 1], answer: 2, explanation: "2 x 2 x 2 = 8, então a raiz cúbica de 8 é 2." },
+    { text: "2² + 2³ =", options: [10, 8, 12, 6], answer: 12, explanation: "2² = 4 e 2³ = 8, então 4 + 8 = 12." },
+    { text: "6² - 4² =", options: [20, 16, 12, 8], answer: 20, explanation: "6² - 4² = 36 - 16 = 20." },
+    { text: "√(144) =", options: [10, 11, 12, 13], answer: 12, explanation: "12 x 12 = 144, então √144 = 12." },
+    { text: "3⁴ =", options: [81, 64, 49, 36], answer: 81, explanation: "3⁴ = 3 x 3 x 3 x 3 = 81." },
+    { text: "Raiz cúbica de 64 =", options: [2, 3, 4, 5], answer: 4, explanation: "4 x 4 x 4 = 64, então a raiz cúbica de 64 é 4." },
+    { text: "√25 + √16 =", options: [5, 6, 7, 9], answer: 9, explanation: "√25 = 5 e √16 = 4, então 5 + 4 = 9." }
+  ];
+
+  function startGame() {
+    const input = document.getElementById('player-name');
+    playerName = input.value.trim();
+    if (!playerName) return alert('Digite seu nome!');
+    
+    document.getElementById('player-display').textContent = `Jogador: ${playerName}`;
+    document.getElementById('score').textContent = `Pontos: ${score}`;
+    document.getElementById('lives').textContent = `Tentativas: ${lives}`;
+
+    document.getElementById('start-screen').style.display = 'none';
+    
+    const scoreboard = document.getElementById('scoreboard');
+    scoreboard.classList.remove('hidden');
+    scoreboard.style.display = 'flex';
+
+    document.getElementById('game-screen').style.display = 'block';
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    const current = questions[currentQuestionIndex];
+    document.getElementById('question-text').textContent = current.text;
+
+    const container = document.getElementById('answers-container');
+    container.innerHTML = '';
+    current.options.forEach(option => {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = option;
+      btn.onclick = () => answerQuestion(option);
+      container.appendChild(btn);
+    });
+
+    document.getElementById('explanation').style.display = 'none';
+  }
+
+  function answerQuestion(selected) {
+    const current = questions[currentQuestionIndex];
+    const isCorrect = selected === current.answer;
+
+    const box = document.getElementById('explanation');
+    const text = document.getElementById('explanation-text');
+    box.classList.remove('correct', 'wrong');
+
+    if (isCorrect) {
+      score += 10;
+      box.classList.add('correct');
+      text.textContent = "✅ Correto! " + current.explanation;
+    } else {
+      lives--;
+      box.classList.add('wrong');
+      text.textContent = "❌ Errado. " + current.explanation;
+    }
+
+    document.getElementById('score').textContent = `Pontos: ${score}`;
+    document.getElementById('lives').textContent = `Tentativas: ${lives}`;
+    box.style.display = 'block';
+
+    if (lives <= 0) {
+      setTimeout(endGame, 1500);
+    }
+  }
+
+  function nextQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex >= questions.length || lives <= 0) {
+      endGame();
+    } else {
+      loadQuestion();
+    }
+  }
+
+  function endGame() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('scoreboard').style.display = 'none';
+    document.getElementById('end-screen').style.display = 'block';
+    document.getElementById('final-player-name').textContent = playerName;
+    document.getElementById('final-score').textContent = score;
+  }
+
+  function goToNextModule() {
+    window.location.href = "fracoes_e_porcentagens.html"; // Altere para a próxima página real do seu projeto
+  }
+</script>
+
+</body>
+</html>

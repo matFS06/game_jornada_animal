@@ -7,6 +7,7 @@
   <style>
     body {
       font-family: 'Arial', sans-serif;
+      background-image: url('geometria.png');
       background-color: #f0f4ff;
       margin: 0;
       padding: 0;
@@ -20,7 +21,7 @@
     .game-container {
       width: 90%;
       max-width: 700px;
-      background-color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.85); /* transparente */
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       padding: 20px 30px;
@@ -124,7 +125,7 @@
 
 <!-- Tela inicial -->
 <div id="start-screen" class="game-container">
-  <h2>Bem-vindo ao Desafio das Operações!</h2>
+  <h2>Bem-vindo ao desafio da Geometria!</h2>
   <img src="logo_geometria.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;" />
   <input type="text" id="player-name" placeholder="Digite seu nome" />
   <br><br>
@@ -387,8 +388,7 @@
     }
 
     function goToNextModule() {
-        // substitua pela URL do próximo módulo, se houver
-        window.location.href = "proximo_modulo.html";
+        window.location.href = "potencia_e_raiz.html";
     }
 </script>
 
