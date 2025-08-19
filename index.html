@@ -54,10 +54,12 @@
     }
 
     .subject-label {
-      font-size: 22px;
+      font-size: clamp(16px, 2.5vw, 22px); /* escala conforme a largura da tela */
       color: #ff5722;
       font-weight: bold;
+      text-align: center;
     }
+
     .more-info {
       margin-top: 10px;
     }
