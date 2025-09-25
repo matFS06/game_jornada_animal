@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Módulo 5: Conversão de Medidas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url('conversao_medidas.png');
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      font-size: 32px;
+      color: #0077b6;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      padding: 15px;
+      font-size: 18px;
+      width: 50%;
+      border: 2px solid #0077b6;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background-color: #cce7ff;
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border: 2px solid #0099ff;
+    }
+
+    .question {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .options {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .option {
+      background:rgb(167, 60, 74);
+      border-radius: 12px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .option:hover {
+      transform: scale(1.05);
+      background: #ffd633;
+    }
+
+    .feedback {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .correct { color: green; }
+    .wrong { color: red; }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #0077b6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover { background: #0096c7; }
+
+    #end-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="start-screen">
+  <h2>Módulo 5: Conversão de Medidas</h2>
+  <img src="logo_conversao_de_medidas.png" alt="Logo Conversão de Medidas" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+  <br>
+  <input type="text" id="player-name" placeholder="Digite seu nome" />
+  <br>
+  <button onclick="startGame()">Iniciar</button>
+</div>
+
+<div class="scoreboard" id="scoreboard" style="display:none;">
+  <span id="player-display">Jogador:</span>
+  <span id="score">Pontos: 0</span>
+  <span id="lives">Vidas: ❤️❤️❤️</span>
+</div>
+
+<div class="container" id="game-screen" style="display:none;">
+  <div class="question" id="question"></div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+  <button id="next-btn" style="display:none;">Próxima</button>
+</div>
+
+<div class="container" id="end-screen" style="display:none;">
+  <h2>🎉 Fim do Jogo, <span id="final-name"></span>!</h2>
+  <p>Você marcou <strong id="score-final"></strong> pontos de <strong id="total-final"></strong> possíveis!</p>
+  <div id="end-buttons">
+    <button onclick="location.reload()">🔄 Jogar Novamente</button>
+    <button onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  { pergunta: "O carteiro precisa pesar um pacote que tem 2,5 kg. Quantos gramas ele deve registrar?", opcoes:["250 g","2500 g","25 g"], resposta:"2500 g", explicacao:"1 kg = 1000 g → 2,5 × 1000 = 2500 g." },
+  { pergunta: "A fita métrica da obra mostra 3 metros. Quantos centímetros isso equivale?", opcoes:["30 cm","300 cm","3000 cm"], resposta:"300 cm", explicacao:"1 m = 100 cm → 3 × 100 = 300 cm." },
+  { pergunta: "O motorista calcula que a viagem dura 2 horas. Quantos minutos ele vai gastar?", opcoes:["200 min","120 min","20 min"], resposta:"120 min", explicacao:"1 h = 60 min → 2 × 60 = 120 min." },
+  { pergunta: "Na cozinha, a receita pede 1500 mL de leite. Quantos litros são necessários?", opcoes:["0,15 L","15 L","1,5 L"], resposta:"1,5 L", explicacao:"1000 mL = 1 L → 1500 ÷ 1000 = 1,5 L." },
+  { pergunta: "Um saco de arroz pesa 3 kg. Quantos gramas isso equivale?", opcoes:["300 g","3000 g","30 g"], resposta:"3000 g", explicacao:"3 × 1000 = 3000 g." },
+  { pergunta: "Uma estrada tem 5 km de extensão. Quantos metros ela tem?", opcoes:["500 m","5000 m","50 m"], resposta:"5000 m", explicacao:"1 km = 1000 m → 5 × 1000 = 5000 m." },
+  { pergunta: "O galão contém 2500 mL de suco. Quantos litros são isso?", opcoes:["2,5 L","25 L","0,25 L"], resposta:"2,5 L", explicacao:"2500 ÷ 1000 = 2,5 L." },
+  { pergunta: "Um livro pesa 750 g. Quantos kg ele pesa?", opcoes:["0,75 kg","7,5 kg","75 kg"], resposta:"0,75 kg", explicacao:"1 kg = 1000 g → 750 ÷ 1000 = 0,75 kg." },
+  { pergunta: "A piscina contém 3 m³ de água. Quantos litros isso equivale?", opcoes:["300 L","3000 L","30 L"], resposta:"3000 L", explicacao:"1 m³ = 1000 L → 3 × 1000 = 3000 L." },
+  { pergunta: "O filme dura 1,5 horas. Quantos minutos ele leva?", opcoes:["90 min","15 min","150 min"], resposta:"90 min", explicacao:"1 h = 60 min → 1,5 × 60 = 90 min." }
+];
+
+let current = 0;
+let score = 0;
+let lives = 3;
+let playerName = "";
+
+function startGame(){
+  const input = document.getElementById("player-name");
+  playerName = input.value.trim();
+  if(!playerName) return alert("Digite seu nome!");
+  document.getElementById("player-display").textContent = `Jogador: ${playerName}`;
+  document.getElementById("start-screen").style.display = "none";
+  document.getElementById("scoreboard").style.display = "flex";
+  document.getElementById("game-screen").style.display = "block";
+  updateScoreboard();
+  loadQuestion();
+}
+
+function updateScoreboard(){
+  document.getElementById("score").textContent = `Pontos: ${score}`;
+  document.getElementById("lives").textContent = `Vidas: ${'❤️'.repeat(lives)}${'🤍'.repeat(3-lives)}`;
+}
+
+function loadQuestion(){
+  const q = questions[current];
+  document.getElementById("question").textContent = q.pergunta;
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("next-btn").style.display = "none";
+
+  q.opcoes.forEach(op=>{
+    const btn = document.createElement("button");
+    btn.textContent = op;
+    btn.className = "option";
+    btn.onclick = ()=>checkAnswer(op);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(selected){
+  const q = questions[current];
+  const feedback = document.getElementById("feedback");
+  if(selected === q.resposta){
+    feedback.textContent = "✅ Correto! " + q.explicacao;
+    feedback.className = "feedback correct";
+    score += 10;
+  } else{
+    feedback.textContent = "❌ Errado! " + q.explicacao;
+    feedback.className = "feedback wrong";
+    lives--;
+    if(lives === 0) return endGame();
+  }
+  updateScoreboard();
+  document.getElementById("next-btn").style.display = "inline-block";
+}
+
+document.getElementById("next-btn").addEventListener("click", ()=>{
+  current++;
+  if(current<questions.length) loadQuestion();
+  else endGame();
+});
+
+function endGame(){
+  document.getElementById("game-screen").style.display = "none";
+  document.getElementById("scoreboard").style.display = "none";
+  document.getElementById("end-screen").style.display = "block";
+  document.getElementById("final-name").textContent = playerName;
+  document.getElementById("score-final").textContent = score;
+  document.getElementById("total-final").textContent = questions.length*10;
+}
+
+function goToNextModule(){
+  alert("Próximo módulo em construção 🚧");
+}
+</script>
+
+</body>
+</html>

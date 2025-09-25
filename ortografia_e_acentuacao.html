@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ortografia e Acentuação – Quebra-Código</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-image: url('ortografia.png'); /* substitua pela sua imagem */
+      background-size: cover;
+      color: #000000;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 30px;
+      background-color: rgba(165, 42, 42, 0.5); /* vermelho tijolo */
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn {
+      padding: 15px 30px;
+      font-size: 20px;
+      background-color: #b22222;
+      color: white;
+      border: 2px solid #800000;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #800000;
+      transform: scale(1.1);
+    }
+
+    input[type="text"] {
+      padding: 15px;
+      font-size: 18px;
+      width: 80%;
+      border: 2px solid #b22222;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background-color: rgba(165, 42, 42, 0.75);
+      padding: 15px;
+      border-radius: 12px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border: 2px solid #b22222;
+    }
+
+    .hidden { display: none !important; }
+    .question { font-size: 24px; font-weight: bold; margin: 20px 0; }
+    .btn-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
+    .explanation { background-color: #fff; color: #333; padding: 20px; border-radius: 8px; font-size: 18px; margin: 20px 0; display: none; }
+    .correct { background-color: #00ff99; }
+    .wrong { background-color: #ff4d4d; }
+    h2 { font-size: 36px; color: #800000; margin-bottom: 20px; }
+    h3 { font-size: 28px; margin-bottom: 20px; font-weight: normal; color: #ffcc00; }
+    #game-screen, #end-screen { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="start-screen" class="container">
+  <h2>⚖️ Ortografia e Acentuação</h2>
+  <img src="logo_ortografia.png" alt="Logo Ortografia" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+  <input type="text" id="player-name" placeholder="Digite seu nome">
+  <br>
+  <button class="btn" onclick="startGame()">Iniciar</button>
+</div>
+
+<div id="scoreboard" class="scoreboard hidden">
+  <span id="player-display">Jogador:</span>
+  <span id="score">Pontos: 0</span>
+  <span id="lives">Tentativas: 5</span>
+</div>
+
+<div id="game-screen" class="container">
+  <div class="question" id="question-text">Carregando questão...</div>
+  <div class="btn-container" id="answers-container"></div>
+  <div id="explanation" class="explanation">
+    <p id="explanation-text">Explicação aparecerá aqui...</p>
+    <button class="btn" onclick="nextQuestion()">Próxima</button>
+  </div>
+</div>
+
+<div id="end-screen" class="container">
+  <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+  <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+  <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+  <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+</div>
+
+<script>
+let playerName = '';
+let score = 0;
+let lives = 5;
+let currentQuestionIndex = 0;
+
+const questions = [
+  {
+    text: "Na frase: Vou <b>mecher</b> na porta, a palavra destacada está correta?",
+    options: [
+      "A) ERRADA, o correto é 'mexer'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'mecher'"
+    ],
+    answer: "A",
+    explanation: "❌ Pois, geralmente depois da sílaba 'me-', usa-se 'x'. Correto: 'mexer'."
+  },
+  {
+    text: "Na frase: Comi uma <b>caicha</b> deliciosa, a palavra destacada está correta?",
+    options: [
+      "A) ERRADA, seria 'caixa'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'caixsa'"
+    ],
+    answer: "A",
+    explanation: "❌ Geralmente, depois dos ditongos usa-se 'x'. Correto: 'caixa'."
+  },
+  {
+    text: "Na frase: Ontem joguei <b>boliche</b> com amigos, a palavra está correta?",
+    options: [
+      "A) ERRADA, seria 'bolixi'",
+      "B) ERRADA, seria 'bolichi'",
+      "C) CORRETA"
+    ],
+    answer: "C",
+    explanation: "✅ Não cai em nenhum caso do uso do X; 'boliche' está correto."
+  },
+  {
+    text: "Na frase: Ela é <b>franceza</b>, a palavra está correta?",
+    options: [
+      "A) ERRADA, o correto é 'francesa'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'françesa'"
+    ],
+    answer: "A",
+    explanation: "❌ Pois, nos sufixo -ês, -esa, -isa que indicam origem, título ou profissão: marquês, francesa, poetisa. se usa s. Correto: 'francesa'."
+  },
+  {
+    text: "A palavra <b>beleza</b> está correta?",
+    options: [
+      "A) ERRADA, seria 'belesa'",
+      "B) ERRADA, seria 'belessa'",
+      "C) CORRETA"
+    ],
+    answer: "C",
+    explanation: "✅ Nos sufixos -ez / -eza que formam substantivos a partir de adjetivos: magro - magreza, belo - beleza, grande - grandeza se usa z"
+  },
+  {
+    text: "A palavra <b>atualisar</b> está correta?",
+    options: [
+      "A) ERRADA, o correto é 'atualizar'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'atualezar'"
+    ],
+    answer: "A",
+    explanation: "❌ Pois no sufixo - izar, que forma verbo: atualizar, batizar, hospitalizar. usa-se z. Correto: 'atualizar'."
+  },
+  {
+    text: "Na frase: Fiz uma <b>viajem</b> incrível, a palavra está correta?",
+    options: [
+      "A) CORRETA",
+      "B) ERRADA, o correto é 'viagem'",
+      "C) ERRADA, seria 'viaghem'"
+    ],
+    answer: "B",
+    explanation: "❌ Pois, usa-se G nos substantivos que terminem em -gem: alavancagem, vagem, viagem. Correto: 'viagem'."
+  },
+  {
+    text: "A palavra <b>jerimum</b> está correta?",
+    options: [
+      "A) CORRETA",
+      "B) ERRADA, seria 'gerimum'",
+      "C) ERRADA, seria 'jerimun'"
+    ],
+    answer: "A",
+    explanation: "✅ Palavras de origem indígena usam j. 'Jerimum' está correto."
+  },
+  {
+    text: "A palavra <b>refúgio</b> está correta?",
+    options: [
+      "A) CORRETA",
+      "B) ERRADA, seria 'refogio'",
+      "C) ERRADA, seria 'refujio'"
+    ],
+    answer: "A",
+    explanation: "✅ Palavras terminadas em -úgio usam G. 'Refúgio' está correto."
+  },
+  {
+    text: "Na frase: O <b>ex presidente</b> falou, está correto?",
+    options: [
+      "A) ERRADA, seria 'expresidente'",
+      "B) ERRADA, o correto é 'ex-presidente'",
+      "C) CORRETA"
+    ],
+    answer: "B",
+    explanation: "❌ Pois, prefixos específicos (ex-, sem-, pré-, etc.) obrigatoriamente levam hífen. Correto: ex-presidente."
+  },
+  {
+    text: "A palavra <b>autoescola</b> está correta?",
+    options: [
+      "A) ERRADA, seria 'auto-escola'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'auto escola'"
+    ],
+    answer: "B",
+    explanation: "✅ Pois, prefixo + palavra iniciada com vogal diferente: não há hífen. 'autoescola' está correto."
+  },
+  {
+    text: "Na frase: Comi um <b>pé-de-moleque</b>, a palavra está correta?",
+    options: [
+      "A) ERRADA, o correto é 'pé de moleque'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'pede-moleque'"
+    ],
+    answer: "A",
+    explanation: "❌ O hífen deixou de ser usado em locuções substantivas, adjetivas, adverbiais etc. que contenham um elemento de ligação entre os termos, como preposição. Correto: 'pé de moleque'."
+  },
+  {
+    text: "A palavra <b>interrelação</b> está correta?",
+    options: [
+      "A) ERRADA, correto é 'inter-relação'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'inter relação'"
+    ],
+    answer: "A",
+    explanation: "❌ Quando o prefixo termina com a mesma consoante da palavra seguinte, deve haver hífen. Correto: inter-relação"
+  },
+  {
+    text: "A palavra <b>paralelepipedo</b> está correta?",
+    options: [
+      "A) CORRETA",
+      "B) ERRADA, seria 'paralelipípedo'",
+      "C) ERRADA, o correto é 'paralelepípedo'"
+    ],
+    answer: "C",
+    explanation: "❌ Todas as palavras proparoxítonas levam acento. Correto: 'paralelepípedo'."
+  },
+  {
+    text: "A palavra <b>dócil</b> está correta?",
+    options: [
+      "A) CORRETA",
+      "B) ERRADA, seria 'docil'",
+      "C) ERRADA, seria 'docel'"
+    ],
+    answer: "A",
+    explanation: "✅ Paroxítona terminada em -l geralmente recebe acento. 'dócil' está correto."
+  },
+  {
+    text: "A palavra <b>album</b> está correta?",
+    options: [
+      "A) CORRETA",
+      "B) ERRADA, seria 'àlbum'",
+      "C) ERRADA, correto é 'álbum'"
+    ],
+    answer: "C",
+    explanation: "❌ Paroxítonas terminadas em -um(ns) levam acento. Correto: 'álbum'."
+  },
+  {
+    text: "A palavra <b>sofá</b> está correta?",
+    options: [
+      "A) ERRADA, seria 'sofa'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'sófá'"
+    ],
+    answer: "B",
+    explanation: "✅ Oxítonas terminadas em -a, -e, -o recebem acento. 'sofá' está correto."
+  },
+  {
+    text: "A palavra <b>amém</b> está correta?",
+    options: [
+      "A) ERRADA, seria 'amen'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'amem'"
+    ],
+    answer: "B",
+    explanation: "✅ Oxítonas terminadas em -em ou -ens recebem acento. 'amém' está correto."
+  },
+  {
+    text: "Na frase: Ele é <b>cauboi</b>, a palavra está correta?",
+    options: [
+      "A) ERRADA, correto é 'caubói'",
+      "B) CORRETA",
+      "C) ERRADA, seria 'couboi'"
+    ],
+    answer: "A",
+    explanation: "❌ Oxítonas terminadas em ditongo aberto -éi, -éu, -ói recebem acento. Correto: 'caubói'."
+  }
+];
+
+function startGame() {
+  const input = document.getElementById('player-name');
+  playerName = input.value.trim();
+  if (!playerName) return alert('Digite seu nome!');
+  
+  document.getElementById('player-display').textContent = `Jogador: ${playerName}`;
+  document.getElementById('score').textContent = `Pontos: ${score}`;
+  document.getElementById('lives').textContent = `Tentativas: ${lives}`;
+
+  document.getElementById('start-screen').style.display = 'none';
+  const scoreboard = document.getElementById('scoreboard');
+  scoreboard.classList.remove('hidden');
+  scoreboard.style.display = 'flex';
+  document.getElementById('game-screen').style.display = 'block';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const current = questions[currentQuestionIndex];
+  document.getElementById('question-text').innerHTML = current.text;
+
+  const container = document.getElementById('answers-container');
+  container.innerHTML = '';
+  current.options.forEach(option => {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = option;
+    btn.onclick = () => answerQuestion(option);
+    container.appendChild(btn);
+  });
+
+  document.getElementById('explanation').style.display = 'none';
+}
+
+function answerQuestion(selected) {
+  const current = questions[currentQuestionIndex];
+  const isCorrect = selected.startsWith(current.answer);
+  const box = document.getElementById('explanation');
+  const text = document.getElementById('explanation-text');
+  box.classList.remove('correct', 'wrong');
+
+  if (isCorrect) {
+    score += 10;
+    box.classList.add('correct');
+    text.textContent = "✅ Correto! " + current.explanation;
+  } else {
+    lives--;
+    box.classList.add('wrong');
+    text.textContent = "❌ Errado. " + current.explanation;
+  }
+
+  document.getElementById('score').textContent = `Pontos: ${score}`;
+  document.getElementById('lives').textContent = `Tentativas: ${lives}`;
+  box.style.display = 'block';
+
+  if (lives <= 0) setTimeout(endGame, 1500);
+}
+
+function nextQuestion() {
+  currentQuestionIndex++;
+  if (currentQuestionIndex >= questions.length || lives <= 0) {
+    endGame();
+  } else {
+    loadQuestion();
+  }
+}
+
+function endGame() {
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('scoreboard').style.display = 'none';
+  document.getElementById('end-screen').style.display = 'block';
+  document.getElementById('final-player-name').textContent = playerName;
+  document.getElementById('final-score').textContent = score;
+}
+
+function goToNextModule() {
+  window.location.href = "geometria.html"; // altere para o próximo módulo real
+}
+</script>
+
+</body>
+</html>
