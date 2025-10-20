@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz Tempos e Modos Verbais</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 650px;
+    margin: 30px auto;
+    background: #f0f4f8;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #2a4d69;
+  }
+  #score-card {
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 1.15em;
+    color: #2a4d69;
+    display: flex;
+    justify-content: space-around;
+  }
+  #question {
+    font-size: 1.4em;
+    margin-bottom: 20px;
+    color: #4a4a4a;
+  }
+  .answers button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 12px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    border: 2px solid #2a4d69;
+    background: white;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .answers button:hover:not(:disabled) {
+    background: #2a4d69;
+    color: white;
+  }
+  .answers button:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+  .feedback {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 10px;
+    display: none;
+    font-size: 1.1em;
+  }
+  .feedback.correct {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  .feedback.wrong {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  #next-btn {
+    margin-top: 20px;
+    padding: 12px 28px;
+    font-size: 1.2em;
+    border: none;
+    background-color: #2a4d69;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    display: none;
+    transition: background-color 0.3s;
+  }
+  #next-btn:hover {
+    background-color: #1f3752;
+  }
+  #start-screen, #end-screen {
+    text-align: center;
+  }
+  input[type="text"] {
+    font-size: 1.1em;
+    padding: 10px;
+    width: 85%;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #aaa;
+  }
+  button#start-btn, button#restart-btn {
+    font-size: 1.3em;
+    padding: 12px 32px;
+    border-radius: 10px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  button#start-btn:hover, button#restart-btn:hover {
+    background-color: #1e7e34;
+  }
+  .container {
+      max-width: 650px;
+      margin: 30px auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
+      border: 4px solid rgb(251, 121, 255);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+</style>
+</head>
+<body>
+
+<div id="start-screen" class="container">
+  <h2>Bem-vindo ao Quiz de Tempos e Modos Verbais!</h2>
+  <img src="logo_verbal.png" alt="Logo" style="max-width: 220px; margin-bottom: 25px; border-radius: 10%;"/>
+  <input type="text" id="player-name" placeholder="Digite seu nome" />
+  <br />
+  <button id="start-btn">Iniciar</button>
+</div>
+
+<div id="game-screen" class="container" style="display:none;">
+  <div id="score-card">
+    <span id="player-display"></span>
+    <span id="score">Pontos: 0</span>
+    <span id="lives">Vidas: 5</span>
+  </div>
+  <div id="question"></div>
+  <div class="answers"></div>
+  <div id="feedback" class="feedback"></div>
+  <button id="next-btn">Próxima</button>
+</div>
+
+<div id="end-screen" class="container" style="display:none;">
+  <h2>Fim de jogo!</h2>
+  <p><strong>Jogador:</strong> <span id="final-player-name"></span></p>
+  <p><strong>Pontuação final:</strong> <span id="final-score"></span> de 20</p>
+  <button id="restart-btn">Jogar novamente</button>
+</div>
+
+<script>
+const questions = [
+  // Fáceis - presente, passado simples, futuro
+  {
+    sentence: "Eu ___ (correr) no parque todos os dias.",
+    options: ["corro", "corremos", "correram", "corre"],
+    answer: "corro",
+    explanation: "Presente do indicativo: indica uma ação habitual ou atual."
+  },
+  {
+    sentence: "Ontem, ela ___ (estudar) para a prova.",
+    options: ["estuda", "estudou", "estudará", "estudasse"],
+    answer: "estudou",
+    explanation: "Pretérito perfeito: indica ação concluída no passado."
+  },
+  {
+    sentence: "Amanhã, nós ___ (viajar) para a praia.",
+    options: ["viajamos", "viajaremos", "viajávamos", "viajássemos"],
+    answer: "viajaremos",
+    explanation: "Futuro do presente: indica ação que ocorrerá no futuro."
+  },
+  {
+    sentence: "Eles sempre ___ (brincar) no quintal.",
+    options: ["brincam", "brincava", "brincarão", "brincassem"],
+    answer: "brincam",
+    explanation: "Presente do indicativo para ação habitual."
+  },
+  {
+    sentence: "Na semana passada, eu ___ (falar) com ele.",
+    options: ["falo", "falei", "falarei", "falasse"],
+    answer: "falei",
+    explanation: "Pretérito perfeito: ação passada e concluída."
+  },
+
+  // Médio - presente contínuo, pretérito imperfeito, futuro do pretérito
+  {
+    sentence: "Todo verão, eles ___ para a praia.",
+    options: ["viajavam", "viajaram", "viajarão", "viajariam"],
+    answer: "viajavam",
+    explanation: "Pretérito imperfeito: ação habitual no passado."
+  },
+  {
+    sentence: "Quando eu era criança, eu ___ (morar) no campo.",
+    options: ["morei", "morava", "morarei", "moraria"],
+    answer: "morava",
+    explanation: "Pretérito imperfeito: ação habitual no passado."
+  },
+  {
+    sentence: "Se eu tivesse dinheiro, eu ___ (comprar) um carro.",
+    options: ["compro", "compraria", "comprasse", "comprei"],
+    answer: "compraria",
+    explanation: "Futuro do pretérito: ação condicionada, hipótese."
+  },
+  {
+    sentence: "Todos os dias, ela ___ (cantar) na igreja.",
+    options: ["cantava", "cantou", "cantaria", "cante"],
+    answer: "cantava",
+    explanation: "Pretérito imperfeito: ação habitual no passado."
+  },
+  {
+    sentence: "Se nós ___ (viajar) para a praia, ficaríamos muito felizes.",
+    options: ["viajávamos", "viajaremos", "viajássemos", "viajamos"],
+    answer: "viajássemos",
+    explanation: "Pretérito imperfeito do subjuntivo: usado para expressar uma condição hipotética."
+  },
+
+  // Difíceis - subjuntivo presente, subjuntivo futuro, mais-que-perfeito, futuro do subjuntivo
+  {
+    sentence: "É importante que ele ___ (fazer) a lição agora.",
+    options: ["faça", "fez", "faria", "faz"],
+    answer: "faça",
+    explanation: "Presente do subjuntivo: expressa desejo ou dúvida."
+  },
+  {
+    sentence: "Se ela ___ (saber) a resposta, me avisaria.",
+    options: ["soube", "saber", "soubesse", "sabia"],
+    answer: "soubesse",
+    explanation: "Pretérito imperfeito do subjuntivo: hipótese no passado."
+  },
+  {
+    sentence: "Quando tu ___ (chegar), já teremos saído.",
+    options: ["chegares", "chegaste", "chegavas", "chegaria"],
+    answer: "chegares",
+    explanation: "Futuro do subjuntivo: ação futura condicionada."
+  },
+  {
+    sentence: "Se eu ___ (ter) estudado mais, teria passado.",
+    options: ["tivesse", "tive", "terei", "tenho"],
+    answer: "tivesse",
+    explanation: "Mais-que-perfeito do subjuntivo: condição impossível no passado."
+  },
+  {
+    sentence: "Ele agiria se ___ (ser) necessário.",
+    options: ["fosse", "seria", "sendo", "ser"],
+    answer: "fosse",
+    explanation: "Pretérito imperfeito do subjuntivo: condição hipotética."
+  },
+
+  // Muito difíceis - tempos compostos e formas perifrásticas
+  {
+    sentence: "Ana ___ (estudar) inglês aos fins de semana.",
+    options: ["tem estudado", "estudarei", "estudando", "estudam"],
+    answer: "tem estudado",
+    explanation: "Pretérito perfeito composto do indicativo: ação iniciada no passado e que continua no presente."
+  },
+  {
+    sentence: "Se eu pudesse, ___ (viajar) pelo mundo.",
+    options: ["viajaria", "viajava", "viajarei", "viajei"],
+    answer: "viajaria",
+    explanation: "Futuro do pretérito: ação hipotética ou condicional no futuro em relação ao passado."
+  },
+  {
+    sentence: "Ana já ___ (ficar) fluente em inglês quando viajar para os EUA.",
+    options: ["ficou", "ficava", "tem ficado", "terá ficado"],
+    answer: "terá ficado",
+    explanation: "Futuro do presente composto do indicativo: ação futura já concluída em relação a outro evento futuro."
+  },
+  {
+    sentence: "Se ele ___ (avisar) que estava atrasado, teríamos esperado.",
+    options: ["avisou", "avisava", "tivesse avisado", "avisará"],
+    answer: "tivesse avisado",
+    explanation: "Pretérito mais-que-perfeito composto do subjuntivo: condição passada não realizada."
+  },
+  {
+    sentence: "Quando eu ___ (terminar) a prova, pedirei ao meu pai para me buscar.",
+    options: ["tiver terminado", "terminei", "terminava", "terminarei"],
+    answer: "tiver terminado",
+    explanation: "Futuro composto do subjuntivo: ação futura anterior a outra também futura."
+  }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let lives = 5;
+let playerName = "";
+
+const startScreen = document.getElementById("start-screen");
+const gameScreen = document.getElementById("game-screen");
+const endScreen = document.getElementById("end-screen");
+
+const playerNameInput = document.getElementById("player-name");
+const startBtn = document.getElementById("start-btn");
+
+const playerDisplay = document.getElementById("player-display");
+const scoreDisplay = document.getElementById("score");
+const livesDisplay = document.getElementById("lives");
+
+const questionText = document.getElementById("question");
+const answersDiv = document.querySelector(".answers");
+const feedbackDiv = document.getElementById("feedback");
+const nextBtn = document.getElementById("next-btn");
+
+const finalPlayerName = document.getElementById("final-player-name");
+const finalScore = document.getElementById("final-score");
+const restartBtn = document.getElementById("restart-btn");
+
+startBtn.addEventListener("click", () => {
+  playerName = playerNameInput.value.trim();
+  if (!playerName) {
+    alert("Por favor, digite seu nome para começar.");
+    return;
+  }
+  startScreen.style.display = "none";
+  gameScreen.style.display = "block";
+  playerDisplay.textContent = `Jogador: ${playerName}`;
+  loadQuestion();
+});
+
+function loadQuestion() {
+  feedbackDiv.style.display = "none";
+  nextBtn.style.display = "none";
+  answersDiv.innerHTML = "";
+  const q = questions[currentQuestionIndex];
+  questionText.textContent = q.sentence;
+
+  q.options.forEach(option => {
+    const btn = document.createElement("button");
+    btn.textContent = option;
+    btn.addEventListener("click", () => checkAnswer(option));
+    answersDiv.appendChild(btn);
+  });
+
+  updateScoreLives();
+}
+
+function checkAnswer(selected) {
+  const q = questions[currentQuestionIndex];
+  const buttons = answersDiv.querySelectorAll("button");
+  buttons.forEach(b => b.disabled = true);
+
+  if (selected === q.answer) {
+    score++;
+    feedbackDiv.textContent = `Correto! Explicação: ${q.explanation}`;
+    feedbackDiv.className = "feedback correct";
+  } else {
+    lives--;
+    feedbackDiv.textContent = `Errado! A resposta correta é "${q.answer}". Explicação: ${q.explanation}`;
+    feedbackDiv.className = "feedback wrong";
+  }
+
+  feedbackDiv.style.display = "block";
+  nextBtn.style.display = "inline-block";
+  updateScoreLives();
+
+  if (lives <= 0) {
+    gameOver();
+  }
+}
+
+nextBtn.addEventListener("click", () => {
+  currentQuestionIndex++;
+  if (currentQuestionIndex >= questions.length) {
+    gameOver();
+  } else {
+    loadQuestion();
+  }
+});
+
+function updateScoreLives() {
+  scoreDisplay.textContent = `Pontos: ${score}`;
+  livesDisplay.textContent = `Vidas: ${lives}`;
+}
+
+function gameOver() {
+  gameScreen.style.display = "none";
+  endScreen.style.display = "block";
+  finalPlayerName.textContent = playerName;
+  finalScore.textContent = score;
+}
+
+restartBtn.addEventListener("click", () => {
+  currentQuestionIndex = 0;
+  score = 0;
+  lives = 5;
+  playerNameInput.value = "";
+  endScreen.style.display = "none";
+  startScreen.style.display = "block";
+});
+</script>
+
+</body>
+</html>

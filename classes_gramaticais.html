@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz Classes Gramaticais</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 20px auto;
+    background: #f7f9fc;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  h2, h3 {
+    text-align: center;
+  }
+  #score-card {
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  #question {
+    font-size: 1.3em;
+    margin-bottom: 15px;
+  }
+  .answers button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .answers button:hover {
+    background: #ddd;
+  }
+  .feedback {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    display: none;
+    font-size: 1.1em;
+  }
+  .feedback.correct {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  .feedback.wrong {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  #next-btn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 1.1em;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: none;
+  }
+  #next-btn:hover {
+    background-color: #0056b3;
+  }
+  #start-screen, #end-screen {
+    text-align: center;
+  }
+  input[type="text"] {
+    font-size: 1.1em;
+    padding: 8px;
+    width: 80%;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid #aaa;
+  }
+  button#start-btn {
+    font-size: 1.2em;
+    padding: 10px 25px;
+    border-radius: 8px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+  }
+  button#start-btn:hover {
+    background-color: #1e7e34;
+  }
+  .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      border: 5px solid rgb(209, 206, 17);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+</head>
+<body>
+
+<div id="start-screen" class="container">
+  <h2>Bem-vindo ao Quiz de Classes Gramaticais!</h2>
+  <img src="logo_cadeia.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"/>
+  <input type="text" id="player-name" placeholder="Digite seu nome" />
+  <br />
+  <button id="start-btn">Iniciar</button>
+</div>
+
+<div id="game-screen" style="display:none;" class="container">
+  <div id="score-card"></div>
+  <div id="question"></div>
+  <div class="answers"></div>
+  <div id="feedback" class="feedback"></div>
+  <button id="next-btn">Próxima</button>
+</div>
+
+<div id="end-screen" style="display:none;">
+  <h2>Fim de jogo!</h2>
+  <p><strong>Jogador:</strong> <span id="final-player-name"></span></p>
+  <p><strong>Pontuação final:</strong> <span id="final-score"></span> de 20</p>
+  <button id="restart-btn">Jogar novamente</button>
+</div>
+
+<script>
+const questions = [
+  // 2 perguntas para cada classe gramatical, total 20, embaralhadas abaixo
+  {
+    question: "Qual palavra é um substantivo?",
+    answers: ["Bonito", "Casa", "Correr", "Rapidamente"],
+    answer: "Casa",
+    explanation: "Substantivo é palavra que nomeia seres, coisas, lugares, como 'Casa'."
+  },
+  {
+    question: "Qual palavra é um verbo?",
+    answers: ["Correr", "Feliz", "Azul", "Em"],
+    answer: "Correr",
+    explanation: "Verbo é palavra que expressa ação ou estado, como 'Correr'."
+  },
+  {
+    question: "Qual palavra é um adjetivo?",
+    answers: ["Grande", "Ele", "Ou", "Dois"],
+    answer: "Grande",
+    explanation: "Adjetivo caracteriza ou qualifica o substantivo, como 'Grande'."
+  },
+  {
+    question: "Qual palavra é um artigo?",
+    answers: ["O", "Ela", "Andar", "Felizmente"],
+    answer: "O",
+    explanation: "Artigo determina o substantivo, como o definido 'O' ou indefinido 'Um'."
+  },
+  {
+    question: "Qual palavra é um pronome?",
+    answers: ["Ele", "Correr", "Azul", "Com"],
+    answer: "Ele",
+    explanation: "Pronome substitui ou acompanha o substantivo, como 'Ele'."
+  },
+  {
+    question: "Qual palavra é um numeral?",
+    answers: ["Três", "Casa", "Falar", "Entre"],
+    answer: "Três",
+    explanation: "Numeral indica quantidade, ordem, etc., como 'Três'."
+  },
+  {
+    question: "Qual palavra é um advérbio?",
+    answers: ["Rapidamente", "Do", "Ela", "Feliz"],
+    answer: "Rapidamente",
+    explanation: "Advérbio modifica verbo, adjetivo ou outro advérbio, como 'Rapidamente'."
+  },
+  {
+    question: "Qual palavra é uma preposição?",
+    answers: ["Com", "Bonito", "Correr", "Eles"],
+    answer: "Com",
+    explanation: "Preposição liga termos na oração, como 'Com'."
+  },
+  {
+    question: "Qual palavra é uma conjunção?",
+    answers: ["E", "Casa", "Ela", "Falar"],
+    answer: "E",
+    explanation: "Conjunção liga orações ou termos, como 'E'."
+  },
+  {
+    question: "Qual palavra é uma interjeição?",
+    answers: ["Ah!", "Azul", "Felizmente", "Dois"],
+    answer: "Ah!",
+    explanation: "Interjeição expressa emoção, como 'Ah!'."
+  },
+
+  // segunda rodada, perguntas mais variadas, mesma estrutura
+
+  {
+    question: "Qual dessas palavras é um artigo definido?",
+    answers: ["A", "Ele", "Bonito", "Correr"],
+    answer: "A",
+    explanation: "Artigos definidos: o, a, os, as."
+  },
+  {
+    question: "Qual palavra é um pronome pessoal?",
+    answers: ["Nós", "Casa", "Grande", "De"],
+    answer: "Nós",
+    explanation: "Pronomes pessoais indicam as pessoas do discurso, como 'Nós'."
+  },
+  {
+    question: "Qual palavra é um verbo no infinitivo?",
+    answers: ["Falar", "Feliz", "Dois", "Com"],
+    answer: "Falar",
+    explanation: "Verbo no infinitivo é o verbo em sua forma básica, como 'Falar'."
+  },
+  {
+    question: "Qual palavra é um numeral ordinal?",
+    answers: ["Primeiro", "Casa", "Ela", "E"],
+    answer: "Primeiro",
+    explanation: "Numerais ordinais indicam ordem, como 'Primeiro'."
+  },
+  {
+    question: "Qual palavra é um advérbio de negação?",
+    answers: ["Não", "Bonito", "Eles", "Do"],
+    answer: "Não",
+    explanation: "Advérbio de negação indica negação, como 'Não'."
+  },
+  {
+    question: "Qual dessas palavras é uma preposição simples?",
+    answers: ["Em", "Falar", "Ele", "Ah!"],
+    answer: "Em",
+    explanation: "Preposições simples são palavras como 'em', 'de', 'a', 'por'."
+  },
+  {
+    question: "Qual palavra é uma conjunção coordenativa?",
+    answers: ["Mas", "Grande", "Casa", "Eles"],
+    answer: "Mas",
+    explanation: "Conjunção coordenativa liga orações independentes, como 'Mas'."
+  },
+  {
+    question: "Qual palavra é uma interjeição de surpresa?",
+    answers: ["Uau!", "Dois", "Ela", "Com"],
+    answer: "Uau!",
+    explanation: "Interjeição de surpresa expressa espanto, como 'Uau!'."
+  },
+  {
+    question: "Qual palavra é um substantivo comum?",
+    answers: ["Cachorro", "Ele", "E", "Não"],
+    answer: "Cachorro",
+    explanation: "Substantivo comum designa seres em geral, como 'Cachorro'."
+  },
+  {
+    question: "Qual palavra é um adjetivo comparativo?",
+    answers: ["Melhor", "Casa", "Eles", "Falar"],
+    answer: "Melhor",
+    explanation: "Adjetivo comparativo compara qualidades, como 'Melhor'."
+  }
+];
+
+// Embaralhar perguntas na carga do jogo
+function shuffleArray(array) {
+  for(let i = array.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+let playerName = "";
+let score = 0;
+let lives = 5;
+let current = 0;
+
+const startBtn = document.getElementById('start-btn');
+const restartBtn = document.getElementById('restart-btn');
+const questionEl = document.getElementById('question');
+const answersEl = document.querySelector('.answers');
+const feedbackEl = document.getElementById('feedback');
+const nextBtn = document.getElementById('next-btn');
+const scoreCard = document.getElementById('score-card');
+
+startBtn.addEventListener('click', startGame);
+restartBtn?.addEventListener('click', () => {
+  document.getElementById('end-screen').style.display = 'none';
+  document.getElementById('start-screen').style.display = 'block';
+});
+
+nextBtn.addEventListener('click', () => {
+  current++;
+  if(current >= questions.length){
+    endGame();
+  } else {
+    loadQuestion();
+  }
+});
+
+function startGame(){
+  playerName = document.getElementById('player-name').value.trim();
+  if(!playerName) {
+    alert("Digite seu nome para começar!");
+    return;
+  }
+
+  score = 0;
+  lives = 5;
+  current = 0;
+
+  shuffleArray(questions);
+
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+  feedbackEl.style.display = 'none';
+  nextBtn.style.display = 'none';
+
+  updateScoreCard();
+  loadQuestion();
+}
+
+function loadQuestion(){
+  feedbackEl.style.display = 'none';
+  nextBtn.style.display = 'none';
+
+  const q = questions[current];
+  questionEl.textContent = `(${current + 1}/${questions.length}) ${q.question}`;
+  answersEl.innerHTML = "";
+
+  const shuffledAnswers = shuffleArray([...q.answers]); // cria cópia embaralhada
+
+  shuffledAnswers.forEach(ans => {
+    const btn = document.createElement('button');
+    btn.textContent = ans;
+    btn.addEventListener('click', () => selectAnswer(ans, q));
+    answersEl.appendChild(btn);
+  });
+}
+
+function selectAnswer(selected, q){
+  // desabilitar botões para evitar múltiplos cliques
+  Array.from(answersEl.children).forEach(b => b.disabled = true);
+
+  if(selected === q.answer){
+    score++;
+    feedbackEl.className = 'feedback correct';
+    feedbackEl.innerHTML = `✅ Correto!<br>${q.explanation}`;
+  } else {
+    lives--;
+    feedbackEl.className = 'feedback wrong';
+    feedbackEl.innerHTML = `❌ Errado!<br>${q.explanation}`;
+  }
+
+  updateScoreCard();
+  feedbackEl.style.display = 'block';
+  nextBtn.style.display = 'inline-block';
+
+  if(lives <= 0){
+    setTimeout(() => {
+      alert("Suas vidas acabaram! Fim de jogo.");
+      endGame();
+    }, 200);
+  }
+}
+
+function updateScoreCard(){
+  scoreCard.innerHTML = `<strong>Jogador:</strong> ${playerName} | <strong>Pontuação:</strong> ${score} | <strong>Vidas:</strong> ${lives}`;
+}
+
+function endGame(){
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('end-screen').style.display = 'block';
+  document.getElementById('final-player-name').textContent = playerName;
+  document.getElementById('final-score').textContent = score;
+}
+</script>
+
+</body>
+</html>
