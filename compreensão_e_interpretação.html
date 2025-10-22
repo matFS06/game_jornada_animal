@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Histórias para Interpretar</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #667eea, #764ba2);
+      color: #fff;
+      margin: 0;
+      padding: 0 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      background: #2c2c54;
+      max-width: 600px;
+      width: 100%;
+      padding: 30px 25px 40px 25px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #ffd700;
+    }
+    #start-screen input[type="text"] {
+      padding: 10px;
+      font-size: 1.1em;
+      width: 80%;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #ffd700;
+      border: none;
+      padding: 12px 30px;
+      font-size: 1.1em;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      color: #2c2c54;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #e6c200;
+    }
+    #game {
+      display: none;
+    }
+    .story-image {
+      width: 180px;
+      height: 180px;
+      border-radius: 25%;
+      object-fit: cover;
+      margin: 20px auto;
+      display: block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      border: 3px solid #ffd700;
+    }
+    .story-text {
+      font-size: 1.1em;
+      margin-bottom: 25px;
+      line-height: 1.5em;
+    }
+    .question {
+      font-size: 1.25em;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    .options button {
+      background: #fff;
+      color: #2c2c54;
+      margin: 10px 0;
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .options button:hover {
+      background: #ffd700;
+      border-color: #e6c200;
+    }
+    .feedback {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.1em;
+      min-height: 30px;
+    }
+    .correct {
+      color: #28a745;
+    }
+    .wrong {
+      color: #dc3545;
+    }
+    .scoreboard {
+      font-size: 1em;
+      margin-bottom: 15px;
+    }
+    #next-btn {
+      margin-top: 25px;
+      padding: 12px 28px;
+      font-size: 1.1em;
+      border-radius: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    #next-btn:hover {
+      background-color: #1e7e34;
+    }
+    .btn {
+      font-size: 1.1em;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="start-screen">
+    <h1>📚 Histórias para Interpretar</h1>
+    <p>Digite seu nome para começar a jogar:</p>
+    <input type="text" id="player-name" placeholder="Seu nome aqui" maxlength="20" />
+    <br />
+    <button id="start-btn">Iniciar</button>
+  </div>
+
+  <div class="container" id="game">
+    <div class="scoreboard">
+      <strong>Jogador:</strong> <span id="display-name"></span> |
+      <strong>Pontuação:</strong> <span id="score">0</span> |
+      <strong>Vidas:</strong> <span id="lives">3</span>
+    </div>
+    <img src="" alt="Imagem da história" id="story-image" class="story-image" />
+    <div class="story-text" id="story-text">Carregando história...</div>
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <button id="next-btn">Próxima história</button>
+  </div>
+
+  <div class="container" id="end-screen" style="display:none;">
+    <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
+    <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+    <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+    <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  </div>
+
+  <div class="container" id="lost-container" style="display:none;">
+    <h2>💔 Você perdeu! Que tal tentar novamente?</h2>
+    <button class="btn" onclick="restartGame()">🔄 Tentar Novamente</button>
+  </div>
+
+  <script>
+    const stories = [
+      {
+        text: "Lucas encontrou um passarinho ferido no parque...",
+        image: "h1_lucas_passarinho.png",
+        question: "O que podemos concluir sobre Lucas?",
+        options: ["Ele demonstrou cuidado e paciência", "Ele tem medo de passarinho", "Ele deu comida para o passarinho"],
+        answer: 0
+      },
+      {
+        text: "Maria plantou uma sementinha no jardim da sua casa. Ela regava a planta todos os dias, mesmo quando estava chovendo. Maria também tirava as folhas secas e conversava com a plantinha, esperando que ela crescesse forte e bonita. Com o tempo, a sementinha virou uma flor cheia de cores.",
+        image: "h2_maria_plantinha.png",
+        question: "Qual das alternativas NÃO faz parte do cuidado que Maria teve com a planta?",
+        options: [
+          "Regar a sementinha todos os dias.",
+          "Esquecer de cuidar da planta quando chove.",
+          "Tirar suas folhas secas"
+        ],
+        answer: 1
+      },
+      {
+        text: "No dia em que o sol brilhava muito forte, Ana decidiu se cuidar. Ela colocou um chapéu grande para proteger a cabeça e levou uma garrafinha de água para não ficar desidratada. Ana sabia que o calor podia causar cansaço e que era importante se proteger para brincar e aproveitar o dia.",
+        image: "h3_ana_chapéu.png",
+        question: "Por que Ana tomou as atitudes mencionadas na história?",
+        options: [
+          "Para se proteger do calor e evitar o cansaço.",
+          "Porque queria se sentir mais bonita.",
+          "Porque ela queria ficar na sombra para dormir."
+        ],
+        answer: 0
+      },
+      {
+        text: "João encontrou um cachorrinho perdido enquanto caminhava no bairro. Ele percebeu que o cachorro não tinha coleira e parecia confuso. João pegou uma coleira que tinha em casa, colocou no cachorro e o levou para passear. Voltando para casa, postou um anúncio informando ter encontrado o cão para tentar localizar o possível dono.",
+        image: "h4_joão_cachorro.png",
+        question: "As atitudes de João revelam que:",
+        options: [
+          "Ele quer encontrar o dono, pois não gosta de cachorros.",
+          "Ele levou o cachorro para passear, pois já o considera seu.",
+          "Ele demonstrou preocupação com o cachorro e com seu possível dono."
+        ],
+        answer: 2
+      },
+      {
+        text: "Durante a aula, Clara não entendeu muito bem a explicação do professor. Por isso, ela fez várias perguntas para tirar suas dúvidas e entender melhor o assunto. Clara sabia que perguntar era importante para aprender e se dedicar mais aos estudos.",
+        image: "h5_clara_professor.png",
+        question: "O que podemos dizer sobre Clara?",
+        options: [
+          "Ela quer aprender e compreende a importância de tirar dúvidas.",
+          "Ela não estava prestando atenção na aula.",
+          "Ela estava conversando com os colegas durante a explicação."
+        ],
+        answer: 0
+      },
+      {
+        text: "Pedro ajudou sua avó na cozinha. Enquanto ela cortava os legumes, Pedro lavava a louça e arrumava a mesa. Além disso, aprendeu uma receita nova de sopa que sua avó fez e gostou muito do sabor que ficou.",
+        image: "h6_pedro_avó.png",
+        question: "O que Pedro fez com sua avó?",
+        options: [
+          "Ele ajudou ela a limpar a cozinha.",
+          "Ele ajudou a avó, enquanto ela cuidava da sopa.",
+          "Ele fez sozinho a sopa que aprendeu com a avó."
+        ],
+        answer: 1
+      },
+      {
+        text: "No zoológico, Lara ficou encantada com os animais. Ela observou cada um com muita atenção e anotou várias curiosidades para usar no trabalho da escola. Lara queria aprender mais sobre os animais e mostrou bastante interesse durante a visita.",
+        image: "h7_lara_zoologico.png",
+        question: "A postura de Lara mostra que:",
+        options: [
+          "Ela estava pensando apenas em tirar uma nota boa.",
+          "Ela se interessou pelos animais e suas curiosidades.",
+          "Ela ficou bastante encantada com o zoológico."
+        ],
+        answer: 1
+      },
+      {
+        text: "Miguel acordou cedo no sábado para ir ao parque com seus amigos. Eles passaram a manhã jogando bola, correndo e se divertindo muito. Miguel adorou estar ao ar livre e brincar com seus colegas depois de uma semana de aula.",
+        image: "h8_miguel_sábado.png",
+        question: "Com base no texto podemos afirmar que Miguel:",
+        options: [
+          "Normalmente acorda tarde aos sábados.",
+          "Miguel brinca com seus amigos no colégio e no parque.",
+          "Miguel teve um momento de lazer com seus amigos."
+        ],
+        answer: 2
+      },
+      {
+        text: "Sofia queria agradecer seu melhor amigo por ajudar em um momento difícil. Então, ela preparou uma surpresa especial: fez um desenho colorido e escreveu um cartão com palavras carinhosas para mostrar o quanto ele era importante para ela.",
+        image: "h9_sofia_amigo.png",
+        question: "Após a leitura do texto, podemos afirmar que:",
+        options: [
+          "Sofia entregou um desenho e um cartão pois está apaixonada.",
+          "Sofia teve um gesto de gratidão com o seu amigo.",
+          "Sofia queria ajudar um amigo que passava por um momento difícil."
+        ],
+        answer: 1
+      },
+      {
+        text: "Lucas adorava ler livros de aventuras. Depois de terminar a leitura de um livro que gostou muito, ele contou para a turma as partes que achou mais emocionantes e o que aprendeu com a história, deixando todos curiosos para ler também.",
+        image: "h10_lucas_livro.png",
+        question: "A atitude de Lucas fez com que:",
+        options: [
+          "A turma parasse de prestar atenção na aula.",
+          "Quisessem ler o livro na sala de aula.",
+          "Os seus colegas despertassem a vontade de ler o livro."
+        ],
+        answer: 2
+      }
+    ];
+
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game');
+    const endScreen = document.getElementById('end-screen');
+    const lostContainer = document.getElementById('lost-container');
+
+    const playerNameInput = document.getElementById('player-name');
+    const startBtn = document.getElementById('start-btn');
+    const displayName = document.getElementById('display-name');
+    const scoreSpan = document.getElementById('score');
+    const livesSpan = document.getElementById('lives');
+    const storyImage = document.getElementById('story-image');
+    const storyText = document.getElementById('story-text');
+    const questionEl = document.getElementById('question');
+    const optionsDiv = document.getElementById('options');
+    const feedbackDiv = document.getElementById('feedback');
+    const nextBtn = document.getElementById('next-btn');
+    const finalPlayerName = document.getElementById('final-player-name');
+    const finalScore = document.getElementById('final-score');
+
+    let currentStoryIndex = 0;
+    let score = 0;
+    let lives = 3;
+    let playerName = '';
+
+    function startGame() {
+      playerName = playerNameInput.value.trim();
+      if (playerName === '') {
+        alert('Por favor, digite seu nome para começar!');
+        return;
+      }
+      startScreen.style.display = 'none';
+      endScreen.style.display = 'none';
+      lostContainer.style.display = 'none';
+      gameScreen.style.display = 'block';
+
+      displayName.textContent = playerName;
+      score = 0;
+      lives = 3;
+      currentStoryIndex = 0;
+      updateScoreLives();
+      loadStory();
+    }
+
+    function updateScoreLives() {
+      scoreSpan.textContent = score;
+      livesSpan.textContent = lives;
+    }
+
+    function loadStory() {
+      feedbackDiv.textContent = '';
+      nextBtn.style.display = 'none';
+      optionsDiv.innerHTML = '';
+
+      if (currentStoryIndex >= stories.length) {
+        endGame();
+        return;
+      }
+
+      const story = stories[currentStoryIndex];
+      storyImage.src = story.image;
+      storyText.textContent = story.text;
+      questionEl.textContent = story.question;
+
+      story.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.textContent = option;
+        btn.onclick = () => checkAnswer(index);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedIndex) {
+      [...optionsDiv.children].forEach(btn => btn.disabled = true);
+
+      const story = stories[currentStoryIndex];
+      if (selectedIndex === story.answer) {
+        score += 10;
+        feedbackDiv.textContent = 'Resposta correta! 🎉';
+        feedbackDiv.className = 'feedback correct';
+      } else {
+        lives--;
+        feedbackDiv.textContent = 'Resposta errada! 😢';
+        feedbackDiv.className = 'feedback wrong';
+      }
+
+      updateScoreLives();
+
+      if (lives <= 0) {
+        loseGame();
+        return;
+      }
+
+      nextBtn.style.display = 'inline-block';
+    }
+
+    function endGame() {
+      gameScreen.style.display = 'none';
+      endScreen.style.display = 'block';
+      finalPlayerName.textContent = playerName;
+      finalScore.textContent = score;
+    }
+
+    function loseGame() {
+      gameScreen.style.display = 'none';
+      lostContainer.style.display = 'block';
+    }
+
+    function restartGame() {
+      startScreen.style.display = 'block';
+      lostContainer.style.display = 'none';
+      playerNameInput.value = '';
+    }
+
+    function nextStory() {
+      currentStoryIndex++;
+      loadStory();
+    }
+
+    function goToNextModule() {
+      alert("Função para o próximo módulo ainda não configurada!");
+    }
+
+    startBtn.addEventListener('click', startGame);
+    nextBtn.addEventListener('click', nextStory);
+  </script>
+</body>
+</html>
+
