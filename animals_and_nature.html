@@ -73,6 +73,13 @@
       font-weight: bold;
       margin-top: 15px;
     }
+    .explanation {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 10px;
+    }
     .nickname-screen {
       background-color: rgba(255,255,255,0.9);
       border-radius: 20px;
@@ -102,6 +109,7 @@
     <div class="question" id="questionText"></div>
     <div class="animal-options" id="optionsContainer"></div>
     <div class="feedback" id="feedback"></div>
+    <div class="explanation" id="explanation"></div>
   </div>
 
   <!-- Fim de jogo -->
@@ -112,22 +120,56 @@
   </div>
 
   <script>
+    const translations = {
+      rabbit: "Coelho",
+      dog: "Cachorro",
+      cat: "Gato",
+      lion: "Leão",
+      tiger: "Tigre",
+      elephant: "Elefante",
+      hippo: "Hipopótamo",
+      rhino: "Rinoceronte",
+      mouse: "Rato",
+      parrot: "Papagaio",
+      duck: "Pato",
+      bird: "Pássaro",
+      wolf: "Lobo",
+      fox: "Raposa",
+      frog: "Sapo",
+      turtle: "Tartaruga",
+      lizard: "Lagarto",
+      fish: "Peixe",
+      shark: "Tubarão",
+      dolphin: "Golfinho",
+      penguin: "Pinguim",
+      seal: "Foca",
+      polar_bear: "Urso Polar",
+      giraffe: "Girafa",
+      monkey: "Macaco",
+      bear: "Urso",
+      falcon: "Falcão",
+      zebra: "Zebra",
+      horse: "Cavalo",
+      donkey: "Burro",
+      snail: "Caracol"
+    };
+
     const questions = [
-      { question: "I have long ears and I love carrots!", correct: "rabbit", options: ["dog", "rabbit", "cat"] },
-      { question: "I am the king of the jungle!", correct: "lion", options: ["tiger", "elephant", "lion"] },
-      { question: "I can swim and I say 'quack quack'!", correct: "duck", options: ["duck", "chicken", "bird"] },
-      { question: "I am very big and I have a long trunk!", correct: "elephant", options: ["elephant", "hippo", "rhino"] },
-      { question: "I am small and I like cheese!", correct: "mouse", options: ["mouse", "cat", "rabbit"] },
-      { question: "I can fly and I have colorful feathers!", correct: "parrot", options: ["parrot", "duck", "owl"] },
-      { question: "I guard the house and bark a lot!", correct: "dog", options: ["dog", "wolf", "fox"] },
-      { question: "I sleep a lot and say 'meow'!", correct: "cat", options: ["cat", "tiger", "lion"] },
-      { question: "I am green and I can jump very high!", correct: "frog", options: ["frog", "turtle", "lizard"] },
-      { question: "I live in the ocean and have fins!", correct: "fish", options: ["fish", "shark", "dolphin"] },
-      { question: "I live in cold places and love snow!", correct: "penguin", options: ["penguin", "seal", "polar_bear"] },
-      { question: "I am very tall and have a long neck!", correct: "giraffe", options: ["camel", "giraffe", "horse"] },
-      { question: "I swing on trees and eat bananas!", correct: "monkey", options: ["bear", "monkey", "falcon"] },
-      { question: "I have black and white stripes!", correct: "zebra", options: ["horse", "zebra", "donkey"] },
-      { question: "I have a shell and move slowly!", correct: "turtle", options: ["snail", "turtle", "frog"] }
+      { question: "I have long ears and I love carrots!", correct: "rabbit" },
+      { question: "I am the king of the jungle!", correct: "lion" },
+      { question: "I can swim and I say 'quack quack'!", correct: "duck" },
+      { question: "I am very big and I have a long trunk!", correct: "elephant" },
+      { question: "I am small and I like cheese!", correct: "mouse" },
+      { question: "I can fly and I have colorful feathers!", correct: "parrot" },
+      { question: "I guard the house and bark a lot!", correct: "dog" },
+      { question: "I sleep a lot and say 'meow'!", correct: "cat" },
+      { question: "I am green and I can jump very high!", correct: "frog" },
+      { question: "I live in the ocean and have fins!", correct: "fish" },
+      { question: "I live in cold places and love snow!", correct: "penguin" },
+      { question: "I am very tall and have a long neck!", correct: "giraffe" },
+      { question: "I swing on trees and eat bananas!", correct: "monkey" },
+      { question: "I have black and white stripes!", correct: "zebra" },
+      { question: "I have a shell and move slowly!", correct: "turtle" }
     ];
 
     let current = 0;
@@ -152,9 +194,21 @@
       if (current >= questions.length) return endGame();
       const q = questions[current];
       document.getElementById("questionText").textContent = q.question;
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("explanation").textContent = "";
       const container = document.getElementById("optionsContainer");
       container.innerHTML = "";
-      q.options.forEach(option => {
+
+      // Embaralha as opções
+      const allAnimals = Object.keys(translations);
+      const options = [q.correct];
+      while (options.length < 3) {
+        const random = allAnimals[Math.floor(Math.random() * allAnimals.length)];
+        if (!options.includes(random)) options.push(random);
+      }
+      options.sort(() => Math.random() - 0.5);
+
+      options.forEach(option => {
         const div = document.createElement("div");
         div.classList.add("animal-card");
         div.innerHTML = `
@@ -168,24 +222,56 @@
 
     function checkAnswer(selected) {
       const feedback = document.getElementById("feedback");
+      const explanation = document.getElementById("explanation");
       const q = questions[current];
+      const correctPt = translations[q.correct];
+      const questionPt = translateQuestion(q.question);
+
       if (selected === q.correct) {
         score += 10;
         feedback.textContent = "✅ Resposta correta!";
         feedback.style.color = "green";
+        explanation.style.backgroundColor = "#c8f7c5";
+        explanation.style.color = "#006400";
+        explanation.textContent = `${questionPt} → Era o(a) ${correctPt}!`;
       } else {
         lives -= 1;
         feedback.textContent = `❌ Resposta errada! A resposta certa era ${q.correct.toUpperCase()}.`;
         feedback.style.color = "red";
+        explanation.style.backgroundColor = "#ffbdbd";
+        explanation.style.color = "#8b0000";
+        explanation.textContent = `${questionPt} → Era o(a) ${correctPt}.`;
       }
+
       document.getElementById("score").textContent = score;
       document.getElementById("lives").textContent = lives;
       current++;
+
       setTimeout(() => {
-        feedback.textContent = "";
         if (lives > 0) loadQuestion();
         else endGame();
-      }, 1200);
+      }, 2500);
+    }
+
+    function translateQuestion(q) {
+      const translationsQ = {
+        "I have long ears and I love carrots!": "Eu tenho orelhas longas e adoro cenouras!",
+        "I am the king of the jungle!": "Eu sou o rei da selva!",
+        "I can swim and I say 'quack quack'!": "Eu sei nadar e digo 'quack quack'!",
+        "I am very big and I have a long trunk!": "Sou muito grande e tenho uma tromba longa!",
+        "I am small and I like cheese!": "Sou pequeno e gosto de queijo!",
+        "I can fly and I have colorful feathers!": "Posso voar e tenho penas coloridas!",
+        "I guard the house and bark a lot!": "Eu protejo a casa e late muito!",
+        "I sleep a lot and say 'meow'!": "Durmo muito e digo 'miau'!",
+        "I am green and I can jump very high!": "Sou verde e posso pular bem alto!",
+        "I live in the ocean and have fins!": "Vivo no oceano e tenho nadadeiras!",
+        "I live in cold places and love snow!": "Vivo em lugares frios e adoro a neve!",
+        "I am very tall and have a long neck!": "Sou muito alto e tenho um pescoço comprido!",
+        "I swing on trees and eat bananas!": "Eu balanço nas árvores e como bananas!",
+        "I have black and white stripes!": "Tenho listras pretas e brancas!",
+        "I have a shell and move slowly!": "Tenho uma concha e me movo devagar!"
+      };
+      return translationsQ[q] || q;
     }
 
     function endGame() {
