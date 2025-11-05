@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍎 Food and Drinks</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      background: linear-gradient(to bottom right, #fff4d1, #ffe6e9);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .game-container {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      max-width: 850px;
+      margin: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      color: #6d4c41;
+      margin-bottom: 20px;
+    }
+
+    .recipe {
+      font-size: 22px;
+      color: #8d6e63;
+      margin-bottom: 20px;
+    }
+
+    .ingredients {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 25px;
+    }
+
+    .ingredient-card {
+      border: 3px solid #f8bbd0;
+      border-radius: 15px;
+      background-color: #fff0f6;
+      width: 160px;
+      padding: 15px;
+      transition: transform 0.2s;
+    }
+
+    .ingredient-card:hover { transform: scale(1.05); }
+
+    .ingredient-card img {
+      width: 80px;
+      height: 80px;
+    }
+
+    .quantity-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .quantity-controls button {
+      border: none;
+      background-color: #ffccbc;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 18px;
+      color: #5d4037;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .quantity-controls button:hover {
+      background-color: #ffab91;
+    }
+
+    .quantity-display {
+      font-size: 18px;
+      font-weight: bold;
+      color: #6d4c41;
+    }
+
+    #feedback {
+      font-size: 20px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    #nextBtn {
+      display: none;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .ingredient-card { width: 120px; padding: 10px; }
+      .ingredient-card img { width: 60px; height: 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-container">
+    <div class="top-bar">
+      <div>👤 Jogador: <span id="playerName">Guest</span></div>
+      <div>⭐ Pontos: <span id="score">0</span></div>
+      <div>🍽️ Receita: <span id="levelNum">1</span>/15</div>
+    </div>
+
+    <h2 id="recipeName" class="recipe">Let's Cook!</h2>
+    <p id="recipeText" class="fw-bold"></p>
+
+    <div class="ingredients" id="ingredients"></div>
+
+    <button id="checkBtn" class="btn btn-success mt-3" onclick="checkRecipe()">🍴 Mix!</button>
+    <button id="nextBtn" class="btn btn-warning mt-3" onclick="nextRecipe()">Next Recipe ▶️</button>
+
+    <div id="feedback"></div>
+  </div>
+
+  <script>
+    // --- Função para embaralhar ---
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    const recipes = shuffleArray([
+      { name: "🍎 Apple Pie", instruction: "For an apple pie, you need 3 apples, 1 flour, and 1 sugar.", ingredients: { apple: 3, flour: 1, sugar: 1 }, translation: "Para uma torta de maçã, você precisa de 3 maçãs, 1 farinha e 1 açúcar." },
+      { name: "🍋 Lemonade", instruction: "For lemonade, mix 2 lemons, 1 sugar, and 1 water.", ingredients: { lemon: 2, sugar: 1, water: 1 }, translation: "Para uma limonada, misture 2 limões, 1 açúcar e 1 água." },
+      { name: "🥪 Sandwich", instruction: "To make a sandwich, use 2 bread, 1 cheese, and 1 ham.", ingredients: { bread: 2, cheese: 1, ham: 1 }, translation: "Para fazer um sanduíche, use 2 pães, 1 queijo e 1 presunto." },
+      { name: "🍕 Pizza", instruction: "For a pizza, you need 1 dough, 2 cheese, and 2 tomato.", ingredients: { dough: 1, cheese: 2, tomato: 2 }, translation: "Para uma pizza, você precisa de 1 massa, 2 queijos e 2 tomates." },
+      { name: "🍰 Cake", instruction: "For a cake, use 2 flour, 2 eggs, and 1 sugar.", ingredients: { flour: 2, eggs: 2, sugar: 1 }, translation: "Para um bolo, use 2 farinhas, 2 ovos e 1 açúcar." },
+      { name: "🍓 Smoothie", instruction: "For a smoothie, blend 3 strawberries, 1 milk, and 1 sugar.", ingredients: { strawberry: 3, milk: 1, sugar: 1 }, translation: "Para um smoothie, misture 3 morangos, 1 leite e 1 açúcar." },
+      { name: "🍔 Burger", instruction: "To make a burger, use 1 bread, 1 meat, and 1 cheese.", ingredients: { bread: 1, meat: 1, cheese: 1 }, translation: "Para fazer um hambúrguer, use 1 pão, 1 carne e 1 queijo." },
+      { name: "🥗 Salad", instruction: "For a salad, mix 2 lettuce, 1 tomato, and 1 carrot.", ingredients: { lettuce: 2, tomato: 1, carrot: 1 }, translation: "Para uma salada, misture 2 alfaces, 1 tomate e 1 cenoura." },
+      { name: "🍌 Banana Shake", instruction: "For a banana shake, use 2 bananas, 1 milk, and 1 sugar.", ingredients: { banana: 2, milk: 1, sugar: 1 }, translation: "Para um milkshake de banana, use 2 bananas, 1 leite e 1 açúcar." },
+      { name: "🥞 Pancake", instruction: "For pancakes, use 2 flour, 1 milk, and 1 eggs.", ingredients: { flour: 2, milk: 1, eggs: 1 }, translation: "Para panquecas, use 2 farinhas, 1 leite e 1 ovo." },
+      { name: "🍝 Pasta", instruction: "For pasta, you need 1 noodles, 1 tomato, and 1 cheese.", ingredients: { noodles: 1, tomato: 1, cheese: 1 }, translation: "Para macarrão, você precisa de 1 macarrão, 1 tomate e 1 queijo." },
+      { name: "🍩 Donuts", instruction: "For donuts, use 2 flour, 1 sugar, and 1 milk.", ingredients: { flour: 2, sugar: 1, milk: 1 }, translation: "Para donuts, use 2 farinhas, 1 açúcar e 1 leite." },
+      { name: "🍇 Fruit Salad", instruction: "For a fruit salad, mix 1 apple, 1 banana, and 1 strawberry.", ingredients: { apple: 1, banana: 1, strawberry: 1 }, translation: "Para uma salada de frutas, misture 1 maçã, 1 banana e 1 morango." },
+      { name: "🍫 Hot Chocolate", instruction: "For hot chocolate, mix 1 milk, 1 chocolate, and 1 sugar.", ingredients: { milk: 1, chocolate: 1, sugar: 1 }, translation: "Para chocolate quente, misture 1 leite, 1 chocolate e 1 açúcar." },
+      { name: "🍳 Omelet", instruction: "For an omelet, use 2 eggs, 1 cheese, and 1 tomato.", ingredients: { eggs: 2, cheese: 1, tomato: 1 }, translation: "Para uma omelete, use 2 ovos, 1 queijo e 1 tomate." }
+    ]);
+
+    let current = 0;
+    let score = 0;
+    let selected = {};
+
+    function startRecipe() {
+      const r = recipes[current];
+      document.getElementById("recipeName").textContent = r.name;
+      document.getElementById("recipeText").textContent = r.instruction;
+      document.getElementById("levelNum").textContent = current + 1;
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("checkBtn").style.display = "inline-block";
+
+      const ingredientsContainer = document.getElementById("ingredients");
+      ingredientsContainer.innerHTML = "";
+
+      selected = {};
+      const ingKeys = shuffleArray(Object.keys(r.ingredients)); // embaralhar ingredientes
+      ingKeys.forEach(ing => {
+        selected[ing] = 0;
+
+        const card = document.createElement("div");
+        card.className = "ingredient-card";
+        card.innerHTML = `
+          <img src="foods/${ing}.png" alt="${ing}">
+          <div class="quantity-controls">
+            <button onclick="changeQty('${ing}', -1)">−</button>
+            <span id="qty-${ing}" class="quantity-display">0</span>
+            <button onclick="changeQty('${ing}', 1)">+</button>
+          </div>
+        `;
+        ingredientsContainer.appendChild(card);
+      });
+    }
+
+    function changeQty(ing, val) {
+      const newQty = Math.max(0, (selected[ing] || 0) + val);
+      selected[ing] = newQty;
+      document.getElementById(`qty-${ing}`).textContent = newQty;
+    }
+
+    function checkRecipe() {
+      const r = recipes[current];
+      const correct = Object.keys(r.ingredients).every(ing => selected[ing] === r.ingredients[ing]);
+
+      const feedback = document.getElementById("feedback");
+      if (correct) {
+        score += 10;
+        feedback.textContent = `✅ Correct! ${r.translation}`;
+        feedback.style.color = "green";
+      } else {
+        feedback.textContent = `❌ Try again! ${r.translation}`;
+        feedback.style.color = "red";
+      }
+
+      document.getElementById("score").textContent = score;
+      document.getElementById("checkBtn").style.display = "none";
+      document.getElementById("nextBtn").style.display = "inline-block";
+    }
+
+    function nextRecipe() {
+      current++;
+      if (current < recipes.length) startRecipe();
+      else endGame();
+    }
+
+    function endGame() {
+      document.querySelector(".game-container").innerHTML = `
+        <h2>🏁 Cooking Complete!</h2>
+        <p>Great job, chef! You scored ${score} points!</p>
+        <button class="btn btn-warning" onclick="location.reload()">Play Again</button>
+      `;
+    }
+
+    startRecipe();
+  </script>
+</body>
+</html>

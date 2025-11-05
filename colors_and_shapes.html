@@ -68,8 +68,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-weight: bold;
-      color: #004d40;
     }
 
     .shape:active { transform: scale(1.06); cursor: grabbing; }
@@ -128,8 +126,8 @@
 
     function startLevel() {
       if (current >= levels.length) {
-        document.getElementById("question").textContent = "🏁 Congratulations! You completed all levels!";
-        document.getElementById("feedback").textContent = `🎉 Final Score: ${score} points!`;
+        document.getElementById("question").textContent = "🏁 Parabéns! Você terminou todas as fases!";
+        document.getElementById("feedback").textContent = `🎉 Pontuação Final: ${score} pontos!`;
         document.getElementById("zones").innerHTML = "";
         document.getElementById("shapes").innerHTML = "";
         return;
@@ -138,10 +136,10 @@
       const level = levels[current];
       document.getElementById("levelNum").textContent = current + 1;
       document.getElementById("question").textContent = level.type === "color"
-        ? "🎨 Match the Color!"
+        ? "🎨 Combine as Cores!"
         : level.type === "shape"
-          ? "🟢 Match the Shape!"
-          : "🌈 Match the Color and Shape!";
+          ? "🟢 Combine as Formas!"
+          : "🌈 Combine Cor e Forma!";
 
       const shapeContainer = document.getElementById("shapes");
       const zoneContainer = document.getElementById("zones");
@@ -149,7 +147,6 @@
       zoneContainer.innerHTML = "";
       document.getElementById("feedback").textContent = "";
 
-      // restante para completar a fase
       remainingThisLevel = level.shapes.length;
 
       // criar shapes (draggables)
@@ -157,44 +154,24 @@
         const div = document.createElement("div");
         div.className = "shape";
         div.dataset.name = shape;
-        // aparência básica
+
         if (level.type === "color" && !shape.includes("_")) {
           div.style.backgroundColor = shape;
-          div.textContent = formatName(shape);
         } else if (level.type === "combo" || shape.includes("_")) {
-          // combo: cor_forma
           const [col, form] = shape.split("_");
-          div.style.display = "flex";
-          // uma pequena caixa com cor + texto (visual simples)
           div.style.backgroundColor = col;
-          div.textContent = formatName(form);
+          applyShapeStyle(div, form);
         } else {
-          // shapes (sem cor)
-          div.style.backgroundColor = "#f0f0f0";
-          div.textContent = formatName(shape);
+          applyShapeStyle(div, shape);
+          div.style.backgroundColor = "#ccc";
         }
-
-        // forma visual especial (ex.: circle)
-        if (shape.includes("circle")) div.style.borderRadius = "50%";
-        if (shape.includes("triangle")) {
-          // para triângulo vamos criar um pseudo-triangle substituto: usar clip-path
-          div.style.backgroundColor = "transparent";
-          div.style.width = "0";
-          div.style.height = "0";
-          div.style.borderLeft = "50px solid transparent";
-          div.style.borderRight = "50px solid transparent";
-          // cor do triângulo:
-          const c = shape.includes("_") ? shape.split("_")[0] : "#777";
-          div.style.borderBottom = `100px solid ${c}`;
-        }
-        if (shape.includes("star")) div.style.clipPath = "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
 
         div.draggable = true;
         addDragTouchEvents(div);
         shapeContainer.appendChild(div);
       });
 
-      // criar zonas (dropzones) embaralhadas
+      // criar zonas com nomes
       shuffleArray(level.shapes).forEach(shape => {
         const zone = document.createElement("div");
         zone.className = "dropzone";
@@ -206,63 +183,68 @@
       });
     }
 
+    function applyShapeStyle(div, shape) {
+      div.style.clipPath = "none";
+      div.style.borderRadius = "15px";
+
+      if (shape.includes("circle")) div.style.borderRadius = "50%";
+      if (shape.includes("triangle"))
+        div.style.clipPath = "polygon(50% 0%, 0% 100%, 100% 100%)";
+      if (shape.includes("star"))
+        div.style.clipPath = "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
+      if (shape.includes("heart"))
+        div.style.clipPath = "polygon(50% 80%, 20% 40%, 35% 15%, 50% 30%, 65% 15%, 80% 40%)";
+      if (shape.includes("diamond"))
+        div.style.clipPath = "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)";
+      if (shape.includes("hexagon"))
+        div.style.clipPath = "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)";
+      if (shape.includes("oval"))
+        div.style.borderRadius = "50% / 30%";
+      if (shape.includes("rectangle"))
+        div.style.borderRadius = "10px";
+      if (shape.includes("pentagon"))
+        div.style.clipPath = "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)";
+      if (shape.includes("trapezoid"))
+        div.style.clipPath = "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)";
+      if (shape.includes("crescent"))
+        div.style.clipPath = "path('M50 0A50 50 0 1 1 49.9 0Z')";
+    }
+
     function formatName(name) {
       return name.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase());
     }
 
     function addDragTouchEvents(el) {
-      // drag para desktop
       el.addEventListener("dragstart", e => {
-        // se a peça já foi escondida (por um acerto anterior), não permitir
-        if (el.style.visibility === "hidden") {
-          e.preventDefault();
-          return;
-        }
+        if (el.style.visibility === "hidden") e.preventDefault();
         e.dataTransfer.setData("text/plain", e.target.dataset.name);
       });
 
-      // suporte mobile: touch drag
       el.addEventListener("touchstart", e => {
         if (el.style.visibility === "hidden") return;
         el.classList.add("dragging");
-        e.target.dataset.touchStartX = e.touches[0].clientX;
-        e.target.dataset.touchStartY = e.touches[0].clientY;
       });
 
       el.addEventListener("touchmove", e => {
         if (el.style.visibility === "hidden") return;
         const touch = e.touches[0];
         el.style.position = "fixed";
-        el.style.left = touch.clientX - (el.offsetWidth/2) + "px";
-        el.style.top = touch.clientY - (el.offsetHeight/2) + "px";
+        el.style.left = touch.clientX - (el.offsetWidth / 2) + "px";
+        el.style.top = touch.clientY - (el.offsetHeight / 2) + "px";
         el.style.zIndex = "1000";
       });
 
       el.addEventListener("touchend", e => {
-        if (el.style.visibility === "hidden") {
-          // reset just in case
-          el.style.position = "";
-          el.style.left = "";
-          el.style.top = "";
-          el.style.zIndex = "";
-          return;
-        }
-        // toque terminou, descobrir sobre qual elemento caiu
+        if (el.style.visibility === "hidden") return;
         const touch = e.changedTouches[0];
         const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-        // restaurar posição (se não for drop correto)
         el.style.position = "";
         el.style.left = "";
         el.style.top = "";
         el.style.zIndex = "";
 
         if (dropTarget && dropTarget.classList.contains("dropzone")) {
-          // evitar dropar em zona já preenchida
-          if (dropTarget.dataset.matched === "true") {
-            // zona já usada -> feedback breve
-            flashZone(dropTarget, false);
-            return;
-          }
+          if (dropTarget.dataset.matched === "true") return;
           checkDrop(el, dropTarget);
         }
       });
@@ -272,11 +254,7 @@
       zone.addEventListener("dragover", e => e.preventDefault());
       zone.addEventListener("drop", e => {
         e.preventDefault();
-        // se já estiver preenchida, ignora
-        if (zone.dataset.matched === "true") {
-          flashZone(zone, false);
-          return;
-        }
+        if (zone.dataset.matched === "true") return;
         const name = e.dataTransfer.getData("text/plain");
         const shape = document.querySelector(`[data-name="${name}"]`);
         if (!shape) return;
@@ -285,60 +263,34 @@
     }
 
     function checkDrop(shape, zone) {
-      // proteção extra: se zona já marcada, não processar
       if (zone.dataset.matched === "true") return;
-
       const correct = zone.dataset.accept === shape.dataset.name;
 
       if (correct) {
         zone.dataset.matched = "true";
-        zone.classList.remove("wrong");
         zone.classList.add("correct");
-        // esconder a peça (apenas se for uma peça visível)
         shape.style.visibility = "hidden";
         score += 10;
         remainingThisLevel--;
-        document.getElementById("feedback").textContent = `✅ Great! Matched ${formatName(shape.dataset.name)}.`;
+        document.getElementById("feedback").textContent = "✅ Acertou!";
         document.getElementById("feedback").style.color = "green";
         document.getElementById("score").textContent = score;
       } else {
-        // feedback visual e retornar peça ao lugar (não esconder)
-        zone.classList.remove("correct");
         zone.classList.add("wrong");
-        document.getElementById("feedback").textContent = `❌ Not ${formatName(zone.dataset.accept)}. Try again.`;
+        setTimeout(() => zone.classList.remove("wrong"), 500);
+        document.getElementById("feedback").textContent = "❌ Errou! Tente novamente.";
         document.getElementById("feedback").style.color = "red";
-        // flash zone to show error and then remove class
-        flashZone(zone, false);
       }
 
-      // só avançar quando todas as zonas CORRETAS estiverem preenchidas
       if (remainingThisLevel <= 0) {
-        setTimeout(() => {
-          current++;
-          startLevel();
-        }, 900);
+        setTimeout(() => { current++; startLevel(); }, 900);
       }
-    }
-
-    function flashZone(zone, ok=true) {
-      // rápida animação de erro/acerto
-      zone.classList.add(ok ? "correct" : "wrong");
-      setTimeout(() => {
-        if (zone.dataset.matched === "true") {
-          zone.classList.add("correct");
-          zone.classList.remove("wrong");
-        } else {
-          zone.classList.remove("correct");
-          zone.classList.remove("wrong");
-        }
-      }, 700);
     }
 
     function shuffleArray(array) {
       return [...array].sort(() => Math.random() - 0.5);
     }
 
-    // iniciar primeira fase
     startLevel();
   </script>
 </body>
