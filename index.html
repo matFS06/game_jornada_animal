@@ -47,14 +47,14 @@
       width: 100%;
       max-width: 120px;
       height: auto;
-      aspect-ratio: 1 / 1; /* mantém quadrado */
+      aspect-ratio: 1 / 1;
       object-fit: cover;
       border-radius: 50%;
       margin-bottom: 10px;
     }
 
     .subject-label {
-      font-size: clamp(16px, 2.5vw, 22px); /* escala conforme a largura da tela */
+      font-size: clamp(16px, 2.5vw, 22px);
       color: #ff5722;
       font-weight: bold;
       text-align: center;
@@ -63,24 +63,58 @@
     .more-info {
       margin-top: 10px;
     }
+
+    /* ------------------------------ */
+    /*      ESTILO DOS MÓDULOS B     */
+    /* ------------------------------ */
+
     .module-list {
       display: none;
-      margin-top: 10px;
-      text-align: left;
-      padding-left: 20px;
-      font-size: 16px;
+      margin-top: 15px;
+      padding-left: 0;
     }
-    .module-list li {
-      margin-bottom: 5px;
-      color: #4e342e;
+    .module-item {
+      background: #f1f8ff;
+      border-left: 5px solid #f5b221;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: background-color 0.2s, transform 0.2s;
+      list-style: none;
+
+      height: 55px; 
+      display: flex;
+      align-items: center;
     }
-    
+
+    .module-item:hover {
+      background: #dceeff;
+      transform: translateX(5px);
+    }
+
+    .module-item a {
+      text-decoration: none;
+      color: #0d47a1;
+      font-weight: bold;
+
+      /* tamanho inicial da fonte */
+      font-size: 17px;
+
+      /* permite múltiplas linhas SE precisar */
+      white-space: normal;
+
+      line-height: 1.1;
+      display: block;
+      width: 100%;
+    }
+
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Bem-vindo ao Game Jornada Animal!<br>Escolha sua Aventura!</h1>
     <div class="row justify-content-center">
+
       <!-- Botão Biologia -->
       <div class="col-6 col-md-4">
         <div class="subject-button" onclick="window.location.href='zoologia.html'">
@@ -90,11 +124,11 @@
         <div class="more-info">
           <button class="btn btn-sm btn-warning" onclick="toggleModules('bio-modules')">Veja os módulos!</button>
           <ul id="bio-modules" class="module-list">
-            <li><a href="zoologia.html">🐾 Zoologia</a></li>
-            <li><a href="botanica.html">🌿 Botânica</a></li>
-            <li><a href="fisiologia.html">🫀 Fisiologia</a></li>
-            <li><a href="cadeia_alimentar.html">🍽️ Cadeia Alimentar</a></li>
-            <li><a href="nutrientes.html">🥦 Nutrientes</a></li>
+            <li class="module-item"><a href="zoologia.html">🐾 Zoologia</a></li>
+            <li class="module-item"><a href="botanica.html">🌿 Botânica</a></li>
+            <li class="module-item"><a href="fisiologia.html">🫀 Fisiologia</a></li>
+            <li class="module-item"><a href="cadeia_alimentar.html">🍽️ Cadeia Alimentar</a></li>
+            <li class="module-item"><a href="nutrientes.html">🥦 Nutrientes</a></li>
           </ul>
         </div>
       </div>
@@ -108,11 +142,11 @@
         <div class="more-info">
           <button class="btn btn-sm btn-warning" onclick="toggleModules('geo-modules')">Veja os módulos!</button>
           <ul id="geo-modules" class="module-list">
-            <li><a href="biomas.html">🌱 Biomas</a></li>
-            <li><a href="paises.html">🏳️ Países</a></li>
-            <li><a href="atividades_economicas.html">💼 Atividades Econômicas</a></li>
-            <li><a href="estados.html">🗺️ Estados e Regiões</a></li>
-            <li><a href="climas.html">🌦️ Climas </a></li>
+            <li class="module-item"><a href="biomas.html">🌱 Biomas</a></li>
+            <li class="module-item"><a href="paises.html">🏳️ Países</a></li>
+            <li class="module-item"><a href="atividades_economicas.html">💼 Atividades Econômicas</a></li>
+            <li class="module-item"><a href="estados.html">🗺️ Estados e Regiões</a></li>
+            <li class="module-item"><a href="climas.html">🌦️ Climas</a></li>
           </ul>
         </div>
       </div>
@@ -126,11 +160,11 @@
         <div class="more-info">
           <button class="btn btn-sm btn-warning" onclick="toggleModules('historia-modules')">Veja os módulos!</button>
           <ul id="historia-modules" class="module-list">
-            <li><a href="pre_historia.html">🔥 Pré-História</a></li>
-            <li><a href="idade_antiga.html">🏛️ Idade Antiga</a></li>
-            <li><a href="idade_media.html">🏰 Idade Média</a></li>
-            <li><a href="idade_moderna.html">💡 Idade Moderna</a></li>
-            <li><a href="idade_contemporanea.html">📱 Idade Contemporânea</a></li>
+            <li class="module-item"><a href="pre_historia.html">🔥 Pré-História</a></li>
+            <li class="module-item"><a href="idade_antiga.html">🏛️ Idade Antiga</a></li>
+            <li class="module-item"><a href="idade_media.html">🏰 Idade Média</a></li>
+            <li class="module-item"><a href="idade_moderna.html">💡 Idade Moderna</a></li>
+            <li class="module-item"><a href="idade_contemporanea.html">📱 Idade Contemporânea</a></li>
           </ul>
         </div>
       </div>
@@ -144,11 +178,11 @@
         <div class="more-info">
           <button class="btn btn-sm btn-warning" onclick="toggleModules('matematica-modules')">Veja os módulos!</button>
           <ul id="matematica-modules" class="module-list">
-            <li><a href="operacoes.html">🧮 Operações Básicas</a></li>
-            <li><a href="geometria.html">📐 Geometria</a></li>
-            <li><a href="potencia_e_raiz.html">⚡ Potência e Raiz</a></li>
-            <li><a href="fracoes_e_porcentagens.html">➗ Frações e Porcentagens</a></li>
-            <li><a href="conversao_de_medidas.html">⚖️ Conversão de Medidas</a></li>
+            <li class="module-item"><a href="operacoes.html">🧮 Operações Básicas</a></li>
+            <li class="module-item"><a href="geometria.html">📐 Geometria</a></li>
+            <li class="module-item"><a href="potencia_e_raiz.html">⚡ Potência e Raiz</a></li>
+            <li class="module-item"><a href="fracoes_e_porcentagens.html">➗ Frações e Porcentagens</a></li>
+            <li class="module-item"><a href="conversao_de_medidas.html">⚖️ Conversão de Medidas</a></li>
           </ul>
         </div>
       </div>
@@ -162,40 +196,65 @@
         <div class="more-info">
           <button class="btn btn-sm btn-warning" onclick="toggleModules('portugues-modules')">Veja os módulos!</button>
           <ul id="portugues-modules" class="module-list">
-            <li><a href="ortografia_e_acentuacao.html">📖 Ortografia e Acentuação</a></li>
-            <li><a href="classes_gramaticais.html">🧩 Classes Gramaticais</a></li>
-            <li><a href="tempos_e_modos_verbais.html">⏳ Tempos e Modos Verbais</a></li>
-            <li><a href="homônimas_e_parônimas.html">🌀 Palavras Homônimas e Parônimas</a></li>
-            <li><a href="compreensão_e_interpretação.html">💬 Compreensão e Interpretação de Texto</a></li>
+            <li class="module-item"><a href="ortografia_e_acentuacao.html">📖 Ortografia e Acentuação</a></li>
+            <li class="module-item"><a href="classes_gramaticais.html">🧩 Classes Gramaticais</a></li>
+            <li class="module-item"><a href="tempos_e_modos_verbais.html">⏳ Tempos e Modos Verbais</a></li>
+            <li class="module-item"><a href="homônimas_e_parônimas.html">🌀 Palavras Homônimas e Parônimas</a></li>
+            <li class="module-item"><a href="compreensão_e_interpretação.html">💬 Compreensão e Interpretação de Texto</a></li>
           </ul>
         </div>
       </div>
 
       <!-- Botão Inglês -->
       <div class="col-6 col-md-4">
-        <div class="subject-button" onclick="window.location.href='index.html'.html'">
+        <div class="subject-button" onclick="window.location.href='index.html'">
           <img src="img_inglês.png" alt="Inglês" class="subject-image">
           <div class="subject-label">Inglês</div>
         </div>
         <div class="more-info">
           <button class="btn btn-sm btn-warning" onclick="toggleModules('english-modules')">Veja os módulos!</button>
           <ul id="english-modules" class="module-list">
-            <li><a href="animals_and_nature.html">🐶 Animals and Nature</a></li>
-            <li><a href="colors_and_shapes.html">🎨 Colors and Shapes</a></li>
-            <li><a href="food_and_drinks.html">🍎 Food and Drinks</a></li>
-            <li><a href="home_and_family.html">🏠 My Home and Family</a></li>
-            <li><a href="daily_routines.html">🕒 Daily Routines</a></li>
+            <li class="module-item"><a href="animals_and_nature.html">🐶 Animals and Nature</a></li>
+            <li class="module-item"><a href="colors_and_shapes.html">🎨 Colors and Shapes</a></li>
+            <li class="module-item"><a href="food_and_drinks.html">🍎 Food and Drinks</a></li>
+            <li class="module-item"><a href="home_and_family.html">🏠 My Home and Family</a></li>
+            <li class="module-item"><a href="daily_routines.html">🕒 Daily Routines</a></li>
           </ul>
         </div>
       </div>
+
     </div>
   </div>
 
   <script>
+    function ajustarFontes() {
+      const itens = document.querySelectorAll('.module-item a');
+
+      itens.forEach(el => {
+        let fontSize = 17; // tamanho inicial
+        el.style.fontSize = fontSize + "px";
+
+        // diminui até caber dentro da caixa (.module-item = 55px)
+        while (el.scrollHeight > 50 && fontSize > 10) {
+          fontSize--;
+          el.style.fontSize = fontSize + "px";
+        }
+      });
+    }
+
+    // roda ao abrir módulos e ao carregar página
+    window.onload = ajustarFontes;
+    window.onresize = ajustarFontes;
+
+    // adaptar ao abrir lista
     function toggleModules(id) {
       const list = document.getElementById(id);
-      list.style.display = (list.style.display === 'none' || list.style.display === '') ? 'block' : 'none';
+      const isOpen = list.style.display === 'block';
+      list.style.display = isOpen ? 'none' : 'block';
+
+      if (!isOpen) ajustarFontes();
     }
   </script>
+
 </body>
 </html>
