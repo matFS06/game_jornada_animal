@@ -32,7 +32,7 @@
     justify-content:center;
     align-items:center;
     overflow:hidden;
-    margin:0 auto 20px auto; /* CENTRALIZA */
+    margin:0 auto 20px auto;
   }
 
   #image-box img {
@@ -52,7 +52,6 @@
     border-radius:12px;
     cursor:pointer;
     font-weight:bold;
-    transition:0.2s;
   }
 
   .option-btn:hover {
@@ -159,7 +158,7 @@ function loadQuestion(){
   },6000);
 }
 
-/* ===== OPÇÕES COM BLOQUEIO FATHER x UNCLE ===== */
+/* ===== OPÇÕES COM BLOQUEIOS ===== */
 
 function showOptions(correctItem){
   const optionsDiv = document.getElementById("options");
@@ -167,11 +166,18 @@ function showOptions(correctItem){
 
   let wrong = group.filter(x => x.word !== correctItem.word);
 
+  /* BLOQUEIOS */
   if(correctItem.word === "Father"){
     wrong = wrong.filter(x => x.word !== "Uncle");
   }
   if(correctItem.word === "Uncle"){
-    wrong = wrong.filter(x => x.word !== "Father");
+    wrong = wrong.filter(x => x.word !== "Father" && x.word !== "Brother");
+  }
+  if(correctItem.word === "Brother"){
+    wrong = wrong.filter(x => x.word !== "Baby" && x.word !== "Uncle");
+  }
+  if(correctItem.word === "Baby"){
+    wrong = wrong.filter(x => x.word !== "Brother");
   }
 
   shuffle(wrong);
@@ -193,7 +199,7 @@ function showOptions(correctItem){
   });
 }
 
-/* ===== FEEDBACK EM PT-BR ===== */
+/* ===== FEEDBACK ===== */
 
 function checkAnswer(selected, correctItem){
   const fb = document.getElementById("feedback");
