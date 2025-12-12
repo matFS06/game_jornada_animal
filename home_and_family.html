@@ -84,7 +84,7 @@
     border-radius:50%;
     cursor:pointer;
     width:120px;
-    height:100px;
+    height:120px;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -98,7 +98,6 @@
     object-fit:cover;
   }
 
-  /* SVG responsivo */
   #lines-svg {
     position:absolute;
     top:0;
@@ -108,11 +107,14 @@
     height:100%;
   }
 
-  /* ===== MOBILE REAL ===== */
+  /* ========= RESPONSIVIDADE REAL ========= */
+
   @media (max-width:700px){
+
     .pair-container {
       flex-direction:column;
       align-items:center;
+      gap:12px;
     }
 
     .words, .images {
@@ -121,37 +123,51 @@
     }
 
     .word-box {
-      width:85%;
-      max-width:none;
-      height:90px;
+      width:80%;
+      max-width:280px;
+      height:70px;
       font-size:18px;
+      padding:10px;
     }
 
     .img-box {
-      width:110px;
-      height:110px;
-    }
-
-    .img-box img {
-      width:100%;
-      height:100%;
+      width:90px;
+      height:90px;
     }
   }
 
   @media (max-width:420px){
+
     .word-box {
-      height:80px;
-      font-size:16px;
+      width:85%;
+      max-width:250px;
+      height:60px;
+      font-size:15px;
+      padding:8px;
     }
 
     .img-box {
-      width:95px;
-      height:95px;
+      width:80px;
+      height:80px;
+    }
+  }
+
+  @media (max-width:360px){
+
+    .word-box {
+      width:90%;
+      max-width:220px;
+      height:55px;
+      font-size:14px;
+    }
+
+    .img-box {
+      width:70px;
+      height:70px;
     }
   }
 
 </style>
-
 </head>
 
 <body>
@@ -165,7 +181,7 @@
   <h2 id="levelTitle">🏠 My Home & Family</h2>
   <p class="fw-bold">Match the words with the correct pictures.</p>
 
-  <svg id="lines-svg" width="100%" height="100%"></svg>
+  <svg id="lines-svg"></svg>
 
   <div class="pair-container">
     <div id="words" class="words"></div>
@@ -180,7 +196,6 @@
   <div id="feedback"></div>
 </div>
 
-<!-- ================= JAVASCRIPT DO GAME ================= -->
 <script>
 const family = [
   { word: "Father", img: "father.png", translation: "Pai" },
