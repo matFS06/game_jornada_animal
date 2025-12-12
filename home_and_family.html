@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>🏠 My Home & Family</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>Picture Quiz – Home & Family</title>
 
 <style>
   body {
@@ -21,385 +20,217 @@
     max-width:900px;
     margin:auto;
     box-shadow:0 4px 12px rgba(0,0,0,0.2);
-    position:relative;
   }
 
-  .header-box {
-    display:flex;
-    justify-content:space-between;
-    font-weight:bold;
-    font-size:20px;
-    margin-bottom:10px;
-  }
-
-  .pair-container {
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    width:100%;
-    gap:10px;
-  }
-
-  .words {
-    width:48%;
-    display:flex;
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .word-box {
-    background:#fff0f6;
-    border:3px solid #ffc1e3;
-    padding:15px;
-    margin-bottom:20px;
-    border-radius:12px;
-    cursor:pointer;
-    font-weight:bold;
-
-    height:100px;
+  #image-box {
+    width:75%;
+    height:400px;
+    background:#ffe6f7;
+    border:3px solid #ffb3db;
+    border-radius:20px;
     display:flex;
     justify-content:center;
     align-items:center;
-
-    width:100%;
-    max-width:360px;
-    font-size:20px;
-
-    word-wrap:break-word;
-    overflow-wrap:break-word;
-    text-align:center;
+    overflow:hidden;
+    margin:0 auto 20px auto; /* CENTRALIZA */
   }
 
-  .images {
-    width:45%;
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-  }
-
-  .img-box {
-    background:#fff0f6;
-    border:3px solid #ffc1e3;
-    margin-bottom:20px;
-    border-radius:50%;
-    cursor:pointer;
-    width:120px;
-    height:120px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:0;
-  }
-
-  .img-box img {
+  #image-box img {
     width:100%;
     height:100%;
-    border-radius:50%;
     object-fit:cover;
   }
 
-  #lines-svg {
-    position:absolute;
-    top:0;
-    left:0;
-    pointer-events:none;
-    width:100%;
-    height:100%;
+  .option-btn {
+    width:90%;
+    max-width:500px;
+    background:#fff0f6;
+    border:3px solid #ffc1e3;
+    padding:15px;
+    font-size:22px;
+    margin:10px auto;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.2s;
   }
 
-  /* ========= RESPONSIVIDADE REAL ========= */
-
-  @media (max-width:700px){
-
-    .pair-container {
-      flex-direction:column;
-      align-items:center;
-      gap:12px;
-    }
-
-    .words, .images {
-      width:100%;
-      align-items:center;
-    }
-
-    .word-box {
-      width:80%;
-      max-width:280px;
-      height:70px;
-      font-size:18px;
-      padding:10px;
-    }
-
-    .img-box {
-      width:90px;
-      height:90px;
-    }
+  .option-btn:hover {
+    background:#ffd6eb;
   }
 
-  @media (max-width:420px){
-
-    .word-box {
-      width:85%;
-      max-width:250px;
-      height:60px;
-      font-size:15px;
-      padding:8px;
-    }
-
-    .img-box {
-      width:80px;
-      height:80px;
-    }
+  #feedback {
+    margin-top:15px;
+    font-size:22px;
+    font-weight:bold;
   }
-
-  @media (max-width:360px){
-
-    .word-box {
-      width:90%;
-      max-width:220px;
-      height:55px;
-      font-size:14px;
-    }
-
-    .img-box {
-      width:70px;
-      height:70px;
-    }
-  }
-
 </style>
 </head>
 
 <body>
 
 <div class="game-container">
-  <div class="header-box">
-    <div id="questionNumber">Question 1/8</div>
+
+  <div style="display:flex;justify-content:space-between;font-size:22px;font-weight:bold;">
+    <div id="questionNumber">Question 1/16</div>
     <div id="scoreBox">Score: 0</div>
   </div>
 
-  <h2 id="levelTitle">🏠 My Home & Family</h2>
-  <p class="fw-bold">Match the words with the correct pictures.</p>
+  <h2>🏠 My Home & Family – Picture Quiz</h2>
 
-  <svg id="lines-svg"></svg>
-
-  <div class="pair-container">
-    <div id="words" class="words"></div>
-    <div id="images" class="images"></div>
+  <div id="image-box">
+    <img id="quiz-image">
   </div>
 
-  <div style="margin-top:10px;">
-    <button id="checkBtn" class="btn btn-success" onclick="checkMatch()">Check ✔️</button>
-    <button id="nextBtn" class="btn btn-warning" onclick="nextLevel()" style="display:none;">Next ▶️</button>
-  </div>
-
+  <div id="options"></div>
   <div id="feedback"></div>
+
 </div>
 
 <script>
+/* ===== DADOS ===== */
+
 const family = [
-  { word: "Father", img: "father.png", translation: "Pai" },
-  { word: "Mother", img: "mother.png", translation: "Mãe" },
-  { word: "Brother", img: "brother.png", translation: "Irmão" },
-  { word: "Sister", img: "sister.png", translation: "Irmã" },
-  { word: "Grandfather", img: "grandfather.png", translation: "Avô" },
-  { word: "Grandmother", img: "grandmother.png", translation: "Avó" },
-  { word: "Baby", img: "baby.png", translation: "Bebê" },
-  { word: "Uncle", img: "uncle.png", translation: "Tio" }
+  { word:"Father", img:"father.png", pt:"Pai" },
+  { word:"Mother", img:"mother.png", pt:"Mãe" },
+  { word:"Brother", img:"brother.png", pt:"Irmão" },
+  { word:"Sister", img:"sister.png", pt:"Irmã" },
+  { word:"Grandfather", img:"grandfather.png", pt:"Avô" },
+  { word:"Grandmother", img:"grandmother.png", pt:"Avó" },
+  { word:"Baby", img:"baby.png", pt:"Bebê" },
+  { word:"Uncle", img:"uncle.png", pt:"Tio" }
 ];
 
 const home = [
-  { word: "Bed", img: "bed.png", translation: "Cama" },
-  { word: "Kitchen", img: "kitchen.png", translation: "Cozinha" },
-  { word: "House", img: "house.png", translation: "Casa" },
-  { word: "Chair", img: "chair.png", translation: "Cadeira" },
-  { word: "Window", img: "window.png", translation: "Janela" },
-  { word: "Door", img: "door.png", translation: "Porta" },
-  { word: "Table", img: "table.png", translation: "Mesa" },
-  { word: "Lamp", img: "lamp.png", translation: "Lâmpada" }
+  { word:"Bed", img:"bed.png", pt:"Cama" },
+  { word:"Kitchen", img:"kitchen.png", pt:"Cozinha" },
+  { word:"House", img:"house.png", pt:"Casa" },
+  { word:"Chair", img:"chair.png", pt:"Cadeira" },
+  { word:"Window", img:"window.png", pt:"Janela" },
+  { word:"Door", img:"door.png", pt:"Porta" },
+  { word:"Table", img:"table.png", pt:"Mesa" },
+  { word:"Lamp", img:"lamp.png", pt:"Lâmpada" }
 ];
 
-const QUESTIONS_FIXED = [
-  [ {category:'family', key:'Father'}, {category:'family','key':'Brother'}, {category:'home','key':'Bed'}, {category:'home','key':'Chair'} ],
-  [ {category:'family', key:'Mother'}, {category:'family','key':'Sister'}, {category:'home','key':'Window'}, {category:'home','key':'Door'} ],
-  [ {category:'family', key:'Grandfather'}, {category:'family','key':'Grandmother'}, {category:'home','key':'Kitchen'}, {category:'home','key':'House'} ],
-  [ {category:'family', key:'Baby'}, {category:'family','key':'Uncle'}, {category:'home','key':'Table'}, {category:'home','key':'Lamp'} ],
-  [ {category:'family', key:'Father'}, {category:'family','key':'Sister'}, {category:'home','key':'Kitchen'}, {category:'home','key':'Window'} ],
-  [ {category:'family', key:'Mother'}, {category:'family','key':'Brother'}, {category:'home','key':'Bed'}, {category:'home','key':'Door'} ],
-  [ {category:'family', key:'Grandfather'}, {category:'family','key':'Baby'}, {category:'home','key':'House'}, {category:'home','key':'Chair'} ],
-  [ {category:'family', key:'Grandmother'}, {category:'family','key':'Uncle'}, {category:'home','key':'Table'}, {category:'home','key':'Lamp'} ]
+const ALL_ITEMS = [
+  ...family.map(i => ({...i, category:"family"})),
+  ...home.map(i => ({...i, category:"home"}))
 ];
 
-function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
-function findItemObj(category, key){
-  return (category==='family' ? family : home).find(x => x.word === key);
+function shuffle(arr){
+  return arr.sort(()=>Math.random()-0.5);
 }
 
-let questionsOrder = [];
-let currentQuestionIndex = 0;
-let score = 0;
-let connections = {};
-let selectedWordPos = null;
-let wordsOnScreen = [];
-let imagesOnScreen = [];
+/* ===== ESTADO ===== */
 
-function initGame(){
-  questionsOrder = shuffle([...Array(QUESTIONS_FIXED.length).keys()]);
-  currentQuestionIndex = 0;
+let order = [];
+let current = 0;
+let score = 0;
+
+/* ===== JOGO ===== */
+
+function startGame(){
+  order = shuffle([...ALL_ITEMS]);
+  current = 0;
   score = 0;
   updateHeader();
   loadQuestion();
 }
 
 function updateHeader(){
-  document.getElementById('questionNumber').innerText =
-    `Question ${currentQuestionIndex+1}/${QUESTIONS_FIXED.length}`;
-  document.getElementById('scoreBox').innerText = `Score: ${score}`;
+  document.getElementById("questionNumber").innerText =
+    `Question ${current+1}/16`;
+  document.getElementById("scoreBox").innerText =
+    `Score: ${score}`;
 }
 
 function loadQuestion(){
-  connections = {};
-  selectedWordPos = null;
-  document.getElementById('feedback').innerHTML = '';
-  document.getElementById('nextBtn').style.display = 'none';
-  document.getElementById('checkBtn').style.display = 'inline-block';
+  document.getElementById("feedback").innerHTML = "";
+  document.getElementById("options").innerHTML = "";
+  document.getElementById("image-box").style.display = "flex";
+
+  const item = order[current];
+  const folder = item.category === "family" ? "family" : "home";
+  document.getElementById("quiz-image").src = `${folder}/${item.img}`;
+
+  setTimeout(()=>{
+    document.getElementById("image-box").style.display = "none";
+    showOptions(item);
+  },6000);
+}
+
+/* ===== OPÇÕES COM BLOQUEIO FATHER x UNCLE ===== */
+
+function showOptions(correctItem){
+  const optionsDiv = document.getElementById("options");
+  const group = correctItem.category === "family" ? family : home;
+
+  let wrong = group.filter(x => x.word !== correctItem.word);
+
+  if(correctItem.word === "Father"){
+    wrong = wrong.filter(x => x.word !== "Uncle");
+  }
+  if(correctItem.word === "Uncle"){
+    wrong = wrong.filter(x => x.word !== "Father");
+  }
+
+  shuffle(wrong);
+  wrong = wrong.slice(0,3);
+
+  let options = shuffle([
+    correctItem.word,
+    wrong[0].word,
+    wrong[1].word,
+    wrong[2].word
+  ]);
+
+  options.forEach(opt=>{
+    const btn = document.createElement("div");
+    btn.className = "option-btn";
+    btn.innerText = opt;
+    btn.onclick = ()=>checkAnswer(opt, correctItem);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+/* ===== FEEDBACK EM PT-BR ===== */
+
+function checkAnswer(selected, correctItem){
+  const fb = document.getElementById("feedback");
+
+  if(selected === correctItem.word){
+    fb.style.color = "green";
+    fb.innerHTML = `🎉 Muito bem!<br>
+      <b>${correctItem.word}</b> significa <b>${correctItem.pt}</b>.`;
+    score += 10;
+  } else {
+    fb.style.color = "red";
+    fb.innerHTML = `😢 Que pena, você errou.<br>
+      A resposta correta é <b>${correctItem.word}</b> — <b>${correctItem.pt}</b>.`;
+  }
 
   updateHeader();
-
-  const qIdx = questionsOrder[currentQuestionIndex];
-  const fixed = QUESTIONS_FIXED[qIdx];
-
-  const items = fixed.map(it => findItemObj(it.category, it.key));
-  wordsOnScreen = shuffle(items.map(i => i.word));
-  imagesOnScreen = shuffle([...items]);
-
-  render();
+  setTimeout(nextQuestion, 2000);
 }
 
-function render(){
-  const wordsDiv = document.getElementById('words');
-  const imagesDiv = document.getElementById('images');
-  const svg = document.getElementById('lines-svg');
-
-  wordsDiv.innerHTML = '';
-  imagesDiv.innerHTML = '';
-  svg.innerHTML = '';
-
-  wordsOnScreen.forEach((w, idx) => {
-    const el = document.createElement('div');
-    el.className = 'word-box';
-    el.id = 'w'+idx;
-    el.innerText = w;
-    el.onclick = ()=> selectWord(idx);
-    wordsDiv.appendChild(el);
-  });
-
-  imagesOnScreen.forEach((itm, idx) => {
-    const el = document.createElement('div');
-    el.className = 'img-box';
-    el.id = 'i'+idx;
-    el.onclick = ()=> connectImage(idx);
-    const img = document.createElement('img');
-    const folder = (family.some(f=>f.word===itm.word) ? 'family' : 'home');
-    img.src = `${folder}/${itm.img}`;
-    img.alt = itm.word;
-    el.appendChild(img);
-    imagesDiv.appendChild(el);
-  });
-}
-
-function selectWord(pos){
-  selectedWordPos = pos;
-  document.querySelectorAll('.word-box').forEach(el=>el.style.outline='none');
-  const el = document.getElementById('w'+pos);
-  if(el) el.style.outline = '3px solid #3b82f6';
-}
-
-function connectImage(imgPos){
-  if(selectedWordPos===null) return;
-  connections[selectedWordPos] = imgPos;
-  selectedWordPos = null;
-  document.querySelectorAll('.word-box').forEach(el=>el.style.outline='none');
-  drawLines();
-}
-
-function drawLines(){
-  const svg = document.getElementById('lines-svg');
-  svg.innerHTML = '';
-  const sr = svg.getBoundingClientRect();
-  Object.keys(connections).forEach(ws=>{
-    const wIdx = Number(ws);
-    const iIdx = connections[ws];
-    const wEl = document.getElementById('w'+wIdx);
-    const iEl = document.getElementById('i'+iIdx);
-    if(!wEl || !iEl) return;
-    const wr = wEl.getBoundingClientRect();
-    const ir = iEl.getBoundingClientRect();
-    const x1 = wr.right - sr.left;
-    const y1 = wr.top + wr.height/2 - sr.top;
-    const x2 = ir.left - sr.left;
-    const y2 = ir.top + ir.height/2 - sr.top;
-    const line = document.createElementNS("http://www.w3.org/2000/svg",'line');
-    line.setAttribute('x1',x1);
-    line.setAttribute('y1',y1);
-    line.setAttribute('x2',x2);
-    line.setAttribute('y2',y2);
-    line.setAttribute('stroke','purple');
-    line.setAttribute('stroke-width','4');
-    line.setAttribute('stroke-linecap','round');
-    svg.appendChild(line);
-  });
-}
-
-function checkMatch(){
-  let correct = 0;
-  let explanation = '';
-
-  for(let wPos=0; wPos<4; wPos++){
-    const word = wordsOnScreen[wPos];
-    const mappedImgPos = connections[wPos];
-    const originalObj = (()=>{
-      const fixed = QUESTIONS_FIXED[questionsOrder[currentQuestionIndex]];
-      const found = fixed.find(x=>x.key===word);
-      return findItemObj(found.category, found.key);
-    })();
-
-    if(typeof mappedImgPos === 'number'){
-      const chosenObj = imagesOnScreen[mappedImgPos];
-      if(chosenObj.word === word){
-        correct++;
-        explanation += `✔️ <b>${word}</b> = ${originalObj.translation}<br>`;
-      } else {
-        explanation += `❌ <b>${word}</b> = ${originalObj.translation} (Você ligou em <b>${chosenObj.word}</b>)<br>`;
-      }
-    } else {
-      explanation += `❌ <b>${word}</b> = ${originalObj.translation} (Não ligado)<br>`;
-    }
-  }
-
-  score += correct * 10;
-  document.getElementById('feedback').innerHTML =
-    `You got <b>${correct}/4</b> correct!<br><br>${explanation}`;
-  document.getElementById('scoreBox').innerText = `Score: ${score}`;
-  document.getElementById('checkBtn').style.display = 'none';
-  document.getElementById('nextBtn').style.display = 'inline-block';
-}
-
-function nextLevel(){
-  if(currentQuestionIndex < QUESTIONS_FIXED.length - 1){
-    currentQuestionIndex++;
-    loadQuestion();
-    updateHeader();
+function nextQuestion(){
+  current++;
+  if(current >= 16){
+    endGame();
   } else {
-    document.querySelector('.game-container').innerHTML = `
-      <h2>🎉 Parabéns!</h2>
-      <p>Final Score: <b>${score}</b> / 320</p>
-      <button class="btn btn-warning" onclick="location.reload()">Play Again</button>
-    `;
+    loadQuestion();
   }
 }
 
-initGame();
+function endGame(){
+  document.querySelector(".game-container").innerHTML = `
+    <h2>🎉 Parabéns!</h2>
+    <p style="font-size:26px;">Pontuação final: <b>${score}</b> / 160</p>
+    <button class="option-btn" onclick="location.reload()">Jogar novamente</button>
+  `;
+}
+
+startGame();
 </script>
 
 </body>
