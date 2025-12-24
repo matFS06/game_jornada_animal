@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Daily Routines – English Game</title>
+
+<style>
+body{
+  font-family:'Comic Sans MS',cursive;
+  background:linear-gradient(to bottom right,#d6f6ff,#ffe6f2);
+  text-align:center;
+  padding:20px;
+}
+
+.game-container{
+  background:white;
+  border-radius:20px;
+  padding:25px;
+  max-width:900px;
+  margin:auto;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  font-size:22px;
+  font-weight:bold;
+}
+
+#image-box{
+  width:70%;
+  height:360px;
+  background:#fff0f6;
+  border:3px solid #ffc1e3;
+  border-radius:20px;
+  margin:20px auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+#image-box img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.sentence{
+  font-size:28px;
+  margin:20px 0;
+}
+
+.option-btn{
+  width:90%;
+  max-width:420px;
+  background:#fff0f6;
+  border:3px solid #ffc1e3;
+  padding:15px;
+  font-size:22px;
+  margin:10px auto;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.option-btn:hover{
+  background:#ffd6eb;
+}
+
+#feedback{
+  margin-top:15px;
+  font-size:22px;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game-container">
+
+  <div class="header">
+    <div id="questionNumber">Question 1/15</div>
+    <div id="scoreBox">Score: 0</div>
+  </div>
+
+  <h2>🕒 Daily Routines</h2>
+
+  <div id="image-box">
+    <img id="routine-image">
+  </div>
+
+  <div class="sentence" id="sentence"></div>
+
+  <div id="options"></div>
+  <div id="feedback"></div>
+
+</div>
+
+<script>
+const routines = [
+ {
+   sentence:"I ____ up in the morning.",
+   answer:"wake",
+   options:["wake","eat","sleep"],
+   img:"wakeup.png",
+   pt:"Eu acordo de manhã"
+ },
+ {
+   sentence:"I ____ my teeth in the morning.",
+   answer:"brush",
+   options:["brush","eat","play"],
+   img:"brush.png",
+   pt:"Eu escovo os dentes"
+ },
+ {
+   sentence:"I ____ a shower after waking up.",
+   answer:"take",
+   options:["take","eat","read"],
+   img:"shower.png",
+   pt:"Eu tomo banho"
+ },
+ {
+   sentence:"I ____ dressed before school.",
+   answer:"get",
+   options:["get","play","eat"],
+   img:"getdressed.png",
+   pt:"Eu me visto"
+ },
+ {
+   sentence:"I ____ breakfast with my family.",
+   answer:"have",
+   options:["have","play","read"],
+   img:"breakfast.png",
+   pt:"Eu tomo café da manhã"
+ },
+ {
+   sentence:"I ____ to school every day.",
+   answer:"go",
+   options:["go","eat","sleep"],
+   img:"school.png",
+   pt:"Eu vou para a escola"
+ },
+ {
+   sentence:"I ____ lunch at noon.",
+   answer:"have",
+   options:["have","read","play"],
+   img:"lunch.png",
+   pt:"Eu almoço"
+ },
+ {
+   sentence:"I ____ English at school.",
+   answer:"study",
+   options:["study","sleep","eat"],
+   img:"study.png",
+   pt:"Eu estudo"
+ },
+ {
+   sentence:"I ____ my homework at home.",
+   answer:"do",
+   options:["do","eat","watch"],
+   img:"homework.png",
+   pt:"Eu faço o dever de casa"
+ },
+ {
+   sentence:"I ____ with my friends.",
+   answer:"play",
+   options:["play","read","sleep"],
+   img:"play.png",
+   pt:"Eu brinco com meus amigos"
+ },
+ {
+   sentence:"I ____ TV in the afternoon.",
+   answer:"watch",
+   options:["watch","read","eat"],
+   img:"tv.png",
+   pt:"Eu assisto TV"
+ },
+ {
+   sentence:"I ____ dinner with my family.",
+   answer:"have",
+   options:["have","play","sleep"],
+   img:"dinner.png",
+   pt:"Eu janto"
+ },
+ {
+   sentence:"I ____ a book before bed.",
+   answer:"read",
+   options:["read","eat","watch"],
+   img:"read.png",
+   pt:"Eu leio um livro"
+ },
+ {
+   sentence:"I ____ to bed at night.",
+   answer:"go",
+   options:["go","eat","play"],
+   img:"bedtime.png",
+   pt:"Eu vou para a cama"
+ },
+ {
+   sentence:"I ____ at night.",
+   answer:"sleep",
+   options:["sleep","eat","play"],
+   img:"sleep.png",
+   pt:"Eu durmo"
+ }
+];
+
+function shuffle(arr){
+  return arr.sort(()=>Math.random()-0.5);
+}
+
+let order = shuffle([...routines]);
+let current = 0;
+let score = 0;
+
+function updateHeader(){
+  document.getElementById("questionNumber").innerText =
+    `Question ${current+1}/15`;
+  document.getElementById("scoreBox").innerText =
+    `Score: ${score}`;
+}
+
+function loadQuestion(){
+  document.getElementById("feedback").innerHTML = "";
+  document.getElementById("options").innerHTML = "";
+
+  const item = order[current];
+
+  document.getElementById("routine-image").src =
+    `routines/${item.img}`;
+
+  document.getElementById("sentence").innerText =
+    item.sentence;
+
+  shuffle([...item.options]).forEach(opt=>{
+    const btn = document.createElement("div");
+    btn.className = "option-btn";
+    btn.innerText = opt;
+    btn.onclick = ()=>checkAnswer(opt,item);
+    document.getElementById("options").appendChild(btn);
+  });
+
+  updateHeader();
+}
+
+function checkAnswer(selected,item){
+  const fb = document.getElementById("feedback");
+
+  if(selected === item.answer){
+    fb.style.color = "green";
+    fb.innerHTML = `🎉 Muito bem!<br>${item.pt}`;
+    score += 10;
+  } else {
+    fb.style.color = "red";
+    fb.innerHTML = `😢 The correct answer is <b>${item.answer}</b>`;
+  }
+
+  updateHeader();
+  setTimeout(nextQuestion,2000);
+}
+
+function nextQuestion(){
+  current++;
+  if(current >= order.length){
+    endGame();
+  } else {
+    loadQuestion();
+  }
+}
+
+function endGame(){
+  document.querySelector(".game-container").innerHTML = `
+    <h2>🎉 Great job!</h2>
+    <p style="font-size:26px;">
+      Final score: <b>${score}</b> / 150
+    </p>
+    <button class="option-btn" onclick="location.reload()">
+      Play again
+    </button>
+  `;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
