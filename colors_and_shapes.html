@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎨 Colors and Shapes (corrigido)</title>
+  <title>🎨 Colors and Shapes</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
     body {
       font-family: 'Comic Sans MS', cursive;
@@ -79,7 +80,6 @@
       min-height: 28px;
     }
 
-    /* Responsivo */
     @media (max-width: 600px) {
       .shape { width: 80px; height: 80px; }
       .dropzone { width: 120px; height: 120px; font-size: 16px; }
@@ -87,9 +87,25 @@
     }
   </style>
 </head>
+
 <body>
 
-  <div class="game-container">
+  <!-- TELA DE INÍCIO -->
+  <div id="startScreen" class="game-container">
+    <h2>🎮 Bem-vindo!</h2>
+    <p>Digite seu nome para começar</p>
+
+    <input id="nicknameInput"
+           class="form-control mb-3 text-center"
+           placeholder="Seu nome"
+           maxlength="15">
+
+    <button class="btn btn-success" onclick="startGame()">▶ Iniciar Jogo</button>
+  </div>
+
+  <!-- JOGO -->
+  <div class="game-container" id="gameScreen" style="display:none">
+
     <div class="top-bar">
       <div>👤 Jogador: <span id="playerName">Guest</span></div>
       <div>⭐ Pontos: <span id="score">0</span></div>
@@ -100,34 +116,48 @@
     <div class="shape-container" id="shapes"></div>
     <div class="zone-container" id="zones"></div>
     <div id="feedback" class="feedback"></div>
+
   </div>
 
   <script>
     const levels = [
-      { type: "color", shapes: ["red", "blue", "yellow"] },
-      { type: "color", shapes: ["green", "orange", "purple"] },
-      { type: "color", shapes: ["pink", "brown", "black"] },
-      { type: "shape", shapes: ["circle", "square", "triangle"] },
-      { type: "shape", shapes: ["star", "heart", "diamond"] },
-      { type: "shape", shapes: ["rectangle", "oval", "hexagon"] },
-      { type: "combo", shapes: ["red_circle", "blue_square", "yellow_triangle"] },
-      { type: "combo", shapes: ["green_star", "orange_heart", "purple_diamond"] },
-      { type: "combo", shapes: ["pink_rectangle", "brown_oval", "black_hexagon"] },
-      { type: "color", shapes: ["white", "gray", "cyan"] },
-      { type: "shape", shapes: ["pentagon", "trapezoid", "crescent"] },
-      { type: "combo", shapes: ["gray_circle", "white_square", "cyan_triangle"] },
-      { type: "combo", shapes: ["red_star", "blue_heart", "yellow_diamond"] },
-      { type: "combo", shapes: ["green_oval", "orange_rectangle", "purple_hexagon"] },
-      { type: "final", shapes: ["rainbow_star", "golden_circle", "silver_triangle"] }
+      { type: "color", shapes: ["red","blue","yellow"] },
+      { type: "color", shapes: ["green","orange","purple"] },
+      { type: "color", shapes: ["pink","brown","black"] },
+      { type: "shape", shapes: ["circle","square","triangle"] },
+      { type: "shape", shapes: ["star","heart","diamond"] },
+      { type: "shape", shapes: ["rectangle","oval","hexagon"] },
+      { type: "combo", shapes: ["red_circle","blue_square","yellow_triangle"] },
+      { type: "combo", shapes: ["green_star","orange_heart","purple_diamond"] },
+      { type: "combo", shapes: ["pink_rectangle","brown_oval","black_hexagon"] },
+      { type: "color", shapes: ["white","gray","cyan"] },
+      { type: "shape", shapes: ["pentagon","trapezoid","crescent"] },
+      { type: "combo", shapes: ["gray_circle","white_square","cyan_triangle"] },
+      { type: "combo", shapes: ["red_star","blue_heart","yellow_diamond"] },
+      { type: "combo", shapes: ["green_oval","orange_rectangle","purple_hexagon"] },
+      { type: "final", shapes: ["rainbow_star","golden_circle","silver_triangle"] }
     ];
 
     let score = 0, current = 0;
     let remainingThisLevel = 0;
 
+    function startGame() {
+      const name = document.getElementById("nicknameInput").value.trim();
+      if (!name) return alert("Digite seu nome 🙂");
+
+      document.getElementById("playerName").textContent = name;
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("gameScreen").style.display = "block";
+
+      startLevel();
+    }
+
     function startLevel() {
       if (current >= levels.length) {
-        document.getElementById("question").textContent = "🏁 Parabéns! Você terminou todas as fases!";
-        document.getElementById("feedback").textContent = `🎉 Pontuação Final: ${score} pontos!`;
+        document.getElementById("question").textContent =
+          "🏁 Parabéns! Você terminou todas as fases!";
+        document.getElementById("feedback").textContent =
+          `🎉 Pontuação Final: ${score} pontos!`;
         document.getElementById("zones").innerHTML = "";
         document.getElementById("shapes").innerHTML = "";
         return;
@@ -135,21 +165,20 @@
 
       const level = levels[current];
       document.getElementById("levelNum").textContent = current + 1;
-      document.getElementById("question").textContent = level.type === "color"
-        ? "🎨 Combine as Cores!"
-        : level.type === "shape"
-          ? "🟢 Combine as Formas!"
-          : "🌈 Combine Cor e Forma!";
+      document.getElementById("question").textContent =
+        level.type === "color" ? "🎨 Combine as Cores!" :
+        level.type === "shape" ? "🟢 Combine as Formas!" :
+        "🌈 Combine Cor e Forma!";
 
       const shapeContainer = document.getElementById("shapes");
       const zoneContainer = document.getElementById("zones");
+
       shapeContainer.innerHTML = "";
       zoneContainer.innerHTML = "";
       document.getElementById("feedback").textContent = "";
 
       remainingThisLevel = level.shapes.length;
 
-      // criar shapes (draggables)
       level.shapes.forEach(shape => {
         const div = document.createElement("div");
         div.className = "shape";
@@ -157,7 +186,7 @@
 
         if (level.type === "color" && !shape.includes("_")) {
           div.style.backgroundColor = shape;
-        } else if (level.type === "combo" || shape.includes("_")) {
+        } else if (shape.includes("_")) {
           const [col, form] = shape.split("_");
           div.style.backgroundColor = col;
           applyShapeStyle(div, form);
@@ -171,7 +200,6 @@
         shapeContainer.appendChild(div);
       });
 
-      // criar zonas com nomes
       shuffleArray(level.shapes).forEach(shape => {
         const zone = document.createElement("div");
         zone.className = "dropzone";
@@ -191,23 +219,25 @@
       if (shape.includes("triangle"))
         div.style.clipPath = "polygon(50% 0%, 0% 100%, 100% 100%)";
       if (shape.includes("star"))
-        div.style.clipPath = "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
+        div.style.clipPath =
+          "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
       if (shape.includes("heart"))
-        div.style.clipPath = "polygon(50% 80%, 20% 40%, 35% 15%, 50% 30%, 65% 15%, 80% 40%)";
+        div.style.clipPath =
+          "polygon(50% 80%, 20% 40%, 35% 15%, 50% 30%, 65% 15%, 80% 40%)";
       if (shape.includes("diamond"))
-        div.style.clipPath = "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)";
+        div.style.clipPath =
+          "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)";
       if (shape.includes("hexagon"))
-        div.style.clipPath = "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)";
+        div.style.clipPath =
+          "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)";
       if (shape.includes("oval"))
         div.style.borderRadius = "50% / 30%";
-      if (shape.includes("rectangle"))
-        div.style.borderRadius = "10px";
       if (shape.includes("pentagon"))
-        div.style.clipPath = "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)";
+        div.style.clipPath =
+          "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)";
       if (shape.includes("trapezoid"))
-        div.style.clipPath = "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)";
-      if (shape.includes("crescent"))
-        div.style.clipPath = "path('M50 0A50 50 0 1 1 49.9 0Z')";
+        div.style.clipPath =
+          "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)";
     }
 
     function formatName(name) {
@@ -216,37 +246,28 @@
 
     function addDragTouchEvents(el) {
       el.addEventListener("dragstart", e => {
-        if (el.style.visibility === "hidden") e.preventDefault();
-        e.dataTransfer.setData("text/plain", e.target.dataset.name);
+        e.dataTransfer.setData("text/plain", el.dataset.name);
       });
 
-      el.addEventListener("touchstart", e => {
-        if (el.style.visibility === "hidden") return;
+      el.addEventListener("touchstart", () => {
         el.classList.add("dragging");
       });
 
       el.addEventListener("touchmove", e => {
-        if (el.style.visibility === "hidden") return;
-        const touch = e.touches[0];
+        const t = e.touches[0];
         el.style.position = "fixed";
-        el.style.left = touch.clientX - (el.offsetWidth / 2) + "px";
-        el.style.top = touch.clientY - (el.offsetHeight / 2) + "px";
+        el.style.left = t.clientX - el.offsetWidth / 2 + "px";
+        el.style.top = t.clientY - el.offsetHeight / 2 + "px";
         el.style.zIndex = "1000";
       });
 
       el.addEventListener("touchend", e => {
-        if (el.style.visibility === "hidden") return;
-        const touch = e.changedTouches[0];
-        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+        const t = e.changedTouches[0];
+        const drop = document.elementFromPoint(t.clientX, t.clientY);
         el.style.position = "";
-        el.style.left = "";
-        el.style.top = "";
         el.style.zIndex = "";
-
-        if (dropTarget && dropTarget.classList.contains("dropzone")) {
-          if (dropTarget.dataset.matched === "true") return;
-          checkDrop(el, dropTarget);
-        }
+        if (drop && drop.classList.contains("dropzone"))
+          checkDrop(el, drop);
       });
     }
 
@@ -254,32 +275,27 @@
       zone.addEventListener("dragover", e => e.preventDefault());
       zone.addEventListener("drop", e => {
         e.preventDefault();
-        if (zone.dataset.matched === "true") return;
         const name = e.dataTransfer.getData("text/plain");
         const shape = document.querySelector(`[data-name="${name}"]`);
-        if (!shape) return;
-        checkDrop(shape, zone);
+        if (shape) checkDrop(shape, zone);
       });
     }
 
     function checkDrop(shape, zone) {
       if (zone.dataset.matched === "true") return;
-      const correct = zone.dataset.accept === shape.dataset.name;
 
-      if (correct) {
+      if (zone.dataset.accept === shape.dataset.name) {
         zone.dataset.matched = "true";
         zone.classList.add("correct");
         shape.style.visibility = "hidden";
         score += 10;
         remainingThisLevel--;
-        document.getElementById("feedback").textContent = "✅ Acertou!";
-        document.getElementById("feedback").style.color = "green";
         document.getElementById("score").textContent = score;
+        document.getElementById("feedback").textContent = "✅ Acertou!";
       } else {
         zone.classList.add("wrong");
         setTimeout(() => zone.classList.remove("wrong"), 500);
-        document.getElementById("feedback").textContent = "❌ Errou! Tente novamente.";
-        document.getElementById("feedback").style.color = "red";
+        document.getElementById("feedback").textContent = "❌ Errou!";
       }
 
       if (remainingThisLevel <= 0) {
@@ -287,11 +303,10 @@
       }
     }
 
-    function shuffleArray(array) {
-      return [...array].sort(() => Math.random() - 0.5);
+    function shuffleArray(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
     }
-
-    startLevel();
   </script>
+
 </body>
 </html>

@@ -102,112 +102,113 @@ body{
 
 <script>
 const routines = [
- {
-   sentence:"I ____ up in the morning.",
-   answer:"wake",
-   options:["wake","eat","sleep"],
-   img:"wakeup.png",
-   pt:"Eu acordo de manhã"
- },
- {
-   sentence:"I ____ my teeth in the morning.",
-   answer:"brush",
-   options:["brush","eat","play"],
-   img:"brush.png",
-   pt:"Eu escovo os dentes"
- },
- {
-   sentence:"I ____ a shower after waking up.",
-   answer:"take",
-   options:["take","eat","read"],
-   img:"shower.png",
-   pt:"Eu tomo banho"
- },
- {
-   sentence:"I ____ dressed before school.",
-   answer:"get",
-   options:["get","play","eat"],
-   img:"getdressed.png",
-   pt:"Eu me visto"
- },
- {
-   sentence:"I ____ breakfast with my family.",
-   answer:"have",
-   options:["have","play","read"],
-   img:"breakfast.png",
-   pt:"Eu tomo café da manhã"
- },
- {
-   sentence:"I ____ to school every day.",
-   answer:"go",
-   options:["go","eat","sleep"],
-   img:"school.png",
-   pt:"Eu vou para a escola"
- },
- {
-   sentence:"I ____ lunch at noon.",
-   answer:"have",
-   options:["have","read","play"],
-   img:"lunch.png",
-   pt:"Eu almoço"
- },
- {
-   sentence:"I ____ English at school.",
-   answer:"study",
-   options:["study","sleep","eat"],
-   img:"study.png",
-   pt:"Eu estudo"
- },
- {
-   sentence:"I ____ my homework at home.",
-   answer:"do",
-   options:["do","eat","watch"],
-   img:"homework.png",
-   pt:"Eu faço o dever de casa"
- },
- {
-   sentence:"I ____ with my friends.",
-   answer:"play",
-   options:["play","read","sleep"],
-   img:"play.png",
-   pt:"Eu brinco com meus amigos"
- },
- {
-   sentence:"I ____ TV in the afternoon.",
-   answer:"watch",
-   options:["watch","read","eat"],
-   img:"tv.png",
-   pt:"Eu assisto TV"
- },
- {
-   sentence:"I ____ dinner with my family.",
-   answer:"have",
-   options:["have","play","sleep"],
-   img:"dinner.png",
-   pt:"Eu janto"
- },
- {
-   sentence:"I ____ a book before bed.",
-   answer:"read",
-   options:["read","eat","watch"],
-   img:"read.png",
-   pt:"Eu leio um livro"
- },
- {
-   sentence:"I ____ to bed at night.",
-   answer:"go",
-   options:["go","eat","play"],
-   img:"bedtime.png",
-   pt:"Eu vou para a cama"
- },
- {
-   sentence:"I ____ at night.",
-   answer:"sleep",
-   options:["sleep","eat","play"],
-   img:"sleep.png",
-   pt:"Eu durmo"
- }
+  {
+    sentence: "I ____ up in the morning.",
+    answer: "wake",
+    options: ["wake", "eat", "sleep"],
+    img: "wakeup.png",
+    pt: "Eu acordo de manhã."
+  },
+  {
+    sentence: "I ____ my teeth in the morning.",
+    answer: "brush",
+    options: ["brush", "eat", "play"],
+    img: "brush.png",
+    pt: "Eu escovo os dentes de manhã."
+  },
+  {
+    sentence: "I ____ a shower after waking up.",
+    answer: "take",
+    options: ["take", "eat", "read"],
+    img: "shower.png",
+    pt: "Eu tomo banho depois de acordar."
+  },
+  {
+    sentence: "I ____ dressed before school.",
+    answer: "get",
+    options: ["get", "play", "eat"],
+    img: "getdressed.png",
+    pt: "Eu me visto antes de ir para a escola."
+  },
+  {
+    sentence: "I ____ breakfast with my family.",
+    answer: "have",
+    options: ["have", "play", "read"],
+    img: "breakfast.png",
+    pt: "Eu tomo café da manhã com minha família."
+  },
+  {
+    sentence: "I ____ to school every day.",
+    answer: "go",
+    options: ["go", "eat", "sleep"],
+    img: "school.png",
+    pt: "Eu vou para a escola todos os dias."
+  },
+  {
+    sentence: "I ____ lunch at noon.",
+    answer: "have",
+    options: ["have", "read", "play"],
+    img: "lunch.png",
+    pt: "Eu almoço ao meio-dia."
+  },
+  {
+    sentence: "I ____ English at school.",
+    answer: "study",
+    options: ["study", "sleep", "eat"],
+    img: "study.png",
+    pt: "Eu estudo inglês na escola."
+  },
+  {
+    sentence: "I ____ my homework at home.",
+    answer: "do",
+    options: ["do", "eat", "watch"],
+    img: "homework.png",
+    pt: "Eu faço meu dever de casa em casa."
+  },
+  {
+    sentence: "I ____ with my friends.",
+    answer: "play",
+    options: ["play", "read", "sleep"],
+    img: "play.png",
+    pt: "Eu brinco com meus amigos."
+  },
+  {
+    sentence: "I ____ TV in the afternoon.",
+    answer: "watch",
+    options: ["watch", "read", "eat"],
+    img: "tv.png",
+    pt: "Eu assisto TV à tarde."
+  },
+  {
+    sentence: "I ____ dinner with my family.",
+    answer: "have",
+    options: ["have", "play", "sleep"],
+    img: "dinner.png",
+    pt: "Eu janto com minha família."
+  },
+  {
+    sentence: "I ____ a book before bed.",
+    answer: "read",
+    options: ["read", "eat", "watch"],
+    img: "read.png",
+    pt: "Eu leio um livro antes de dormir."
+  },
+  {
+    sentence: "I ____ to bed at night.",
+    answer: "go",
+    options: ["go", "eat", "play"],
+    img: "bedtime.png",
+    pt: "Eu vou para a cama à noite."
+  },
+  {
+    sentence: "I ____ at night.",
+    answer: "sleep",
+    options: ["sleep", "eat", "play"],
+    img: "sleep.png",
+    pt: "Eu durmo à noite."
+  }
 ];
+
 
 function shuffle(arr){
   return arr.sort(()=>Math.random()-0.5);
