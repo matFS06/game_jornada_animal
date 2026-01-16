@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jogo de Geometria – Módulo 2</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -26,6 +31,8 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       padding: 20px 30px;
       text-align: center;
+      overflow-y: auto;
+      max-height: 90vh;
     }
 
     h1 {
@@ -68,6 +75,11 @@
 
     .option.incorrect {
       background-color: #e74c3c !important;
+    }
+
+    /* Impede múltiplos cliques na mesma questão */
+    .options.disabled {
+      pointer-events: none;
     }
 
     .btn {
@@ -119,11 +131,19 @@
       font-weight: bold;
       font-size: 18px;
     }
+
+    /* Estilo do container do Gráfico (Adicionado) */
+    #chart-container {
+      width: 100%;
+      margin: 20px 0;
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
 
-<!-- Tela inicial -->
 <div id="start-screen" class="game-container">
   <h2>Bem-vindo ao desafio da Geometria!</h2>
   <img src="logo_geometria.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;" />
@@ -132,7 +152,6 @@
   <button class="btn" onclick="startGame()">Iniciar</button>
 </div>
 
-<!-- Scoreboard -->
 <div id="scoreboard" class="scoreboard">
   <span id="player-display">Jogador: </span>
   <span id="score">Pontos: 0</span>
@@ -150,10 +169,16 @@
   </div>
 </div>
 
-<!-- Tela final -->
 <div id="end-screen" class="game-container" style="display: none;">
   <h2>🏁 Fim de Jogo, <span id="final-player-name"></span>!</h2>
   <p>Você marcou <strong><span id="final-score"></span> ponto(s)</strong>.</p>
+  
+  <div id="chart-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <button class="btn" style="background-color: #27ae60;" onclick="generatePDF()">📥 Baixar Boletim PDF</button>
+  <br>
   <button class="btn" onclick="restartGame()">🔄 Jogar Novamente</button>
   <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
 </div>
@@ -164,8 +189,12 @@
   let score = 0;
   let lives = 5;
 
+  // Variáveis para rastreamento (Adicionado)
+  let scoreHistory = [0]; 
+  let playerReport = [];
+
   const levels = [
-     // Fase 1: Fórmula do quadrado
+      // Fase 1: Fórmula do quadrado
     {
         type: "formula",
         figure: "Quadrado",
@@ -316,6 +345,7 @@
     const question = document.getElementById("question");
     const feedback = document.getElementById("feedback");
 
+    optionsZone.classList.remove("disabled"); // Reativa cliques
     document.getElementById("figure-name").textContent = `Figura: ${level.figure}`;
     document.getElementById("next-btn").style.display = "none";
     optionsZone.innerHTML = "";
@@ -334,7 +364,10 @@
 
   function checkAnswer(element, level) {
     const allOptions = document.querySelectorAll(".option");
-    allOptions.forEach(opt => opt.classList.remove("correct", "incorrect"));
+    const optionsZone = document.getElementById("options-zone");
+    
+    // Desabilita outros cliques nesta fase
+    optionsZone.classList.add("disabled");
 
     let selected = element.textContent;
     let correct = level.correctAnswer;
@@ -343,28 +376,38 @@
       selected = parseFloat(selected);
     }
 
+    const isCorrect = (selected === correct);
+
+    // Salva dados para o relatório (Adicionado)
+    playerReport.push({
+      pergunta: level.question,
+      escolhida: element.textContent,
+      gabarito: level.correctAnswer,
+      resultado: isCorrect ? "Acertou" : "Errou"
+    });
+
     const feedback = document.getElementById("feedback");
 
-    if (selected === correct) {
+    if (isCorrect) {
       element.classList.add("correct");
       feedback.textContent = "✅ Correto!";
       score += level.type === "area" ? 20 : 10;
-      document.getElementById("score").textContent = `Pontos: ${score}`;
-      document.getElementById("next-btn").style.display = "inline-block";
     } else {
-        element.classList.add("incorrect");
-        feedback.textContent = "❌ Tente novamente!";
-        
-        lives--;
-        document.getElementById("lives").textContent = `Vidas: ${lives} ❤️`;
+      element.classList.add("incorrect");
+      feedback.textContent = "❌ Tente novamente!";
+      lives--;
+    }
 
-        if (lives <= 0) {
-        document.getElementById("game").style.display = "none";
-        document.getElementById("scoreboard").style.display = "none";
-        document.getElementById("end-screen").style.display = "block";
-        document.getElementById("final-player-name").textContent = playerName;
-        document.getElementById("final-score").textContent = score;
-        }
+    // Registra histórico para o gráfico
+    scoreHistory.push(score);
+    
+    document.getElementById("score").textContent = `Pontos: ${score}`;
+    document.getElementById("lives").textContent = `Vidas: ${lives} ❤️`;
+
+    if (lives <= 0) {
+        showFinalScreen();
+    } else {
+        document.getElementById("next-btn").style.display = "inline-block";
     }
   }
 
@@ -373,23 +416,94 @@
     if (currentLevel < levels.length) {
         loadLevel();
     } else {
-        // Finaliza o jogo corretamente
-        document.getElementById("game").style.display = "none";
-        document.getElementById("scoreboard").style.display = "none";
-        document.getElementById("end-screen").style.display = "block";
-        document.getElementById("final-player-name").textContent = playerName;
-        document.getElementById("final-score").textContent = score;
+        showFinalScreen();
     }
   }
 
+  // Função centralizada para fim de jogo (Adicionado)
+  function showFinalScreen() {
+    document.getElementById("game").style.display = "none";
+    document.getElementById("scoreboard").style.display = "none";
+    document.getElementById("end-screen").style.display = "block";
+    document.getElementById("final-player-name").textContent = playerName;
+    document.getElementById("final-score").textContent = score;
+    renderChart();
+  }
 
-    function restartGame() {
-        location.reload(); // simples recarregamento
-    }
+  // Função para desenhar o gráfico (Adicionado)
+  function renderChart() {
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: scoreHistory.map((_, i) => `Fase ${i}`),
+            datasets: [{
+                label: 'Evolução da Pontuação',
+                data: scoreHistory,
+                borderColor: '#007acc',
+                backgroundColor: 'rgba(0, 122, 204, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+  }
 
-    function goToNextModule() {
-        window.location.href = "potencia_e_raiz.html";
-    }
+  // Função para gerar o Boletim PDF (Adicionado)
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Cabeçalho
+    doc.setFontSize(18);
+    doc.setTextColor(44, 62, 80);
+    doc.text("BOLETIM ESCOLAR - MÓDULO GEOMETRIA", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.text(`Aluno(a): ${playerName}`, 20, 35);
+    doc.text(`Pontuação Total: ${score} pontos`, 20, 42);
+    doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 49);
+
+    // Tabela de gabarito
+    const tableRows = playerReport.map(item => [
+      item.pergunta,
+      item.escolhida,
+      item.gabarito,
+      item.resultado
+    ]);
+
+    doc.autoTable({
+      startY: 55,
+      head: [['Pergunta', 'Sua Resposta', 'Gabarito', 'Status']],
+      body: tableRows,
+      headStyles: { fillColor: [0, 122, 204] },
+      didParseCell: function(data) {
+          if (data.column.index === 3 && data.cell.section === 'body') {
+              if (data.cell.raw === 'Errou') {
+                  data.cell.styles.textColor = [231, 76, 60];
+              } else {
+                  data.cell.styles.textColor = [76, 175, 80];
+              }
+          }
+      }
+    });
+
+    doc.save(`Boletim_${playerName}_Geometria.pdf`);
+  }
+
+  function restartGame() {
+      location.reload(); 
+  }
+
+  function goToNextModule() {
+      window.location.href = "potencia_e_raiz.html";
+  }
 </script>
 
 </body>

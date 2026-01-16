@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jogo de Operações</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Georgia', serif;
@@ -51,6 +56,7 @@
       margin: 0 10px;
       font-size: 24px;
       vertical-align: middle;
+      border-radius: 5px;
     }
 
     .option {
@@ -62,7 +68,12 @@
       border-radius: 8px;
       font-size: 20px;
       cursor: pointer;
+      transition: 0.3s;
     }
+
+    .option:hover { background-color: #005a99; }
+    
+    .disabled { pointer-events: none; opacity: 0.7; }
 
     .btn {
       padding: 10px 20px;
@@ -72,10 +83,21 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      margin: 5px;
     }
 
-    .btn:hover {
-      background-color: #005a99;
+    .btn:hover { background-color: #005a99; }
+    
+    .btn-pdf { background-color: #27ae60; }
+    .btn-pdf:hover { background-color: #1e8449; }
+
+    #chart-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
     }
 
     input[type="text"] {
@@ -90,7 +112,6 @@
 </head>
 <body>
 
-<!-- Tela inicial -->
 <div id="start-screen" class="container">
   <h2>Bem-vindo ao Desafio das Operações!</h2>
   <img src="logo_operacoes.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;" />
@@ -99,27 +120,27 @@
   <button class="btn" onclick="startGame()">Iniciar</button>
 </div>
 
-<!-- Scoreboard -->
 <div id="scoreboard" class="scoreboard" style="display: none;">
   <span id="player-display">Jogador:</span>
   <span id="score">Pontos: 0</span>
   <span id="lives">Vidas: 3 ❤️</span>
 </div>
 
-<!-- Jogo -->
 <div id="game-screen" class="container" style="display: none;">
-  <div class="drop-zone" id="question-zone">
-    <!-- Operação aparece aqui -->
-  </div>
-  <div id="options-zone">
-    <!-- Opções aparecem aqui -->
-  </div>
+  <div class="drop-zone" id="question-zone"></div>
+  <div id="options-zone"></div>
 </div>
 
-<!-- Tela final -->
 <div id="end-screen" class="container" style="display: none;">
   <h2>🏁 Fim de Jogo, <span id="final-player-name"></span>!</h2>
   <p>Você marcou <strong><span id="final-score"></span> ponto(s)</strong>.</p>
+  
+  <div id="chart-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <button class="btn btn-pdf" onclick="generatePDF()">📥 Baixar Boletim em PDF</button>
+  <br>
   <button class="btn" onclick="restartGame()">🔄 Jogar Novamente</button>
   <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
 </div>
@@ -128,8 +149,13 @@
   let playerName = "";
   let score = 0;
   let lives = 3;
+  let questionIndex = 0;
+
+  // Dados para Relatório e Gráfico
+  let scoreHistory = [0];
+  let reportData = [];
+
   const questions = [
-    // Primeiras 8 perguntas (resultado faltando)
     { question: "10 × 2 ÷ 4", result: 5 },
     { question: "7 + 6 × 3", result: 25 },
     { question: "8 ÷ 2 + 6", result: 10 },
@@ -138,33 +164,17 @@
     { question: "12 ÷ 4 × 3", result: 9 },
     { question: "15 ÷ 5 + 8", result: 11 },
     { question: "6 × 2 - 4", result: 8 },
-
-    // Últimas 4 perguntas com operador faltando, resultado dado:
-    // Questão 9: 15 / 5 ☐ 2 = 6     (resposta: ×)
-    { questionParts: ["15", "÷", "5", null, "2"], result: 6, missing: 3 },
-
-    // Questão 10 (corrigida)
-    { questionParts: ["6", null, "5", "×", "2"], result: 16, missing: 1 },   // 6 + (5 × 2) = 16
-
-    // Questão 11: 2 ☐ 8 - 3 = 13    (resposta: ×)
-    { questionParts: ["2", null, "8", "-", "3"], result: 13, missing: 1 },
-
-    // Questão 12: 20 - 12 ☐ 4 = 17  (resposta: ÷)
-    { questionParts: ["20", "-", "12", null, "4"], result: 17, missing: 3 }
-    ];
-
-
-  // Limitar as perguntas para 12
-  let questionIndex = 0;
+    { questionParts: ["15", "÷", "5", null, "2"], result: 6, missing: 3, label: "15 ÷ 5 ? 2 = 6" },
+    { questionParts: ["6", null, "5", "×", "2"], result: 16, missing: 1, label: "6 ? 5 × 2 = 16" },
+    { questionParts: ["2", null, "8", "-", "3"], result: 13, missing: 1, label: "2 ? 8 - 3 = 13" },
+    { questionParts: ["20", "-", "12", null, "4"], result: 17, missing: 3, label: "20 - 12 ? 4 = 17" }
+  ];
 
   function startGame() {
     playerName = document.getElementById("player-name").value.trim();
     if (!playerName) return alert("Digite seu nome para jogar!");
 
     document.getElementById("player-display").textContent = `Jogador: ${playerName}`;
-    document.getElementById("score").textContent = `Pontos: ${score}`;
-    document.getElementById("lives").textContent = `Vidas: ${lives} ❤️`;
-
     document.getElementById("start-screen").style.display = "none";
     document.getElementById("game-screen").style.display = "block";
     document.getElementById("scoreboard").style.display = "flex";
@@ -177,31 +187,25 @@
     const zone = document.getElementById("question-zone");
     const optionZone = document.getElementById("options-zone");
     optionZone.innerHTML = "";
+    optionZone.classList.remove("disabled");
 
     if (questionIndex < 8) {
-        // Resultado está faltando
         zone.innerHTML = `${current.question} = <span class="drop-box" id="drop"></span>`;
-
         const correct = current.result;
         const options = [correct];
         while (options.length < 4) {
-        let fake = correct + Math.floor(Math.random() * 10 - 5);
-        if (fake !== correct && !options.includes(fake) && fake >= 0) {
-            options.push(fake);
+          let fake = correct + Math.floor(Math.random() * 10 - 5);
+          if (fake !== correct && !options.includes(fake) && fake >= 0) options.push(fake);
         }
-        }
-
         options.sort(() => Math.random() - 0.5);
         options.forEach(num => {
-        const el = document.createElement("div");
-        el.className = "option";
-        el.textContent = num;
-        el.onclick = () => handleOptionClick(el, correct);
-        optionZone.appendChild(el);
+          const el = document.createElement("div");
+          el.className = "option";
+          el.textContent = num;
+          el.onclick = () => handleOptionClick(el, correct);
+          optionZone.appendChild(el);
         });
-
     } else {
-        // Operador está faltando
         const parts = [...current.questionParts];
         const dropIndex = current.missing;
         parts[dropIndex] = '<span class="drop-box" id="drop"></span>';
@@ -209,88 +213,74 @@
 
         const operators = ['+', '-', '×', '÷'];
         operators.forEach(op => {
-        const el = document.createElement("div");
-        el.className = "option";
-        el.textContent = op;
-        el.onclick = () => handleOperatorClick(el, current);
-        optionZone.appendChild(el);
+          const el = document.createElement("div");
+          el.className = "option";
+          el.textContent = op;
+          el.onclick = () => handleOperatorClick(el, current);
+          optionZone.appendChild(el);
         });
     }
-    }
-  function handleOperatorClick(operatorElement, current) {
-    const operator = operatorElement.textContent;
-    const dropBox = document.getElementById("drop");
+  }
+
+  function registerStep(questionText, userAns, correctAns, isCorrect) {
+    reportData.push({
+      pergunta: questionText,
+      escolhida: userAns,
+      gabarito: correctAns,
+      status: isCorrect ? "Acertou" : "Errou"
+    });
+    if(isCorrect) score += 10;
+    else lives -= 1;
+    
+    scoreHistory.push(score);
+    updateDisplay();
+  }
+
+  function updateDisplay() {
+    document.getElementById("score").textContent = `Pontos: ${score}`;
+    document.getElementById("lives").textContent = `Vidas: ${lives} ❤️`;
+  }
+
+  function handleOptionClick(el, correct) {
+    document.getElementById("options-zone").classList.add("disabled");
+    const val = parseInt(el.textContent);
+    const drop = document.getElementById("drop");
+    const isCorrect = (val === correct);
+    
+    drop.textContent = val;
+    drop.style.backgroundColor = isCorrect ? "#4CAF50" : "#e74c3c";
+    drop.style.color = "white";
+
+    registerStep(questions[questionIndex].question, val, correct, isCorrect);
+    checkFlow();
+  }
+
+  function handleOperatorClick(el, current) {
+    document.getElementById("options-zone").classList.add("disabled");
+    const op = el.textContent;
+    const drop = document.getElementById("drop");
     const parts = [...current.questionParts];
+    parts[current.missing] = op;
 
-    parts[current.missing] = operator;
+    let expr = parts.map(p => (p === "×" ? "*" : p === "÷" ? "/" : p)).join(" ");
+    let calcResult = eval(expr);
+    const isCorrect = Math.abs(calcResult - current.result) < 0.001;
 
-    let expression = parts.map(p => {
-        if (p === "×") return "*";
-        if (p === "÷") return "/";
-        return p;
-    }).join(" ");
+    drop.textContent = op;
+    drop.style.backgroundColor = isCorrect ? "#4CAF50" : "#e74c3c";
+    drop.style.color = "white";
 
-    let result = 0;
-    try {
-        result = eval(expression);
-    } catch (e) {
-        result = NaN;
-    }
+    registerStep(current.label, op, "Verificar Lógica", isCorrect);
+    checkFlow();
+  }
 
-    dropBox.textContent = operator;
-    if (Math.abs(result - current.result) < 0.001) {
-        score += 10;
-        dropBox.style.backgroundColor = "#4CAF50";
-    } else {
-        lives -= 1;
-        dropBox.style.backgroundColor = "#e74c3c";
-    }
-
-    document.getElementById("player-display").textContent = `Jogador: ${playerName}`;
-    document.getElementById("score").textContent = `Pontos: ${score}`;
-    document.getElementById("lives").textContent = `Vidas: ${lives} ❤️`;
-
+  function checkFlow() {
     setTimeout(() => {
-        if (lives <= 0) {
-        endGame();
-        } else {
-        questionIndex++;
-        if (questionIndex < 12) {
-            showQuestion();
-        } else {
-            endGame();
-        }
-        }
-    }, 1000);
-    }
-
-  function handleOptionClick(optionElement, correct) {
-    const droppedValue = parseInt(optionElement.textContent);
-    const dropBox = document.getElementById("drop");
-
-    if (droppedValue === correct) {
-      score += 10;
-      dropBox.textContent = droppedValue;
-      dropBox.style.backgroundColor = "#4CAF50";
-    } else {
-      lives -= 1;
-      dropBox.textContent = droppedValue;
-      dropBox.style.backgroundColor = "#e74c3c";
-    }
-
-    document.getElementById("score").textContent = `Pontos: ${score}`;
-    document.getElementById("lives").textContent = `Vidas: ${lives} ❤️`;
-
-    setTimeout(() => {
-      if (lives <= 0) {
+      if (lives <= 0 || questionIndex >= 11) {
         endGame();
       } else {
         questionIndex++;
-        if (questionIndex < 12) {
-          showQuestion();
-        } else {
-          endGame();
-        }
+        showQuestion();
       }
     }, 1000);
   }
@@ -301,15 +291,60 @@
     document.getElementById("end-screen").style.display = "block";
     document.getElementById("final-player-name").textContent = playerName;
     document.getElementById("final-score").textContent = score;
+    renderChart();
   }
 
-  function restartGame() {
-    location.reload();
+  function renderChart() {
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: scoreHistory.map((_, i) => `Q${i}`),
+        datasets: [{
+          label: 'Pontuação',
+          data: scoreHistory,
+          borderColor: '#007acc',
+          backgroundColor: 'rgba(0, 122, 204, 0.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      }
+    });
   }
 
-  function goToNextModule() {
-    window.location.href = "geometria.html"; // Troque pelo próximo módulo
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.setTextColor(0, 122, 204);
+    doc.text("BOLETIM DE OPERAÇÕES MATEMÁTICAS", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Aluno: ${playerName}`, 20, 35);
+    doc.text(`Pontos: ${score}`, 20, 42);
+    doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 49);
+
+    const rows = reportData.map(item => [item.pergunta, item.escolhida, item.status]);
+
+    doc.autoTable({
+      startY: 55,
+      head: [['Questão', 'Sua Resposta', 'Status']],
+      body: rows,
+      headStyles: { fillColor: [0, 122, 204] },
+      didParseCell: function(data) {
+        if (data.column.index === 2 && data.cell.section === 'body') {
+          data.cell.styles.textColor = data.cell.raw === 'Acertou' ? [76, 175, 80] : [231, 76, 60];
+        }
+      }
+    });
+
+    doc.save(`Boletim_Operacoes_${playerName}.pdf`);
   }
+
+  function restartGame() { location.reload(); }
+  function goToNextModule() { window.location.href = "geometria.html"; }
 </script>
 
 </body>

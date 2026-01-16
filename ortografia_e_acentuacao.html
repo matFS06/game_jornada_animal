@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ortografia e Acentuação – Quebra-Código</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -19,7 +24,7 @@
       max-width: 800px;
       margin: 30px auto;
       padding: 30px;
-      background-color: rgba(165, 42, 42, 0.5); /* vermelho tijolo */
+      background-color: rgba(189, 133, 133, 0.5); /* vermelho tijolo */
       border-radius: 12px;
       /*box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);*/
     }
@@ -39,6 +44,15 @@
     .btn:hover {
       background-color: #800000;
       transform: scale(1.1);
+    }
+
+    /* Estilo para o botão PDF */
+    .btn-pdf {
+      background-color: #5d4037; /* Marrom */
+      border-color: #3e2723;
+    }
+    .btn-pdf:hover {
+      background-color: #3e2723;
     }
 
     input[type="text"] {
@@ -72,6 +86,23 @@
     h2 { font-size: 36px; color: #800000; margin-bottom: 20px; }
     h3 { font-size: 28px; margin-bottom: 20px; font-weight: normal; color: #ffcc00; }
     #game-screen, #end-screen { display: none; }
+
+    /* Estilos para o Gráfico e Botões Finais */
+    #chart-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .end-nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
@@ -79,6 +110,7 @@
 <div id="start-screen" class="container">
   <h2>⚖️ Ortografia e Acentuação</h2>
   <img src="logo_ortografia.png" alt="Logo Ortografia" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+  <br>
   <input type="text" id="player-name" placeholder="Digite seu nome">
   <br>
   <button class="btn" onclick="startGame()">Iniciar</button>
@@ -102,8 +134,17 @@
 <div id="end-screen" class="container">
   <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
   <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
-  <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
-  <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  
+  <div id="chart-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <button class="btn btn-pdf" onclick="generatePDF()">📥 Baixar Boletim PDF</button>
+
+  <div class="end-nav-buttons">
+    <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
+    <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  </div>
 </div>
 
 <script>
@@ -111,195 +152,121 @@ let playerName = '';
 let score = 0;
 let lives = 5;
 let currentQuestionIndex = 0;
+let scoreHistory = [0]; // Histórico para o gráfico
+let reportData = [];   // Dados para o PDF
 
 const questions = [
   {
     text: "Na frase: Vou <b>mecher</b> na porta, a palavra destacada está correta?",
-    options: [
-      "A) ERRADA, o correto é 'mexer'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'mechêr"
-    ],
+    options: ["A) ERRADA, o correto é 'mexer'", "B) CORRETA", "C) ERRADA, seria 'mechêr"],
     answer: "A",
     explanation: "❌ Pois, geralmente depois da sílaba 'me-', usa-se 'x'. Correto: 'mexer'."
   },
   {
     text: "Na frase: Comi uma <b>caicha</b> deliciosa, a palavra destacada está correta?",
-    options: [
-      "A) ERRADA, seria 'caixa'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'caixsa'"
-    ],
+    options: ["A) ERRADA, seria 'caixa'", "B) CORRETA", "C) ERRADA, seria 'caixsa'"],
     answer: "A",
     explanation: "❌ Geralmente, depois dos ditongos usa-se 'x'. Correto: 'caixa'."
   },
   {
     text: "Na frase: Ontem joguei <b>boliche</b> com amigos, a palavra está correta?",
-    options: [
-      "A) ERRADA, seria 'bolixi'",
-      "B) ERRADA, seria 'bolichi'",
-      "C) CORRETA"
-    ],
+    options: ["A) ERRADA, seria 'bolixi'", "B) ERRADA, seria 'bolichi'", "C) CORRETA"],
     answer: "C",
     explanation: "✅ Não cai em nenhum caso do uso do X; 'boliche' está correto."
   },
   {
     text: "Na frase: Ela é <b>franceza</b>, a palavra está correta?",
-    options: [
-      "A) ERRADA, o correto é 'francesa'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'françesa'"
-    ],
+    options: ["A) ERRADA, o correto é 'francesa'", "B) CORRETA", "C) ERRADA, seria 'françesa'"],
     answer: "A",
     explanation: "❌ Pois, nos sufixo -ês, -esa, -isa que indicam origem, título ou profissão: marquês, francesa, poetisa. se usa s. Correto: 'francesa'."
   },
   {
     text: "A palavra <b>beleza</b> está correta?",
-    options: [
-      "A) ERRADA, seria 'belesa'",
-      "B) ERRADA, seria 'belessa'",
-      "C) CORRETA"
-    ],
+    options: ["A) ERRADA, seria 'belesa'", "B) ERRADA, seria 'belessa'", "C) CORRETA"],
     answer: "C",
     explanation: "✅ Nos sufixos -ez / -eza que formam substantivos a partir de adjetivos: magro - magreza, belo - beleza, grande - grandeza se usa z"
   },
   {
     text: "A palavra <b>atualisar</b> está correta?",
-    options: [
-      "A) ERRADA, o correto é 'atualizar'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'atualezar'"
-    ],
+    options: ["A) ERRADA, o correto é 'atualizar'", "B) CORRETA", "C) ERRADA, seria 'atualezar'"],
     answer: "A",
     explanation: "❌ Pois no sufixo - izar, que forma verbo: atualizar, batizar, hospitalizar. usa-se z. Correto: 'atualizar'."
   },
   {
     text: "Na frase: Fiz uma <b>viajem</b> incrível, a palavra está correta?",
-    options: [
-      "A) CORRETA",
-      "B) ERRADA, o correto é 'viagem'",
-      "C) ERRADA, seria 'viaghem'"
-    ],
+    options: ["A) CORRETA", "B) ERRADA, o correto é 'viagem'", "C) ERRADA, seria 'viaghem'"],
     answer: "B",
     explanation: "❌ Pois, usa-se G nos substantivos que terminem em -gem: alavancagem, vagem, viagem. Correto: 'viagem'."
   },
   {
     text: "A palavra <b>jerimum</b> está correta?",
-    options: [
-      "A) CORRETA",
-      "B) ERRADA, seria 'gerimum'",
-      "C) ERRADA, seria 'jerimun'"
-    ],
+    options: ["A) CORRETA", "B) ERRADA, seria 'gerimum'", "C) ERRADA, seria 'jerimun'"],
     answer: "A",
     explanation: "✅ Palavras de origem indígena usam j. 'Jerimum' está correto."
   },
   {
     text: "A palavra <b>refúgio</b> está correta?",
-    options: [
-      "A) CORRETA",
-      "B) ERRADA, seria 'refogio'",
-      "C) ERRADA, seria 'refujio'"
-    ],
+    options: ["A) CORRETA", "B) ERRADA, seria 'refogio'", "C) ERRADA, seria 'refujio'"],
     answer: "A",
     explanation: "✅ Palavras terminadas em -úgio usam G. 'Refúgio' está correto."
   },
   {
     text: "Na frase: O <b>ex presidente</b> falou, está correto?",
-    options: [
-      "A) ERRADA, seria 'expresidente'",
-      "B) ERRADA, o correto é 'ex-presidente'",
-      "C) CORRETA"
-    ],
+    options: ["A) ERRADA, seria 'expresidente'", "B) ERRADA, o correto é 'ex-presidente'", "C) CORRETA"],
     answer: "B",
     explanation: "❌ Pois, prefixos específicos (ex-, sem-, pré-, etc.) obrigatoriamente levam hífen. Correto: ex-presidente."
   },
   {
     text: "A palavra <b>autoescola</b> está correta?",
-    options: [
-      "A) ERRADA, seria 'auto-escola'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'auto escola'"
-    ],
+    options: ["A) ERRADA, seria 'auto-escola'", "B) CORRETA", "C) ERRADA, seria 'auto escola'"],
     answer: "B",
     explanation: "✅ Pois, prefixo + palavra iniciada com vogal diferente: não há hífen. 'autoescola' está correto."
   },
   {
     text: "Na frase: Comi um <b>pé-de-moleque</b>, a palavra está correta?",
-    options: [
-      "A) ERRADA, o correto é 'pé de moleque'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'pede-moleque'"
-    ],
+    options: ["A) ERRADA, o correto é 'pé de moleque'", "B) CORRETA", "C) ERRADA, seria 'pede-moleque'"],
     answer: "A",
     explanation: "❌ O hífen deixou de ser usado em locuções substantivas, adjetivas, adverbiais etc. que contenham um elemento de ligação entre os termos, como preposição. Correto: 'pé de moleque'."
   },
   {
     text: "A palavra <b>interrelação</b> está correta?",
-    options: [
-      "A) ERRADA, correto é 'inter-relação'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'inter relação'"
-    ],
+    options: ["A) ERRADA, correto é 'inter-relação'", "B) CORRETA", "C) ERRADA, seria 'inter relação'"],
     answer: "A",
     explanation: "❌ Quando o prefixo termina com a mesma consoante da palavra seguinte, deve haver hífen. Correto: inter-relação"
   },
   {
     text: "A palavra <b>paralelepipedo</b> está correta?",
-    options: [
-      "A) CORRETA",
-      "B) ERRADA, seria 'paralelipípedo'",
-      "C) ERRADA, o correto é 'paralelepípedo'"
-    ],
+    options: ["A) CORRETA", "B) ERRADA, seria 'paralelipípedo'", "C) ERRADA, o correto é 'paralelepípedo'"],
     answer: "C",
     explanation: "❌ Todas as palavras proparoxítonas levam acento. Correto: 'paralelepípedo'."
   },
   {
     text: "A palavra <b>dócil</b> está correta?",
-    options: [
-      "A) CORRETA",
-      "B) ERRADA, seria 'docil'",
-      "C) ERRADA, seria 'docel'"
-    ],
+    options: ["A) CORRETA", "B) ERRADA, seria 'docil'", "C) ERRADA, seria 'docel'"],
     answer: "A",
     explanation: "✅ Paroxítona terminada em -l geralmente recebe acento. 'dócil' está correto."
   },
   {
     text: "A palavra <b>album</b> está correta?",
-    options: [
-      "A) CORRETA",
-      "B) ERRADA, seria 'àlbum'",
-      "C) ERRADA, correto é 'álbum'"
-    ],
+    options: ["A) CORRETA", "B) ERRADA, seria 'àlbum'", "C) ERRADA, correto é 'álbum'"],
     answer: "C",
     explanation: "❌ Paroxítonas terminadas em -um(ns) levam acento. Correto: 'álbum'."
   },
   {
     text: "A palavra <b>sofá</b> está correta?",
-    options: [
-      "A) ERRADA, seria 'sofa'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'sófá'"
-    ],
+    options: ["A) ERRADA, seria 'sofa'", "B) CORRETA", "C) ERRADA, seria 'sófá'"],
     answer: "B",
     explanation: "✅ Oxítonas terminadas em -a, -e, -o recebem acento. 'sofá' está correto."
   },
   {
     text: "A palavra <b>amém</b> está correta?",
-    options: [
-      "A) ERRADA, seria 'amen'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'amem'"
-    ],
+    options: ["A) ERRADA, seria 'amen'", "B) CORRETA", "C) ERRADA, seria 'amem'"],
     answer: "B",
     explanation: "✅ Oxítonas terminadas em -em ou -ens recebem acento. 'amém' está correto."
   },
   {
     text: "Na frase: Ele é <b>cauboi</b>, a palavra está correta?",
-    options: [
-      "A) ERRADA, correto é 'caubói'",
-      "B) CORRETA",
-      "C) ERRADA, seria 'couboi'"
-    ],
+    options: ["A) ERRADA, correto é 'caubói'", "B) CORRETA", "C) ERRADA, seria 'couboi'"],
     answer: "A",
     explanation: "❌ Oxítonas terminadas em ditongo aberto -éi, -éu, -ói recebem acento. Correto: 'caubói'."
   }
@@ -344,6 +311,10 @@ function answerQuestion(selected) {
   const isCorrect = selected.startsWith(current.answer);
   const box = document.getElementById('explanation');
   const text = document.getElementById('explanation-text');
+  
+  // Bloquear cliques múltiplos
+  document.getElementById('answers-container').style.pointerEvents = 'none';
+
   box.classList.remove('correct', 'wrong');
 
   if (isCorrect) {
@@ -356,15 +327,27 @@ function answerQuestion(selected) {
     text.textContent = "❌ Errado. " + current.explanation;
   }
 
+  // Guardar dados para o PDF e Gráfico
+  reportData.push({
+    pergunta: current.text.replace(/<b>/g, "").replace(/<\/b>/g, ""),
+    escolhida: selected,
+    status: isCorrect ? "Acertou" : "Errou"
+  });
+  scoreHistory.push(score);
+
   document.getElementById('score').textContent = `Pontos: ${score}`;
   document.getElementById('lives').textContent = `Tentativas: ${lives}`;
   box.style.display = 'block';
 
-  if (lives <= 0) setTimeout(endGame, 1500);
+  if (lives <= 0) {
+     setTimeout(endGame, 1500);
+  }
 }
 
 function nextQuestion() {
   currentQuestionIndex++;
+  document.getElementById('answers-container').style.pointerEvents = 'auto';
+  
   if (currentQuestionIndex >= questions.length || lives <= 0) {
     endGame();
   } else {
@@ -378,10 +361,66 @@ function endGame() {
   document.getElementById('end-screen').style.display = 'block';
   document.getElementById('final-player-name').textContent = playerName;
   document.getElementById('final-score').textContent = score;
+  renderChart();
+}
+
+// NOVA FUNÇÃO: RENDERIZAR GRÁFICO (MARROM)
+function renderChart() {
+  const ctx = document.getElementById('scoreChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: scoreHistory.map((_, i) => `Q${i}`),
+      datasets: [{
+        label: 'Evolução de Pontos',
+        data: scoreHistory,
+        borderColor: '#5d4037', // Marrom
+        backgroundColor: 'rgba(93, 64, 55, 0.2)',
+        fill: true,
+        tension: 0.3
+      }]
+    }
+  });
+}
+
+// NOVA FUNÇÃO: GERAR PDF (MARROM)
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  doc.setFontSize(20);
+  doc.setTextColor(93, 64, 55); // Marrom
+  doc.text("BOLETIM: ORTOGRAFIA E ACENTUAÇÃO", 105, 20, { align: "center" });
+  
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text(`Aluno: ${playerName}`, 20, 35);
+  doc.text(`Pontuação Final: ${score}`, 20, 42);
+  doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 49);
+
+  const rows = reportData.map(item => [item.pergunta, item.escolhida, item.status]);
+
+  doc.autoTable({
+    startY: 55,
+    head: [['Questão', 'Sua Resposta', 'Resultado']],
+    body: rows,
+    headStyles: { fillColor: [93, 64, 55] }, // Cabeçalho Marrom
+    didParseCell: function(data) {
+      if (data.column.index === 2 && data.cell.section === 'body') {
+        if (data.cell.raw === 'Acertou') {
+          data.cell.styles.textColor = [0, 128, 0]; // Verde
+        } else {
+          data.cell.styles.textColor = [255, 0, 0]; // Vermelho
+        }
+      }
+    }
+  });
+
+  doc.save(`Boletim_Ortografia_${playerName}.pdf`);
 }
 
 function goToNextModule() {
-  window.location.href = "classes_gramaticais.html"; // altere para o próximo módulo real
+  window.location.href = "classes_gramaticais.html"; 
 }
 </script>
 

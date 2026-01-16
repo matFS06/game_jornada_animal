@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Raízes e Potenciação – Quebra-Código</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -19,7 +24,7 @@
       max-width: 800px;
       margin: 30px auto;
       padding: 30px;
-      background-color: rgba(240, 209, 255, 0.5);
+      background-color: rgba(240, 209, 255, 0.9); /* Aumentada a opacidade para melhor leitura */
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
@@ -39,6 +44,11 @@
     .btn:hover {
       background-color: #4700b3;
       transform: scale(1.1);
+    }
+
+    .btn-pdf {
+      background-color: #27ae60;
+      border-color: #1e8449;
     }
 
     input[type="text"] {
@@ -63,9 +73,7 @@
       border: 2px solid #6a00ff;
     }
 
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
     .question {
       font-size: 28px;
@@ -90,11 +98,18 @@
       display: none;
     }
 
-    .correct { background-color: #00ff99; }
-    .wrong { background-color: #ff4d4d; }
+    .correct { background-color: #00ff99 !important; }
+    .wrong { background-color: #ff4d4d !important; }
 
     h2 { font-size: 36px; color: #be5f05; margin-bottom: 20px; }
-    h3 { font-size: 28px; margin-bottom: 20px; font-weight: normal; color: #ffcc00; }
+
+    #chart-container {
+      width: 100%;
+      margin: 20px 0;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+    }
 
     #game-screen, #end-screen { display: none; }
   </style>
@@ -117,11 +132,9 @@
 
 <div id="game-screen" class="container">
   <div class="question" id="question-text">Carregando questão...</div>
-  <div class="btn-container" id="answers-container">
-    <!-- Botões serão gerados dinamicamente -->
-  </div>
+  <div class="btn-container" id="answers-container"></div>
   <div id="explanation" class="explanation">
-    <p id="explanation-text">Explicação aparecerá aqui...</p>
+    <p id="explanation-text"></p>
     <button class="btn" onclick="nextQuestion()">Próxima</button>
   </div>
 </div>
@@ -129,6 +142,13 @@
 <div id="end-screen" class="container">
   <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
   <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+  
+  <div id="chart-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <button class="btn btn-pdf" onclick="generatePDF()">📥 Baixar Boletim PDF</button>
+  <br>
   <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
   <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
 </div>
@@ -138,6 +158,10 @@
   let score = 0;
   let lives = 5;
   let currentQuestionIndex = 0;
+  
+  // Dados para Relatório e Gráfico (Adicionado)
+  let scoreHistory = [0];
+  let reportData = [];
 
   const questions = [
     { text: "√49 =", options: [6, 7, 8, 9], answer: 7, explanation: "A raiz quadrada de 49 é 7 porque 7² = 49." },
@@ -168,9 +192,6 @@
     if (!playerName) return alert('Digite seu nome!');
     
     document.getElementById('player-display').textContent = `Jogador: ${playerName}`;
-    document.getElementById('score').textContent = `Pontos: ${score}`;
-    document.getElementById('lives').textContent = `Tentativas: ${lives}`;
-
     document.getElementById('start-screen').style.display = 'none';
     
     const scoreboard = document.getElementById('scoreboard');
@@ -187,20 +208,26 @@
 
     const container = document.getElementById('answers-container');
     container.innerHTML = '';
+    container.classList.remove('hidden');
+
     current.options.forEach(option => {
       const btn = document.createElement('button');
       btn.className = 'btn';
       btn.textContent = option;
-      btn.onclick = () => answerQuestion(option);
+      btn.onclick = () => answerQuestion(option, btn);
       container.appendChild(btn);
     });
 
     document.getElementById('explanation').style.display = 'none';
   }
 
-  function answerQuestion(selected) {
+  function answerQuestion(selected, btnClicked) {
     const current = questions[currentQuestionIndex];
     const isCorrect = selected === current.answer;
+
+    // Impede múltiplos cliques desativando os botões
+    const allBtns = document.querySelectorAll('#answers-container .btn');
+    allBtns.forEach(b => b.disabled = true);
 
     const box = document.getElementById('explanation');
     const text = document.getElementById('explanation-text');
@@ -215,6 +242,15 @@
       box.classList.add('wrong');
       text.textContent = "❌ Errado. " + current.explanation;
     }
+
+    // Salva para o relatório
+    reportData.push({
+      pergunta: current.text,
+      escolhida: selected,
+      gabarito: current.answer,
+      resultado: isCorrect ? "Acertou" : "Errou"
+    });
+    scoreHistory.push(score);
 
     document.getElementById('score').textContent = `Pontos: ${score}`;
     document.getElementById('lives').textContent = `Tentativas: ${lives}`;
@@ -240,10 +276,60 @@
     document.getElementById('end-screen').style.display = 'block';
     document.getElementById('final-player-name').textContent = playerName;
     document.getElementById('final-score').textContent = score;
+    renderChart();
+  }
+
+  function renderChart() {
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: scoreHistory.map((_, i) => `Q${i}`),
+        datasets: [{
+          label: 'Evolução dos Pontos',
+          data: scoreHistory,
+          borderColor: '#6a00ff',
+          backgroundColor: 'rgba(106, 0, 255, 0.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      }
+    });
+  }
+
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.setTextColor(106, 0, 255);
+    doc.text("BOLETIM ESCOLAR - POTÊNCIA E RAIZ", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Aluno: ${playerName}`, 20, 35);
+    doc.text(`Pontuação Final: ${score}`, 20, 42);
+    doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 49);
+
+    const rows = reportData.map(item => [item.pergunta, item.escolhida, item.gabarito, item.resultado]);
+
+    doc.autoTable({
+      startY: 55,
+      head: [['Questão', 'Sua Resposta', 'Gabarito', 'Status']],
+      body: rows,
+      headStyles: { fillColor: [106, 0, 255] },
+      didParseCell: function(data) {
+        if (data.column.index === 3 && data.cell.section === 'body') {
+          data.cell.styles.textColor = data.cell.raw === 'Acertou' ? [0, 150, 0] : [200, 0, 0];
+        }
+      }
+    });
+
+    doc.save(`Boletim_PotenciaRaiz_${playerName}.pdf`);
   }
 
   function goToNextModule() {
-    window.location.href = "fracoes_e_porcentagens.html"; // Altere para a próxima página real do seu projeto
+    window.location.href = "fracoes_e_porcentagens.html"; 
   }
 </script>
 

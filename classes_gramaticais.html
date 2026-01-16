@@ -4,12 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Quiz Classes Gramaticais</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
 <style>
   body {
     font-family: Arial, sans-serif;
     max-width: 600px;
     margin: 20px auto;
-    background: #f7f9fc;
+    background-image: url('classes_gramaticais.png');
     padding: 20px;
     border-radius: 10px;
   }
@@ -114,13 +119,25 @@
   .btn:hover {
     background-color: #218838;
   }
+  .btn-pdf {
+    background-color: #27ae60;
+  }
+  #chart-container {
+    width: 100%;
+    margin: 20px 0;
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
 </style>
 </head>
 <body>
 
 <div id="start-screen" class="container">
   <h2>Bem-vindo ao Quiz de Classes Gramaticais!</h2>
-  <img src="logo_cadeia.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"/>
+  <img src="logo_classes_gramaticais.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"/>
+  <br>
   <input type="text" id="player-name" placeholder="Digite seu nome" />
   <br />
   <button id="start-btn">Iniciar</button>
@@ -137,6 +154,13 @@
 <div id="end-screen" class="container" style="display:none;">
   <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
   <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+  
+  <div id="chart-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <button class="btn btn-pdf" onclick="generatePDF()">📥 Baixar Boletim PDF</button>
+  <br>
   <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
   <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
 </div>
@@ -144,7 +168,6 @@
 
 <script>
 const questions = [
-  // 2 perguntas para cada classe gramatical, total 20, embaralhadas abaixo
   {
     question: "Qual palavra é um substantivo?",
     answers: ["Bonito", "Casa", "Correr", "Rapidamente"],
@@ -205,9 +228,6 @@ const questions = [
     answer: "Ah!",
     explanation: "Interjeição expressa emoção, como 'Ah!'."
   },
-
-  // segunda rodada, perguntas mais variadas, mesma estrutura
-
   {
     question: "Qual dessas palavras é um artigo definido?",
     answers: ["A", "Ele", "Bonito", "Correr"],
@@ -270,7 +290,6 @@ const questions = [
   }
 ];
 
-// Embaralhar perguntas na carga do jogo
 function shuffleArray(array) {
   for(let i = array.length - 1; i > 0; i--){
     const j = Math.floor(Math.random() * (i + 1));
@@ -284,8 +303,11 @@ let score = 0;
 let lives = 5;
 let current = 0;
 
+// Variáveis de Relatório (Novas)
+let scoreHistory = [0];
+let reportData = [];
+
 const startBtn = document.getElementById('start-btn');
-const restartBtn = document.getElementById('restart-btn');
 const questionEl = document.getElementById('question');
 const answersEl = document.querySelector('.answers');
 const feedbackEl = document.getElementById('feedback');
@@ -293,10 +315,6 @@ const nextBtn = document.getElementById('next-btn');
 const scoreCard = document.getElementById('score-card');
 
 startBtn.addEventListener('click', startGame);
-restartBtn?.addEventListener('click', () => {
-  document.getElementById('end-screen').style.display = 'none';
-  document.getElementById('start-screen').style.display = 'block';
-});
 
 nextBtn.addEventListener('click', () => {
   current++;
@@ -317,6 +335,8 @@ function startGame(){
   score = 0;
   lives = 5;
   current = 0;
+  scoreHistory = [0];
+  reportData = [];
 
   shuffleArray(questions);
 
@@ -337,7 +357,7 @@ function loadQuestion(){
   questionEl.textContent = `(${current + 1}/${questions.length}) ${q.question}`;
   answersEl.innerHTML = "";
 
-  const shuffledAnswers = shuffleArray([...q.answers]); // cria cópia embaralhada
+  const shuffledAnswers = shuffleArray([...q.answers]);
 
   shuffledAnswers.forEach(ans => {
     const btn = document.createElement('button');
@@ -348,11 +368,12 @@ function loadQuestion(){
 }
 
 function selectAnswer(selected, q){
-  // desabilitar botões para evitar múltiplos cliques
   Array.from(answersEl.children).forEach(b => b.disabled = true);
 
-  if(selected === q.answer){
-    score++;
+  const isCorrect = (selected === q.answer);
+
+  if(isCorrect){
+    score += 10;
     feedbackEl.className = 'feedback correct';
     feedbackEl.innerHTML = `✅ Correto!<br>${q.explanation}`;
   } else {
@@ -360,6 +381,15 @@ function selectAnswer(selected, q){
     feedbackEl.className = 'feedback wrong';
     feedbackEl.innerHTML = `❌ Errado!<br>${q.explanation}`;
   }
+
+  // Guardar dados para o gráfico e PDF
+  reportData.push({
+    pergunta: q.question,
+    escolhida: selected,
+    gabarito: q.answer,
+    resultado: isCorrect ? "Acertou" : "Errou"
+  });
+  scoreHistory.push(score);
 
   updateScoreCard();
   feedbackEl.style.display = 'block';
@@ -382,12 +412,61 @@ function endGame(){
   document.getElementById('end-screen').style.display = 'block';
   document.getElementById('final-player-name').textContent = playerName;
   document.getElementById('final-score').textContent = score;
+  renderChart();
+}
+
+function renderChart() {
+  const ctx = document.getElementById('scoreChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: scoreHistory.map((_, i) => `Q${i}`),
+      datasets: [{
+        label: 'Evolução dos Pontos',
+        data: scoreHistory,
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+        fill: true,
+        tension: 0.3
+      }]
+    }
+  });
+}
+
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  doc.setFontSize(20);
+  doc.setTextColor(0, 123, 255);
+  doc.text("BOLETIM ESCOLAR - CLASSES GRAMATICAIS", 105, 20, { align: "center" });
+  
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text(`Aluno(a): ${playerName}`, 20, 35);
+  doc.text(`Pontuação Total: ${score}`, 20, 42);
+  doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 49);
+
+  const rows = reportData.map(item => [item.pergunta, item.escolhida, item.gabarito, item.resultado]);
+
+  doc.autoTable({
+    startY: 55,
+    head: [['Questão', 'Sua Resposta', 'Gabarito', 'Status']],
+    body: rows,
+    headStyles: { fillColor: [0, 123, 255] },
+    didParseCell: function(data) {
+      if (data.column.index === 3 && data.cell.section === 'body') {
+        data.cell.styles.textColor = data.cell.raw === 'Acertou' ? [0, 150, 0] : [200, 0, 0];
+      }
+    }
+  });
+
+  doc.save(`Boletim_${playerName}_ClassesGramaticais.pdf`);
 }
 
 function goToNextModule() {
-  window.location.href = "tempos_e_modos_verbais.html"; // altere para o nome real do seu próximo módulo
+  window.location.href = "tempos_e_modos_verbais.html";
 }
-
 </script>
 
 </body>

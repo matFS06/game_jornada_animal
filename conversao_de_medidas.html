@@ -4,10 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Módulo 5: Conversão de Medidas</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       background-image: url('conversao_medidas.png');
+      background-color: #e0f2f1;
+      background-size: cover;
       text-align: center;
       margin: 0;
       padding: 0;
@@ -17,7 +24,7 @@
       max-width: 800px;
       margin: 30px auto;
       padding: 30px;
-      background-color: #fff;
+      background-color: rgba(255, 255, 255, 0.95);
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
@@ -50,9 +57,10 @@
     }
 
     .question {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
       margin: 20px 0;
+      color: #333;
     }
 
     .options {
@@ -64,9 +72,11 @@
     }
 
     .option {
-      background:rgb(167, 60, 74);
+      background: #a73c4a;
+      color: white;
+      border: none;
       border-radius: 12px;
-      padding: 10px 20px;
+      padding: 15px 25px;
       cursor: pointer;
       font-size: 18px;
       font-weight: bold;
@@ -77,35 +87,53 @@
     .option:hover {
       transform: scale(1.05);
       background: #ffd633;
+      color: #333;
     }
 
     .feedback {
       margin-top: 20px;
       font-size: 18px;
       font-weight: bold;
+      min-height: 24px;
     }
 
     .correct { color: green; }
     .wrong { color: red; }
 
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
+    .btn-action {
+      padding: 12px 20px;
       background: #0077b6;
       color: white;
       border: none;
       border-radius: 10px;
       font-size: 16px;
       cursor: pointer;
+      transition: background 0.3s;
     }
 
-    button:hover { background: #0096c7; }
+    .btn-action:hover { background: #0096c7; }
+    
+    .btn-pdf { background-color: #27ae60; margin-bottom: 15px; }
+    .btn-pdf:hover { background-color: #1e8449; }
 
-    #end-buttons {
+    #chart-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .disabled { pointer-events: none; opacity: 0.6; }
+
+    .end-nav-buttons {
       display: flex;
       justify-content: center;
-      gap: 20px;
-      margin-top: 20px;
+      gap: 15px;
+      margin-top: 10px;
+      flex-wrap: wrap;
     }
   </style>
 </head>
@@ -113,11 +141,11 @@
 
 <div class="container" id="start-screen">
   <h2>Módulo 5: Conversão de Medidas</h2>
-  <img src="logo_conversao_de_medidas.png" alt="Logo Conversão de Medidas" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+  <img src="logo_conversao_de_medidas.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
   <br>
   <input type="text" id="player-name" placeholder="Digite seu nome" />
   <br>
-  <button onclick="startGame()">Iniciar</button>
+  <button class="btn-action" onclick="startGame()">Iniciar</button>
 </div>
 
 <div class="scoreboard" id="scoreboard" style="display:none;">
@@ -130,15 +158,22 @@
   <div class="question" id="question"></div>
   <div class="options" id="options"></div>
   <div class="feedback" id="feedback"></div>
-  <button id="next-btn" style="display:none;">Próxima</button>
+  <button class="btn-action" id="next-btn" style="display:none;">Próxima Questão</button>
 </div>
 
 <div class="container" id="end-screen" style="display:none;">
   <h2>🎉 Fim do Jogo, <span id="final-name"></span>!</h2>
-  <p>Você marcou <strong id="score-final"></strong> pontos de <strong id="total-final"></strong> possíveis!</p>
-  <div id="end-buttons">
-    <button onclick="location.reload()">🔄 Jogar Novamente</button>
-    <button onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  <p>Você marcou <strong id="score-final"></strong> pontos!</p>
+  
+  <div id="chart-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <button class="btn-action btn-pdf" onclick="generatePDF()">📥 Baixar Boletim PDF</button>
+
+  <div class="end-nav-buttons">
+    <button class="btn-action" onclick="location.reload()">🔄 Jogar Novamente</button>
+    <button class="btn-action" onclick="goToNextModule()">➡️ Finalizar Módulos</button>
   </div>
 </div>
 
@@ -160,6 +195,8 @@ let current = 0;
 let score = 0;
 let lives = 3;
 let playerName = "";
+let scoreHistory = [0];
+let reportData = [];
 
 function startGame(){
   const input = document.getElementById("player-name");
@@ -183,6 +220,7 @@ function loadQuestion(){
   document.getElementById("question").textContent = q.pergunta;
   const optionsDiv = document.getElementById("options");
   optionsDiv.innerHTML = "";
+  optionsDiv.classList.remove("disabled");
   document.getElementById("feedback").textContent = "";
   document.getElementById("next-btn").style.display = "none";
 
@@ -198,7 +236,11 @@ function loadQuestion(){
 function checkAnswer(selected){
   const q = questions[current];
   const feedback = document.getElementById("feedback");
-  if(selected === q.resposta){
+  document.getElementById("options").classList.add("disabled");
+  
+  const isCorrect = (selected === q.resposta);
+
+  if(isCorrect){
     feedback.textContent = "✅ Correto! " + q.explicacao;
     feedback.className = "feedback correct";
     score += 10;
@@ -206,15 +248,27 @@ function checkAnswer(selected){
     feedback.textContent = "❌ Errado! " + q.explicacao;
     feedback.className = "feedback wrong";
     lives--;
-    if(lives === 0) return endGame();
   }
+
+  reportData.push({
+    pergunta: q.pergunta,
+    escolhida: selected,
+    gabarito: q.resposta,
+    status: isCorrect ? "Acertou" : "Errou"
+  });
+  scoreHistory.push(score);
   updateScoreboard();
-  document.getElementById("next-btn").style.display = "inline-block";
+
+  if(lives <= 0){
+    setTimeout(endGame, 1000);
+  } else {
+    document.getElementById("next-btn").style.display = "inline-block";
+  }
 }
 
 document.getElementById("next-btn").addEventListener("click", ()=>{
   current++;
-  if(current<questions.length) loadQuestion();
+  if(current < questions.length) loadQuestion();
   else endGame();
 });
 
@@ -224,11 +278,68 @@ function endGame(){
   document.getElementById("end-screen").style.display = "block";
   document.getElementById("final-name").textContent = playerName;
   document.getElementById("score-final").textContent = score;
-  document.getElementById("total-final").textContent = questions.length*10;
+  renderChart();
+}
+
+function renderChart() {
+  const ctx = document.getElementById('scoreChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: scoreHistory.map((_, i) => `Q${i}`),
+      datasets: [{
+        label: 'Evolução de Pontos',
+        data: scoreHistory,
+        borderColor: '#0077b6',
+        backgroundColor: 'rgba(0, 119, 182, 0.1)',
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+}
+
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  doc.setFontSize(20);
+  doc.setTextColor(0, 119, 182);
+  doc.text("BOLETIM: CONVERSÃO DE MEDIDAS", 105, 20, { align: "center" });
+  
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text(`Aluno: ${playerName}`, 20, 35);
+  doc.text(`Pontuação Final: ${score}`, 20, 42);
+  doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 49);
+
+  const rows = reportData.map(item => [item.pergunta, item.escolhida, item.status]);
+
+  doc.autoTable({
+    startY: 55,
+    head: [['Questão', 'Sua Resposta', 'Resultado']],
+    body: rows,
+    headStyles: { fillColor: [0, 119, 182] },
+    didParseCell: function(data) {
+      if (data.column.index === 2 && data.cell.section === 'body') {
+        if (data.cell.raw === 'Acertou') {
+          data.cell.styles.textColor = [0, 128, 0]; // Verde
+        } else if (data.cell.raw === 'Errou') {
+          data.cell.styles.textColor = [255, 0, 0]; // Vermelho
+        }
+      }
+    }
+  });
+
+  doc.save(`Boletim_Medidas_${playerName}.pdf`);
 }
 
 function goToNextModule(){
-  alert("Próximo módulo em construção 🚧");
+  window.location.href = "index.html";
 }
 </script>
 

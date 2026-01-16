@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Módulo 4: Frações e Porcentagens</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -18,7 +23,7 @@
       max-width: 800px;
       margin: 30px auto;
       padding: 30px;
-      background-color: #fff;
+      background-color: rgba(255, 255, 255, 0.95);
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
@@ -32,6 +37,7 @@
     .graph {
       font-size: 40px;
       margin: 20px 0;
+      letter-spacing: 5px;
     }
 
     .question {
@@ -57,16 +63,25 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.3s;
+      margin: 5px;
     }
 
     .btn:hover {
       background-color: #007acc;
     }
 
+    .btn-pdf {
+      background-color: #27ae60;
+    }
+    .btn-pdf:hover {
+      background-color: #1e8449;
+    }
+
     .feedback {
       font-size: 20px;
       margin-top: 20px;
       font-weight: bold;
+      min-height: 24px;
     }
 
     .correct { color: green; }
@@ -87,6 +102,15 @@
       border: 2px solid #0099ff;
     }
 
+    #chart-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
     input[type="text"] {
       padding: 15px;
       font-size: 18px;
@@ -95,13 +119,15 @@
       border-radius: 8px;
       margin-bottom: 20px;
     }
+    
+    .disabled { pointer-events: none; opacity: 0.6; }
   </style>
 </head>
 <body>
 
 <div class="container" id="start-screen">
   <h2>Módulo 4: Frações e Porcentagens</h2>
-  <img src="logo_fracoes_e_porcentagens.png" alt="Logo Raiz e Potência" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
+  <img src="logo_fracoes_e_porcentagens.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
   <input type="text" id="player-name" placeholder="Digite seu nome" />
   <br>
   <button class="btn" onclick="startGame()">Iniciar</button>
@@ -123,79 +149,40 @@
 
 <div class="container" id="end-screen">
   <h2>🎉 Fim do Jogo, <span id="final-name"></span>!</h2>
-  <p>Você acertou <strong id="score-final"></strong> de <strong id="total-final"></strong> questões!</p>
+  <p>Você marcou <strong id="score-final"></strong> pontos!</p>
+  
+  <div id="chart-container">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <button class="btn btn-pdf" onclick="generatePDF()">📥 Baixar Boletim PDF</button>
+  <br>
   <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
   <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
 </div>
 
 <script>
   const questions = [
-    {
-      graph: '🍴🍴🍕🍕🍕🍕🍕🍕',
-      text: 'João comeu duas fatias das 8 da pizza. Quanto falta?',
-      options: ['75%', '25%', '50%', '10%'],
-      answer: '75%'
-    },
-    {
-      graph: '🍴🍴🍴🍴🍫🍫🍫🍫🍫🍫',
-      text: 'Ana comeu 4 de 10 pedaços de chocolate. Qual fração representa o que falta?',
-      options: ['6/10', '4/10', '3/10', '10/10'],
-      answer: '6/10'
-    },
-    {
-      graph: '🔵🔵🔵🔵🔵🔵⚪⚪⚪⚪',
-      text: 'Foi usado 60% da barra de progresso. Quanto falta?',
-      options: ['40%', '60%', '30%', '10%'],
-      answer: '40%'
-    },
-    {
-      graph: '🍴🍴🍴🍰🍰🍰🍰🍰',
-      text: 'Foram consumidos 3 de 8 pedaços de bolo. Qual fração representa o restante?',
-      options: ['5/8', '3/8', '4/8', '1/8'],
-      answer: '5/8'
-    },
-    {
-      graph: '🚚🚚🚚🚚🚚🚚🚚📦📦📦',
-      text: 'Uma tranportadora entregou 7 das 10 caixas. Qual porcentagem falta ser entregue?',
-      options: ['30%', '70%', '20%', '10%'],
-      answer: '30%'
-    },
-    {
-      graph: '🍴🍴🍴🍴🍴🍴🍩🍩🍩🍩',
-      text: 'Carlos comeu 6 de 10 rosquinhas. Qual porcentagem representa o que ele comeu?',
-      options: ['60%', '40%', '50%', '70%'],
-      answer: '60%'
-    },
-    {
-      graph: '📖📖📖📖📖📖📚📚📚📚',
-      text: 'Em uma pilha de 10 livros, 6 foram lidos. Qual fração representa os livros lidos?',
-      options: ['6/10', '4/10', '5/10', '3/10'],
-      answer: '6/10'
-    },
-    {
-      graph: '⚪⚪⚪⚪⚽⚽⚽⚽⚽⚽',
-      text: 'Durante o treino, 4 de 10 bolas foram usadas. Qual porcentagem representa as bolas usadas?',
-      options: ['40%', '60%', '30%', '20%'],
-      answer: '40%'
-    },
-    {
-      graph: '🍴🍴🍴🍴🍴🍏🍏🍏🍏🍏',
-      text: 'Foram comidas 5 de 10 maçãs. Qual fração representa o que foi comido?',
-      options: ['5/10', '3/10', '7/10', '10/10'],
-      answer: '5/10'
-    },
-    {
-      graph: '💧💧💧💧💧💧💧⚪⚪⚪',
-      text: 'De 10 copos de água, 7 foram bebidos. Qual porcentagem ainda falta?',
-      options: ['30%', '70%', '20%', '10%'],
-      answer: '30%'
-    }
+    { graph: '🍴🍴🍕🍕🍕🍕🍕🍕', text: 'João comeu duas fatias das 8 da pizza. Quanto falta?', options: ['75%', '25%', '50%', '10%'], answer: '75%' },
+    { graph: '🍴🍴🍴🍴🍫🍫🍫🍫🍫🍫', text: 'Ana comeu 4 de 10 pedaços de chocolate. Qual fração representa o que falta?', options: ['6/10', '4/10', '3/10', '10/10'], answer: '6/10' },
+    { graph: '🔵🔵🔵🔵🔵🔵⚪⚪⚪⚪', text: 'Foi usado 60% da barra de progresso. Quanto falta?', options: ['40%', '60%', '30%', '10%'], answer: '40%' },
+    { graph: '🍴🍴🍴🍰🍰🍰🍰🍰', text: 'Foram consumidos 3 de 8 pedaços de bolo. Qual fração representa o restante?', options: ['5/8', '3/8', '4/8', '1/8'], answer: '5/8' },
+    { graph: '🚚🚚🚚🚚🚚🚚🚚📦📦📦', text: 'Uma transportadora entregou 7 das 10 caixas. Qual porcentagem falta ser entregue?', options: ['30%', '70%', '20%', '10%'], answer: '30%' },
+    { graph: '🍴🍴🍴🍴🍴🍴🍩🍩🍩🍩', text: 'Carlos comeu 6 de 10 rosquinhas. Qual porcentagem representa o que ele comeu?', options: ['60%', '40%', '50%', '70%'], answer: '60%' },
+    { graph: '📖📖📖📖📖📖📚📚📚📚', text: 'Em uma pilha de 10 livros, 6 foram lidos. Qual fração representa os livros lidos?', options: ['6/10', '4/10', '5/10', '3/10'], answer: '6/10' },
+    { graph: '⚪⚪⚪⚪⚽⚽⚽⚽⚽⚽', text: 'Durante o treino, 4 de 10 bolas foram usadas. Qual porcentagem representa as bolas usadas?', options: ['40%', '60%', '30%', '20%'], answer: '40%' },
+    { graph: '🍴🍴🍴🍴🍴🍏🍏🍏🍏🍏', text: 'Foram comidas 5 de 10 maçãs. Qual fração representa o que foi comido?', options: ['5/10', '3/10', '7/10', '10/10'], answer: '5/10' },
+    { graph: '💧💧💧💧💧💧💧⚪⚪⚪', text: 'De 10 copos de água, 7 foram bebidos. Qual porcentagem ainda falta?', options: ['30%', '70%', '20%', '10%'], answer: '30%' }
   ];
 
   let current = 0;
-  let correct = 0;
+  let correctPoints = 0;
   let lives = 3;
   let playerName = '';
+  
+  // Rastreamento para Relatórios
+  let scoreHistory = [0];
+  let reportData = [];
 
   function startGame() {
     const input = document.getElementById('player-name');
@@ -210,7 +197,7 @@
   }
 
   function updateScoreboard() {
-    document.getElementById('score').textContent = `Pontos: ${correct}`;
+    document.getElementById('score').textContent = `Pontos: ${correctPoints}`;
     document.getElementById('lives').textContent = `Vidas: ${'❤️'.repeat(lives)}${'🤍'.repeat(3 - lives)}`;
   }
 
@@ -220,6 +207,7 @@
     document.getElementById('question').textContent = q.text;
     const optionsContainer = document.getElementById('options-container');
     optionsContainer.innerHTML = '';
+    optionsContainer.classList.remove('disabled');
     document.getElementById('feedback').textContent = '';
     document.getElementById('next-btn').style.display = 'none';
 
@@ -235,18 +223,36 @@
   function checkAnswer(selected) {
     const q = questions[current];
     const feedback = document.getElementById('feedback');
-    if (selected === q.answer) {
+    document.getElementById('options-container').classList.add('disabled');
+    
+    const isCorrect = (selected === q.answer);
+
+    if (isCorrect) {
       feedback.textContent = '✅ Correto!';
       feedback.className = 'feedback correct';
-      correct+=10;
+      correctPoints += 10;
     } else {
       feedback.textContent = `❌ Errado. Resposta certa: ${q.answer}`;
       feedback.className = 'feedback wrong';
       lives--;
-      if (lives === 0) return endGame();
     }
+
+    // Registrar dados
+    reportData.push({
+      pergunta: q.text,
+      escolhida: selected,
+      gabarito: q.answer,
+      status: isCorrect ? "Acertou" : "Errou"
+    });
+    scoreHistory.push(correctPoints);
+
     updateScoreboard();
-    document.getElementById('next-btn').style.display = 'inline-block';
+    
+    if (lives <= 0) {
+      setTimeout(endGame, 1000);
+    } else {
+      document.getElementById('next-btn').style.display = 'inline-block';
+    }
   }
 
   function nextQuestion() {
@@ -263,12 +269,61 @@
     document.getElementById('scoreboard').style.display = 'none';
     document.getElementById('end-screen').style.display = 'block';
     document.getElementById('final-name').textContent = playerName;
-    document.getElementById('score-final').textContent = correct;
-    document.getElementById('total-final').textContent = questions.length;
+    document.getElementById('score-final').textContent = correctPoints;
+    renderChart();
+  }
+
+  function renderChart() {
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: scoreHistory.map((_, i) => `Q${i}`),
+        datasets: [{
+          label: 'Pontuação',
+          data: scoreHistory,
+          borderColor: '#0099ff',
+          backgroundColor: 'rgba(0, 153, 255, 0.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      }
+    });
+  }
+
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.setTextColor(0, 102, 204);
+    doc.text("BOLETIM: FRAÇÕES E PORCENTAGENS", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text(`Aluno: ${playerName}`, 20, 35);
+    doc.text(`Pontuação: ${correctPoints}`, 20, 42);
+    doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 49);
+
+    const rows = reportData.map(item => [item.pergunta, item.escolhida, item.status]);
+
+    doc.autoTable({
+      startY: 55,
+      head: [['Questão', 'Sua Resposta', 'Resultado']],
+      body: rows,
+      headStyles: { fillColor: [0, 153, 255] },
+      didParseCell: function(data) {
+        if (data.column.index === 2 && data.cell.section === 'body') {
+          data.cell.styles.textColor = data.cell.raw === 'Acertou' ? [0, 128, 0] : [255, 0, 0];
+        }
+      }
+    });
+
+    doc.save(`Boletim_Fractions_${playerName}.pdf`);
   }
 
   function goToNextModule() {
-    alert("Próximo módulo em construção 🚧");
+    window.location.href = "conversao_de_medidas.html"; 
   }
 </script>
 
