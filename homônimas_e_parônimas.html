@@ -4,10 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Palavra Certa – Ortografia Confusiva</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      background-color: #2c2c2c;
+      background-image: url('palavras.png');
+      background-size: cover;
       color: #fff;
       padding: 20px;
       margin: 0;
@@ -23,14 +30,8 @@
       text-align: center;
     }
 
-    h1, h2 {
-      color: #ffd700;
-    }
-
-    .question {
-      font-size: 1.2em;
-      margin: 30px 0 20px;
-    }
+    h1, h2 { color: #ffd700; }
+    .question { font-size: 1.2em; margin: 30px 0 20px; }
 
     .options button {
       background: #fff;
@@ -45,143 +46,65 @@
       transition: all 0.3s;
     }
 
-    .options button:hover {
-      background: #ffd700;
-    }
-
-    .feedback {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-
-    .correct {
-      color: #28a745;
-    }
-
-    .wrong {
-      color: #dc3545;
-    }
-
-    .scoreboard {
-      margin-top: 10px;
-      font-size: 1em;
-    }
+    .options button:hover { background: #ffd700; }
+    .feedback { margin-top: 20px; font-weight: bold; }
+    .correct { color: #28a745; }
+    .wrong { color: #dc3545; }
+    .scoreboard { margin-top: 10px; font-size: 1em; }
 
     #next-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 1em;
-      border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      display: none;
-    }
-
-    #next-btn:hover {
-      background: #0056b3;
+      margin-top: 20px; padding: 10px 20px; font-size: 1em;
+      border: none; background: #007bff; color: white;
+      border-radius: 8px; cursor: pointer; display: none;
     }
 
     .explanation {
-      margin-top: 15px;
-      text-align: left;
-      background: #333;
-      padding: 15px;
+      margin-top: 15px; text-align: left; background: #333;
+      padding: 15px; border-radius: 8px; font-size: 0.95em;
+    }
+
+    .word { color: #ffd700; font-weight: bold; }
+
+    #chart-container {
+      background: white;
       border-radius: 8px;
-      font-size: 0.95em;
-    }
-
-    .explanation p {
-      margin: 5px 0;
-    }
-
-    .word {
-      color: #ffd700;
-      font-weight: bold;
-    }
-
-    /* Tela inicial */
-    #start-screen {
-      max-width: 400px;
-      margin: 100px auto;
-      background: #222;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.7);
-      text-align: center;
-    }
-
-    #start-screen img {
-      max-width: 250px;
-      margin-bottom: 20px;
-      border-radius: 10%;
-    }
-
-    #player-name {
+      margin: 20px 0;
       padding: 10px;
-      width: 80%;
-      border-radius: 8px;
-      border: none;
-      margin-bottom: 15px;
-      font-size: 1em;
     }
 
-    #start-btn {
-      padding: 10px 30px;
-      font-size: 1.1em;
-      border: none;
-      background-color: #ffd700;
-      color: #000;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+    #start-screen { max-width: 400px; margin: 100px auto; background: #222; padding: 25px; border-radius: 12px; text-align: center; }
+    #start-screen img { max-width: 250px; margin-bottom: 20px; border-radius: 10%; }
+    #player-name { padding: 10px; width: 80%; border-radius: 8px; border: none; margin-bottom: 15px; font-size: 1em; }
+    
+    #start-btn, .btn {
+      padding: 10px 30px; font-size: 1.1em; border: none;
+      background-color: #ffd700; color: #000; border-radius: 8px;
+      cursor: pointer; transition: 0.3s; margin: 5px;
     }
 
-    #start-btn:hover {
-      background-color: #e6c200;
-    }
-
-    .btn {
-      font-size: 1.1em;
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: none;
-      background-color: #28a745;
-      color: white;
-      cursor: pointer;
-      margin: 10px;
-    }
-
-    .btn:hover {
-      background-color: #218838;
-    }
+    .btn-next-module { background-color: #28a745; color: white; }
+    .btn-pdf { background-color: #8b4513; color: white; } 
   </style>
 </head>
 <body>
 
-  <!-- Tela de Start -->
   <div id="start-screen" class="container">
-    <h2>Bem-vindo ao Módulo Homônimas e Parônimas</h2>
-    <img src="logo_cadeia.png" alt="Logo" />
+    <h2>Módulo Homônimas e Parônimas</h2>
+    <img src="logo_palavras.png" alt="Logo" />
     <input type="text" id="player-name" placeholder="Digite seu nome" />
     <br />
     <button id="start-btn">Iniciar</button>
   </div>
 
-  <!-- Quiz -->
   <div id="quiz-container" class="container" style="display:none;">
     <h1>🧠 Palavra Certa</h1>
-    <p><em>Escolha a palavra correta para completar a frase.</em></p>
-
     <div id="game">
       <div class="scoreboard">
         <strong>Jogador:</strong> <span id="player-display"></span> |
         <strong>Pontuação:</strong> <span id="score">0</span> |
         <strong>Vidas:</strong> <span id="lives">5</span>
       </div>
-
-      <div class="question" id="question">Carregando pergunta...</div>
+      <div class="question" id="question"></div>
       <div class="options" id="options"></div>
       <div class="feedback" id="feedback"></div>
       <div class="explanation" id="explanation"></div>
@@ -189,23 +112,28 @@
     </div>
   </div>
 
-  <!-- Tela final -->
   <div id="end-screen" class="container" style="display:none;">
     <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
     <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
+    
+    <div id="chart-container">
+      <canvas id="scoreChart"></canvas>
+    </div>
+
+    <button class="btn btn-pdf" onclick="generatePDF()">📥 Baixar Boletim PDF</button>
+    <br>
     <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
-    <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+    <button class="btn btn-next-module" onclick="goToNextModule()">➡️ Próximo Módulo</button>
   </div>
 
-  <!-- Script no final -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const startScreen = document.getElementById('start-screen');
       const quizContainer = document.getElementById('quiz-container');
+      const endScreen = document.getElementById('end-screen');
       const startBtn = document.getElementById('start-btn');
       const playerNameInput = document.getElementById('player-name');
       const playerDisplay = document.getElementById('player-display');
-
       const questionEl = document.getElementById("question");
       const optionsEl = document.getElementById("options");
       const feedbackEl = document.getElementById("feedback");
@@ -217,164 +145,37 @@
       let current = 0;
       let score = 0;
       let lives = 5;
+      let playerName = "";
+      let scoreHistory = [0]; 
+      let reportData = [];
 
-      // Variáveis do quiz
-    const questions = [
-      // (mesmo array que você enviou, omitido aqui por espaço)
-      {
-        sentence: "O músico fez um ótimo ______ ontem no teatro.",
-        options: {
-          "Concerto": "Apresentação musical ou harmonia de sons.",
-          "Conserto": "Ato de reparar algo quebrado."
-        },
-        answer: "Concerto"
-      },
-      {
-        sentence: "O mecânico terminou o ______ do carro.",
-        options: {
-          "Conserto": "Ato de reparar algo quebrado.",
-          "Concerto": "Apresentação musical ou harmonia de sons."
-        },
-        answer: "Conserto"
-      },
-      {
-        sentence: "Vamos marcar uma ______ de cinema à noite.",
-        options: {
-          "Sessão": "Período destinado a uma atividade (ex: cinema, reunião).",
-          "Seção": "Parte subdividida de algo maior (ex: seção de um livro).",
-          "Cessão": "Ato de ceder algo ou abrir mão."
-        },
-        answer: "Sessão"
-      },
-      {
-        sentence: "A empresa fará a ______ de direitos autorais.",
-        options: {
-          "Cessão": "Ato de ceder algo ou abrir mão.",
-          "Seção": "Parte subdividida de algo maior.",
-          "Sessão": "Período destinado a uma atividade."
-        },
-        answer: "Cessão"
-      },
-      {
-        sentence: "O livro foi colocado na ______ infantil da biblioteca.",
-        options: {
-          "Seção": "Parte subdividida de algo maior (ex: seção infantil).",
-          "Sessão": "Período destinado a uma atividade.",
-          "Cessão": "Ato de ceder algo."
-        },
-        answer: "Seção"
-      },
-      {
-        sentence: "Ele me deu um caloroso ______ pela conquista.",
-        options: {
-          "Cumprimento": "Ato de saudar alguém.",
-          "Comprimento": "Extensão, medida longitudinal."
-        },
-        answer: "Cumprimento"
-      },
-      {
-        sentence: "O ______ da sala era de dez metros.",
-        options: {
-          "Comprimento": "Extensão, medida longitudinal.",
-          "Cumprimento": "Ato de saudar alguém."
-        },
-        answer: "Comprimento"
-      },
-      {
-        sentence: "Ela colocou um ______ confortável na cadeira.",
-        options: {
-          "Assento": "Lugar onde se senta.",
-          "Acento": "Sinal gráfico usado na escrita."
-        },
-        answer: "Assento"
-      },
-      {
-        sentence: "A palavra 'pôde' tem um ______ circunflexo.",
-        options: {
-          "Acento": "Sinal gráfico usado na escrita.",
-          "Assento": "Lugar onde se senta."
-        },
-        answer: "Acento"
-      },
-      {
-        sentence: "Ele vai ______ para o Canadá no ano que vem.",
-        options: {
-          "Emigrar": "Sair do país para morar em outro.",
-          "Imigrar": "Entrar em um país para viver nele."
-        },
-        answer: "Emigrar"
-      },
-      {
-        sentence: "Ela vai ______ para o Brasil em dezembro.",
-        options: {
-          "Imigrar": "Entrar em um país para viver nele.",
-          "Emigrar": "Sair do país para morar em outro."
-        },
-        answer: "Imigrar"
-      },
-      {
-        sentence: "O ______ do IBGE revelou crescimento populacional.",
-        options: {
-          "Censo": "Levantamento estatístico da população.",
-          "Senso": "Capacidade de entender ou julgar algo."
-        },
-        answer: "Censo"
-      },
-      {
-        sentence: "Ele tem um bom ______ de justiça.",
-        options: {
-          "Senso": "Capacidade de entender ou julgar algo.",
-          "Censo": "Levantamento estatístico da população."
-        },
-        answer: "Senso"
-      },
-      {
-        sentence: "Ela foi ______ pelas regras da competição.",
-        options: {
-          "Infligida": "Recebeu uma punição ou sofrimento.",
-          "Infringida": "Violação de uma regra ou norma."
-        },
-        answer: "Infligida"
-      },
-      {
-        sentence: "Ele ______ as regras e foi desclassificado.",
-        options: {
-          "Infringiu": "Quebrou ou violou uma regra.",
-          "Infligiu": "Causou dor ou punição."
-        },
-        answer: "Infringiu"
-      },
-      {
-        sentence: "O ____ do carro quebrou e ele precisou consertar.",
-        options: {
-          "Cinto": "Correia usada para segurança em veículos ou roupas.",
-          "Sinto": "Forma do verbo sentir, relacionado a percepções ou emoções."
-        },
-        answer: "Cinto",
-        explanationOptions: {
-          "Cinto": "É uma faixa ou correia usada para segurar ou prender, como no carro ou na roupa.",
-          "Sinto": "É uma forma verbal do verbo sentir, relacionada a emoções ou sensações."
-        }
-      },
-      {
-        sentence: "O diretor vai ____ o documento amanhã para oficializar o acordo.",
-        options: {
-          "Ratificar": "Confirmar ou validar algo oficialmente.",
-          "Retificar": "Corrigir ou ajustar algo que está errado."
-        },
-        answer: "Ratificar",
-        explanationOptions: {
-          "Ratificar": "Significa confirmar, validar ou tornar algo oficial.",
-          "Retificar": "Significa corrigir ou fazer ajustes em algo."
-        }
-      }
-    ];
+      const questions = [
+        { sentence: "O músico fez um ótimo ______ ontem no teatro.", options: { "Concerto": "Apresentação musical.", "Conserto": "Ato de reparar." }, answer: "Concerto" },
+        { sentence: "O mecânico terminou o ______ do carro.", options: { "Conserto": "Reparar algo quebrado.", "Concerto": "Harmonia de sons." }, answer: "Conserto" },
+        { sentence: "Vamos marcar uma ______ de cinema à noite.", options: { "Sessão": "Período de atividade.", "Seção": "Divisão.", "Cessão": "Ato de ceder." }, answer: "Sessão" },
+        { sentence: "A empresa fará a ______ de direitos autorais.", options: { "Cessão": "Abrir mão.", "Seção": "Parte subdividida.", "Sessão": "Período." }, answer: "Cessão" },
+        { sentence: "O livro foi colocado na ______ infantil.", options: { "Seção": "Divisão/Setor.", "Sessão": "Período.", "Cessão": "Ato de ceder." }, answer: "Seção" },
+        { sentence: "Ele me deu um caloroso ______.", options: { "Cumprimento": "Saudação.", "Comprimento": "Medida." }, answer: "Cumprimento" },
+        { sentence: "O ______ da sala era de dez metros.", options: { "Comprimento": "Medida.", "Cumprimento": "Saudação." }, answer: "Comprimento" },
+        { sentence: "Ela colocou um ______ confortável na cadeira.", options: { "Assento": "Lugar de sentar.", "Acento": "Sinal gráfico." }, answer: "Assento" },
+        { sentence: "A palavra 'pôde' tem um ______ circunflexo.", options: { "Acento": "Sinal gráfico.", "Assento": "Lugar de sentar." }, answer: "Acento" },
+        { sentence: "Ele vai ______ para o Canadá.", options: { "Emigrar": "Sair do país.", "Imigrar": "Entrar no país." }, answer: "Emigrar" },
+        { sentence: "Ela vai ______ para o Brasil.", options: { "Imigrar": "Entrar no país.", "Emigrar": "Sair do país." }, answer: "Imigrar" },
+        { sentence: "O ______ do IBGE revelou crescimento.", options: { "Censo": "Estatística.", "Senso": "Julgamento." }, answer: "Censo" },
+        { sentence: "Ele tem um bom ______ de justiça.", options: { "Senso": "Julgamento.", "Censo": "Estatística." }, answer: "Senso" },
+        { sentence: "Ela foi ______ pelas regras da competição.", options: { "Infligida": "Punição aplicada.", "Infringida": "Regra violada." }, answer: "Infligida" },
+        { sentence: "Ele ______ as regras e foi desclassificado.", options: { "Infringiu": "Violou.", "Infligiu": "Aplicou pena." }, answer: "Infringiu" },
+        { sentence: "O ____ do carro quebrou.", options: { "Cinto": "Correia de segurança.", "Sinto": "Verbo sentir." }, answer: "Cinto" },
+        { sentence: "O diretor vai ____ o documento amanhã.", options: { "Ratificar": "Confirmar.", "Retificar": "Corrigir." }, answer: "Ratificar" }
+      ];
 
-      function shuffle(array) {
+      // Algoritmo Fisher-Yates para embaralhar qualquer array
+      function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [array[i], array[j]] = [array[j], array[i]];
         }
+        return array;
       }
 
       function showQuestion() {
@@ -382,11 +183,14 @@
         questionEl.textContent = q.sentence;
         optionsEl.innerHTML = "";
         feedbackEl.textContent = "";
-        feedbackEl.className = "feedback";
         explanationEl.textContent = "";
         nextBtn.style.display = "none";
 
-        Object.keys(q.options).forEach(word => {
+        // Transforma as chaves do objeto em array e as embaralha
+        const keys = Object.keys(q.options);
+        const shuffledOptions = shuffleArray(keys);
+
+        shuffledOptions.forEach(word => {
           const btn = document.createElement("button");
           btn.textContent = word;
           btn.onclick = () => checkAnswer(word);
@@ -396,25 +200,35 @@
 
       function checkAnswer(selected) {
         const q = questions[current];
-        const correct = q.answer;
+        const isCorrect = (selected === q.answer);
+        
+        // Desativa botões após escolha
+        const buttons = optionsEl.querySelectorAll("button");
+        buttons.forEach(b => b.disabled = true);
 
-        if (selected === correct) {
+        if (isCorrect) {
           score += 10;
           feedbackEl.textContent = "✅ Correto!";
           feedbackEl.className = "feedback correct";
         } else {
           lives--;
-          feedbackEl.textContent = `❌ Errado! A resposta certa era: "${correct}".`;
+          feedbackEl.textContent = `❌ Errado! Resposta: "${q.answer}".`;
           feedbackEl.className = "feedback wrong";
         }
 
+        reportData.push({
+          pergunta: q.sentence.replace("______", q.answer),
+          escolhida: selected,
+          status: isCorrect ? "Acertou" : "Errou"
+        });
+        scoreHistory.push(score);
+
         scoreEl.textContent = score;
         livesEl.textContent = lives;
-
         showExplanations(q.options);
         nextBtn.style.display = "inline-block";
 
-        if (lives <= 0) setTimeout(gameOver, 500);
+        if (lives <= 0) setTimeout(gameOver, 800);
       }
 
       function showExplanations(options) {
@@ -424,31 +238,76 @@
         }
       }
 
-      function nextQuestion() {
+      function gameOver() {
+        quizContainer.style.display = "none";
+        endScreen.style.display = "block";
+        document.getElementById("final-score").textContent = score;
+        document.getElementById("final-player-name").textContent = playerName;
+        renderChart();
+      }
+
+      function renderChart() {
+        const ctx = document.getElementById('scoreChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: scoreHistory.map((_, i) => `Q${i}`),
+            datasets: [{
+              label: 'Pontuação',
+              data: scoreHistory,
+              borderColor: '#8b4513',
+              backgroundColor: 'rgba(139, 69, 19, 0.2)',
+              borderWidth: 3,
+              tension: 0.3,
+              fill: true
+            }]
+          },
+          options: { scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      window.generatePDF = function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.setTextColor(139, 69, 19);
+        doc.text("BOLETIM DE DESEMPENHO", 105, 20, { align: "center" });
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.text(`Jogador: ${playerName}`, 14, 35);
+        doc.text(`Pontuação Total: ${score}`, 14, 42);
+
+        const rows = reportData.map(item => [item.pergunta, item.escolhida, item.status]);
+        doc.autoTable({
+          startY: 50,
+          head: [['Sentença', 'Sua Escolha', 'Resultado']],
+          body: rows,
+          headStyles: { fillColor: [139, 69, 19] },
+          didParseCell: (data) => {
+            if (data.column.index === 2 && data.cell.section === 'body') {
+              data.cell.styles.textColor = data.cell.raw === 'Acertou' ? [40, 167, 69] : [220, 53, 69];
+            }
+          }
+        });
+        doc.save(`Boletim_${playerName}.pdf`);
+      }
+
+      nextBtn.onclick = () => {
         current++;
         if (current >= questions.length) gameOver();
         else showQuestion();
-      }
-
-      function gameOver() {
-        document.getElementById("game").style.display = "none";
-        document.getElementById("end-screen").style.display = "block";
-        document.getElementById("final-score").textContent = score;
-        document.getElementById("final-player-name").textContent = playerDisplay.textContent;
-      }
-
-      nextBtn.onclick = nextQuestion;
+      };
 
       startBtn.onclick = () => {
-        const playerName = playerNameInput.value.trim();
-        if (!playerName) {
-          alert('Por favor, digite seu nome para iniciar o quiz.');
-          return;
-        }
+        playerName = playerNameInput.value.trim();
+        if (!playerName) { alert('Digite seu nome!'); return; }
         playerDisplay.textContent = playerName;
         startScreen.style.display = 'none';
         quizContainer.style.display = 'block';
-        shuffle(questions);
+        
+        // Embaralha as perguntas ao iniciar
+        shuffleArray(questions);
+        
         showQuestion();
       };
 
@@ -459,4 +318,3 @@
   </script>
 </body>
 </html>
-

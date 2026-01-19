@@ -4,10 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Histórias para Interpretar</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #667eea, #764ba2);
+      background-image: url('compreensao_e_interpretacao.png');
       color: #fff;
       margin: 0;
       padding: 0 20px;
@@ -97,12 +102,9 @@
       font-size: 1.1em;
       min-height: 30px;
     }
-    .correct {
-      color: #28a745;
-    }
-    .wrong {
-      color: #dc3545;
-    }
+    .correct { color: #28a745; }
+    .wrong { color: #dc3545; }
+    
     .scoreboard {
       font-size: 1em;
       margin-bottom: 15px;
@@ -110,38 +112,37 @@
     #next-btn {
       margin-top: 25px;
       padding: 12px 28px;
-      font-size: 1.1em;
-      border-radius: 10px;
       background-color: #28a745;
       color: white;
-      border: none;
-      cursor: pointer;
       display: none;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
     }
-    #next-btn:hover {
-      background-color: #1e7e34;
+
+    /* Estilos do Gráfico e Botões Finais */
+    #chart-container {
+      background: white;
+      border-radius: 8px;
+      margin: 20px 0;
+      padding: 10px;
     }
     .btn {
       font-size: 1.1em;
       padding: 10px 20px;
       border-radius: 8px;
       border: none;
-      background-color: #28a745;
-      color: white;
       cursor: pointer;
       margin: 10px;
+      font-weight: bold;
     }
-    .btn:hover {
-      background-color: #218838;
-    }
+    .btn-restart { background-color: #ffd700; color: #000; }
+    .btn-next-module { background-color: #28a745; color: white; }
+    .btn-pdf { background-color: #8b4513; color: white; } 
   </style>
 </head>
 <body>
+
   <div class="container" id="start-screen">
     <h1>📚 Histórias para Interpretar</h1>
-    <p>Digite seu nome para começar a jogar:</p>
+    <img src="logo_textos.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"/>
     <input type="text" id="player-name" placeholder="Seu nome aqui" maxlength="20" />
     <br />
     <button id="start-btn">Iniciar</button>
@@ -164,13 +165,20 @@
   <div class="container" id="end-screen" style="display:none;">
     <h2>🎉 Parabéns, <span id="final-player-name"></span>!</h2>
     <p>Você terminou com <strong><span id="final-score"></span> ponto(s)</strong>!</p>
-    <button class="btn" onclick="location.reload()">🔄 Jogar Novamente</button>
-    <button class="btn" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+    
+    <div id="chart-container">
+      <canvas id="scoreChart"></canvas>
+    </div>
+
+    <button class="btn btn-pdf" onclick="generatePDF()">📥 Baixar Boletim PDF</button>
+    <br>
+    <button class="btn btn-restart" onclick="location.reload()">🔄 Jogar Novamente</button>
+    <button class="btn btn-next-module" onclick="goToNextModule()">➡️ Finalizar Módulos</button>
   </div>
 
   <div class="container" id="lost-container" style="display:none;">
     <h2>💔 Você perdeu! Que tal tentar novamente?</h2>
-    <button class="btn" onclick="restartGame()">🔄 Tentar Novamente</button>
+    <button class="btn btn-restart" onclick="restartGame()">🔄 Tentar Novamente</button>
   </div>
 
   <script>
@@ -186,44 +194,28 @@
         text: "Maria plantou uma sementinha no jardim da sua casa. Ela regava a planta todos os dias, mesmo quando estava chovendo. Maria também tirava as folhas secas e conversava com a plantinha, esperando que ela crescesse forte e bonita. Com o tempo, a sementinha virou uma flor cheia de cores.",
         image: "h2_maria_plantinha.png",
         question: "Qual das alternativas NÃO faz parte do cuidado que Maria teve com a planta?",
-        options: [
-          "Regar a sementinha todos os dias.",
-          "Esquecer de cuidar da planta quando chove.",
-          "Tirar suas folhas secas"
-        ],
+        options: ["Regar a sementinha todos os dias.", "Esquecer de cuidar da planta quando chove.", "Tirar suas folhas secas"],
         answer: 1
       },
       {
         text: "No dia em que o sol brilhava muito forte, Ana decidiu se cuidar. Ela colocou um chapéu grande para proteger a cabeça e levou uma garrafinha de água para não ficar desidratada. Ana sabia que o calor podia causar cansaço e que era importante se proteger para brincar e aproveitar o dia.",
         image: "h3_ana_chapéu.png",
         question: "Por que Ana tomou as atitudes mencionadas na história?",
-        options: [
-          "Para se proteger do calor e evitar o cansaço.",
-          "Porque queria se sentir mais bonita.",
-          "Porque ela queria ficar na sombra para dormir."
-        ],
+        options: ["Para se proteger do calor e evitar o cansaço.", "Porque queria se sentir mais bonita.", "Porque ela queria ficar na sombra para dormir."],
         answer: 0
       },
       {
         text: "João encontrou um cachorrinho perdido enquanto caminhava no bairro. Ele percebeu que o cachorro não tinha coleira e parecia confuso. João pegou uma coleira que tinha em casa, colocou no cachorro e o levou para passear. Voltando para casa, postou um anúncio informando ter encontrado o cão para tentar localizar o possível dono.",
         image: "h4_joão_cachorro.png",
         question: "As atitudes de João revelam que:",
-        options: [
-          "Ele quer encontrar o dono, pois não gosta de cachorros.",
-          "Ele levou o cachorro para passear, pois já o considera seu.",
-          "Ele demonstrou preocupação com o cachorro e com seu possível dono."
-        ],
+        options: ["Ele quer encontrar o dono, pois não gosta de cachorros.", "Ele levou o cachorro para passear, pois já o considera seu.", "Ele demonstrou preocupação com o cachorro e com seu possível dono."],
         answer: 2
       },
       {
         text: "Durante a aula, Clara não entendeu muito bem a explicação do professor. Por isso, ela fez várias perguntas para tirar suas dúvidas e entender melhor o assunto. Clara sabia que perguntar era importante para aprender e se dedicar mais aos estudos.",
         image: "h5_clara_professor.png",
         question: "O que podemos dizer sobre Clara?",
-        options: [
-          "Ela quer aprender e compreende a importância de tirar dúvidas.",
-          "Ela não estava prestando atenção na aula.",
-          "Ela estava conversando com os colegas durante a explicação."
-        ],
+        options: ["Ela quer aprender e compreende a importância de tirar dúvidas.", "Ela não estava prestando atenção na aula.", "Ela estava conversando com os colegas durante a explicação."],
         answer: 0
       },
       {
@@ -287,7 +279,6 @@
     const gameScreen = document.getElementById('game');
     const endScreen = document.getElementById('end-screen');
     const lostContainer = document.getElementById('lost-container');
-
     const playerNameInput = document.getElementById('player-name');
     const startBtn = document.getElementById('start-btn');
     const displayName = document.getElementById('display-name');
@@ -306,6 +297,8 @@
     let score = 0;
     let lives = 3;
     let playerName = '';
+    let scoreHistory = [0]; 
+    let reportData = [];
 
     function startGame() {
       playerName = playerNameInput.value.trim();
@@ -322,6 +315,8 @@
       score = 0;
       lives = 3;
       currentStoryIndex = 0;
+      scoreHistory = [0];
+      reportData = [];
       updateScoreLives();
       loadStory();
     }
@@ -358,7 +353,9 @@
       [...optionsDiv.children].forEach(btn => btn.disabled = true);
 
       const story = stories[currentStoryIndex];
-      if (selectedIndex === story.answer) {
+      const isCorrect = (selectedIndex === story.answer);
+
+      if (isCorrect) {
         score += 10;
         feedbackDiv.textContent = 'Resposta correta! 🎉';
         feedbackDiv.className = 'feedback correct';
@@ -368,14 +365,67 @@
         feedbackDiv.className = 'feedback wrong';
       }
 
+      // Salva dados para o gráfico e PDF
+      reportData.push({
+        pergunta: story.question,
+        escolhida: story.options[selectedIndex],
+        status: isCorrect ? "Acertou" : "Errou"
+      });
+      scoreHistory.push(score);
+
       updateScoreLives();
 
       if (lives <= 0) {
-        loseGame();
+        setTimeout(loseGame, 800);
         return;
       }
-
       nextBtn.style.display = 'inline-block';
+    }
+
+    function renderChart() {
+      const ctx = document.getElementById('scoreChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: scoreHistory.map((_, i) => `Q${i}`),
+          datasets: [{
+            label: 'Evolução da Pontuação',
+            data: scoreHistory,
+            borderColor: '#8b4513',
+            backgroundColor: 'rgba(139, 69, 19, 0.2)',
+            borderWidth: 3,
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    window.generatePDF = function() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.setTextColor(139, 69, 19);
+      doc.text("BOLETIM DE DESEMPENHO - INTERPRETAÇÃO", 105, 20, { align: "center" });
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text(`Jogador: ${playerName}`, 14, 35);
+      doc.text(`Pontuação Total: ${score}`, 14, 42);
+
+      const rows = reportData.map(item => [item.pergunta, item.escolhida, item.status]);
+      doc.autoTable({
+        startY: 50,
+        head: [['Questão', 'Sua Resposta', 'Resultado']],
+        body: rows,
+        headStyles: { fillColor: [139, 69, 19] },
+        didParseCell: (data) => {
+          if (data.column.index === 2 && data.cell.section === 'body') {
+            data.cell.styles.textColor = data.cell.raw === 'Acertou' ? [40, 167, 69] : [220, 53, 69];
+          }
+        }
+      });
+      doc.save(`Boletim_Interpretacao_${playerName}.pdf`);
     }
 
     function endGame() {
@@ -383,6 +433,7 @@
       endScreen.style.display = 'block';
       finalPlayerName.textContent = playerName;
       finalScore.textContent = score;
+      renderChart();
     }
 
     function loseGame() {
@@ -402,7 +453,7 @@
     }
 
     function goToNextModule() {
-      alert("Função para o próximo módulo ainda não configurada!");
+      window.location.href = "index.html";
     }
 
     startBtn.addEventListener('click', startGame);
@@ -410,4 +461,3 @@
   </script>
 </body>
 </html>
-

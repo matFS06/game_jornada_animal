@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Classificação do Reino Animal</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -11,7 +16,7 @@
       background-color: #f1f8ff;
       padding: 20px;
       text-align: center;
-      background-image: url('animais.jpg'); /* Link da imagem de fundo */
+      background-image: url('animais.png'); 
       background-size: cover;
       background-position: center;
       height: 100vh;
@@ -92,7 +97,6 @@
       background-color: #f44336;
       color: white;
     }
-    /* Container de explicação */
     #explanation-container {
       display: none;
       margin-top: 20px;
@@ -111,7 +115,6 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-    /* Tela inicial dentro de container */
     #start-screen {
       display: block;
     }
@@ -125,35 +128,41 @@
       max-width: 300px;
       margin-bottom: 20px;
     }
-    /* Tela de reinício */
     #restart-container {
       margin-top: 100px;
     }
-    /* Tela de Perda */
     #lost-container {
       margin-top: 100px;
+    }
+    #chart-wrapper {
+      margin: 20px 0;
+      padding: 10px;
+      background: #fff;
+      border: 2px solid #2e7d32;
+      border-radius: 10px;
+    }
+    .btn-boletim {
+      background-color: #2e7d32 !important;
+      margin-bottom: 5px;
     }
   </style>
 </head>
 <body>
-  <!-- Tela inicial (dentro de um container branco) -->
   <div id="start-screen" class="container">
     <h2>Bem-vindo ao Módulo de Zoologia</h2>
-    <img src="logo.png" alt="Logo" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
+    <img src="logo_zoologia.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;">
     <br>
     <input type="text" id="player-name" placeholder="Digite seu nome">
     <br>
     <button id="start-button" class="btn" onclick="startGame()">Iniciar</button>
   </div>
 
-  <!-- Scoreboard -->
   <div id="scoreboard" class="scoreboard">
     <span id="player-display"></span>
-    <span id="score">Pontos: 0</span> | <span id="lives">Vidas: 3</span>
+    <span id="score">Pontos: 0</span> | <span id="lives">Vidas: 5</span>
     <span style="font-size: 24px; margin-left: 10px;">❤️</span>
   </div>
 
-  <!-- Container do Quiz -->
   <div id="quiz-container" class="container">
     <h2 class="question">Vamos aprender sobre o animal!</h2>
     <div id="animal" class="animal"></div>
@@ -164,12 +173,10 @@
       <button id="nao-button" class="answer-button" onclick="checkAnswer('não')">Não</button>
     </div>
   
-    <!-- Botão "Próxima Pergunta" inicia desabilitado -->
     <button id="next-question-button" class="btn" onclick="nextQuestion()" disabled>Próxima Pergunta</button>
   
     <div id="message-container" class="message"></div>
     
-    <!-- Container de explicação para os animais que possuem explicação -->
     <div id="explanation-container">
       <div id="explanation-title"></div>
       <img id="explanation-img" src="" alt="Imagem do Animal">
@@ -178,15 +185,20 @@
     </div>
   </div>
 
-  <!-- Tela de reinício -->
   <div id="restart-container" class="container">
-    <img src="troféu.png" alt="Troféu" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
+    <img src="troféu.png" alt="Troféu" style="max-width: 150px; margin-bottom: 20px; border-radius: 50%;"/>
     <h2>Parabéns! Você completou todas as perguntas!</h2>
+    
+    <div id="chart-wrapper">
+      <canvas id="meuGrafico"></canvas>
+    </div>
+
+    <button class="btn btn-boletim" onclick="gerarBoletim()">Baixar Boletim (em PDF)</button>
+    <br>
     <button class="btn" onclick="restartGame()">Jogar Novamente</button>
     <button class="btn" onclick="goToNextModule()">Próximo Módulo</button>
   </div>
 
-  <!-- Tela de Perda -->
   <div id="lost-container" class="container">
     <img src="gameover.png" alt="Game Over" style="max-width: 200px; margin-bottom: 20px; border-radius: 50%;"/>
     <h2>Você perdeu! Que tal tentar novamente?</h2>
@@ -195,9 +207,11 @@
 
   <script>
     let score = 0;
-    let lives = 3;
+    let lives = 5;
     let playerName = "";
-    
+    let historicoPontos = [0];
+    let dadosRespostas = [];
+
     let animals = [
       {
         name: "Leão",
@@ -284,16 +298,10 @@
     let currentAnimalIndex = 0;
     let currentQuestionIndex = 0;
     
-    // Função para iniciar o jogo
     function startGame() {
       playerName = document.getElementById("player-name").value.trim();
-      if (!playerName) {
-        alert("Por favor, digite seu nome!");
-        return;
-      }
-      // Atualiza o display do nome do jogador
+      if (!playerName) { alert("Por favor, digite seu nome!"); return; }
       document.getElementById("player-display").innerText = "Jogador: " + playerName + " | ";
-      // Esconde a tela inicial e exibe o scoreboard e o quiz
       document.getElementById("start-screen").style.display = "none";
       document.getElementById("scoreboard").style.display = "block";
       document.getElementById("quiz-container").style.display = "block";
@@ -306,172 +314,168 @@
     }
 
     function clearMessage() {
-      const messageContainer = document.getElementById("message-container");
-      messageContainer.innerText = "";
-      messageContainer.classList.remove("correct", "incorrect");
+      const mc = document.getElementById("message-container");
+      mc.innerText = "";
+      mc.classList.remove("correct", "incorrect");
     }
 
     function showMessage(message, isCorrect) {
-      const messageContainer = document.getElementById("message-container");
-      messageContainer.innerText = message;
-      messageContainer.classList.remove("correct", "incorrect");
-      if (isCorrect) {
-        messageContainer.classList.add("correct");
-      } else {
-        messageContainer.classList.add("incorrect");
-      }
+      const mc = document.getElementById("message-container");
+      mc.innerText = message;
+      mc.classList.remove("correct", "incorrect");
+      if (isCorrect) mc.classList.add("correct"); else mc.classList.add("incorrect");
     }
 
     function checkAnswer(answer) {
-      // Desabilita os botões de resposta após o clique
       document.getElementById("sim-button").disabled = true;
       document.getElementById("nao-button").disabled = true;
-
       const currentAnimal = animals[currentAnimalIndex];
       const currentQuestion = currentAnimal.questions[currentQuestionIndex];
+      const acertou = (answer === currentQuestion.correctAnswer);
 
-      if (answer === currentQuestion.correctAnswer) {
+      if (acertou) {
         score += 10;
         showMessage("Muito bem! Resposta correta.", true);
       } else {
         lives -= 1;
         showMessage("Ops! Resposta incorreta.", false);
         if (lives === 0) {
-          showMessage("VOCÊ PERDEU! Tente novamente.", false);
-          showLostScreen(); // Chama a função para exibir a tela de "perdedor"
+          showLostScreen();
           return;
         }
       }
+      
+      historicoPontos.push(score);
+      dadosRespostas.push({
+        animal: currentAnimal.name,
+        pergunta: currentQuestion.question,
+        resultado: acertou ? "Correto" : "Errado"
+      });
+
       updateScoreboard();
-      // Habilita o botão "Próxima Pergunta" somente após a resposta
       document.getElementById("next-question-button").disabled = false;
     }
 
     function nextQuestion() {
       clearMessage();
-      // Desabilita o botão "Próxima Pergunta" até que a nova pergunta seja respondida
       document.getElementById("next-question-button").disabled = true;
-      // Reabilita os botões de resposta
       document.getElementById("sim-button").disabled = false;
       document.getElementById("nao-button").disabled = false;
-
       const currentAnimal = animals[currentAnimalIndex];
       currentQuestionIndex++;
 
-      // Se terminar as perguntas do animal...
       if (currentQuestionIndex >= currentAnimal.questions.length) {
-        // Se o animal tiver explicação, exibe a explicação
-        if (currentAnimal.explanation) {
-          showExplanation();
-          return;
-        }
-        // Se não tiver explicação, passa para o próximo animal
+        if (currentAnimal.explanation) { showExplanation(); return; }
         currentAnimalIndex++;
         currentQuestionIndex = 0;
       }
-
-      if (currentAnimalIndex >= animals.length) {
-        showRestartScreen();
-        return;
-      }
+      if (currentAnimalIndex >= animals.length) { showRestartScreen(); return; }
       generateRound();
     }
 
     function generateRound() {
-      // Garante que o container de explicação esteja escondido
       document.getElementById("explanation-container").style.display = "none";
       document.getElementById("animal").style.display = "block";
       document.getElementById("question-container").style.display = "block";
       document.querySelector(".answer-buttons").style.display = "block";
       document.getElementById("next-question-button").style.display = "block";
-
-      const currentAnimal = animals[currentAnimalIndex];
-      const currentQuestion = currentAnimal.questions[currentQuestionIndex];
-
-      document.getElementById("animal").innerText = currentAnimal.name;
-      document.getElementById("question-container").innerText = currentQuestion.question;
+      const animal = animals[currentAnimalIndex];
+      document.getElementById("animal").innerText = animal.name;
+      document.getElementById("question-container").innerText = animal.questions[currentQuestionIndex].question;
     }
 
     function showExplanation() {
-      // Esconde os elementos da pergunta
       document.getElementById("animal").style.display = "none";
       document.getElementById("question-container").style.display = "none";
       document.querySelector(".answer-buttons").style.display = "none";
       document.getElementById("next-question-button").style.display = "none";
-
-      let currentAnimal = animals[currentAnimalIndex];
-      // Atualiza o título da explicação com o nome do animal
-      document.getElementById("explanation-title").innerText = currentAnimal.name;
-      // Atualiza a imagem usando a propriedade explanationImage ou, se não existir, utiliza o nome do animal em minúsculo + .png
-      document.getElementById("explanation-img").src = currentAnimal.explanationImage || (currentAnimal.name.toLowerCase() + ".png");
-      // Atualiza o texto da explicação
-      document.getElementById("explanation-text").innerText = currentAnimal.explanation;
-      // Exibe o container de explicação
+      let animal = animals[currentAnimalIndex];
+      document.getElementById("explanation-title").innerText = animal.name;
+      document.getElementById("explanation-img").src = animal.explanationImage;
+      document.getElementById("explanation-text").innerText = animal.explanation;
       document.getElementById("explanation-container").style.display = "block";
     }
 
     function nextAnimal() {
-      // Esconde a explicação e exibe os elementos da pergunta
       document.getElementById("explanation-container").style.display = "none";
-      document.getElementById("animal").style.display = "block";
-      document.getElementById("question-container").style.display = "block";
-      document.querySelector(".answer-buttons").style.display = "block";
-      document.getElementById("next-question-button").style.display = "block";
-
       currentAnimalIndex++;
       currentQuestionIndex = 0;
-
-      if (currentAnimalIndex >= animals.length) {
-        showRestartScreen();
-        return;
-      }
+      if (currentAnimalIndex >= animals.length) { showRestartScreen(); return; }
       generateRound();
     }
 
-    // Exibe a tela de perda quando o jogador perde
     function showLostScreen() {
       document.getElementById("quiz-container").style.display = "none";
       document.getElementById("scoreboard").style.display = "none";
-      // Exibe a tela de perda
       document.getElementById("lost-container").style.display = "block";
     }
 
-    // Exibe a tela de reinício quando o jogo termina ou o jogador perde
     function showRestartScreen() {
       document.getElementById("quiz-container").style.display = "none";
       document.getElementById("scoreboard").style.display = "none";
-      document.getElementById("lost-container").style.display = "none"; // Esconde a tela de perda, se estiver visível
       document.getElementById("restart-container").style.display = "block";
+      desenharGrafico();
     }
 
-    // Reinicia o jogo
-    function restartGame() {
-      score = 0;
-      lives = 3;
-      currentAnimalIndex = 0;
-      currentQuestionIndex = 0;
-      updateScoreboard();
-      clearMessage();
-      
-      // Esconde a tela de perda
-      document.getElementById("lost-container").style.display = "none";  // Esconde a tela de "perdeu"
-      
-      // Reabilita os botões de resposta
-      document.getElementById("sim-button").disabled = false;
-      document.getElementById("nao-button").disabled = false;
-      
-      // Oculta a tela de reinício e exibe a tela inicial
-      document.getElementById("restart-container").style.display = "none";
-      document.getElementById("start-screen").style.display = "block";
-      
-      // Limpa o campo de nome, se desejar
-      document.getElementById("player-name").value = "";
+    function desenharGrafico() {
+      const ctx = document.getElementById('meuGrafico').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: historicoPontos.map((_, i) => i),
+          datasets: [{
+            label: 'Sua Pontuação',
+            data: historicoPontos,
+            borderColor: '#2e7d32',
+            backgroundColor: 'rgba(46, 125, 50, 0.2)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
     }
-    function goToNextModule() {
-      window.location.href = "botanica.html";
+
+    // FUNÇÃO DO BOLETIM PDF COM CORES NO GABARITO
+    function gerarBoletim() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.setFontSize(22);
+      doc.setTextColor(46, 125, 50); 
+      doc.text("BOLETIM DE ZOOLOGIA", 105, 20, { align: "center" });
+      
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Jogador: ${playerName}`, 20, 35);
+      doc.text(`Pontuação Final: ${score} pontos`, 20, 45);
+
+      const tableData = dadosRespostas.map(d => [d.animal, d.pergunta, d.resultado]);
+      
+      doc.autoTable({
+        startY: 55,
+        head: [['Animal', 'Pergunta', 'Resultado']],
+        body: tableData,
+        headStyles: { fillColor: [46, 125, 50] },
+        didParseCell: function(data) {
+          // Verifica se é a coluna de Resultado (índice 2) e não é o cabeçalho
+          if (data.column.index === 2 && data.section === 'body') {
+            const txt = data.cell.raw;
+            if (txt === "Correto") {
+              data.cell.styles.textColor = [0, 128, 0]; // Verde
+            } else if (txt === "Errado") {
+              data.cell.styles.textColor = [255, 0, 0]; // Vermelho
+            }
+          }
+        }
+      });
+
+      doc.save(`Boletim_${playerName}_Zoologia.pdf`);
     }
+
+    function restartGame() { location.reload(); }
+    function goToNextModule() { window.location.href = "botanica.html"; }
   </script>
 </body>
 </html>
-
-
