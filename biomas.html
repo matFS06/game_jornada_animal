@@ -2,7 +2,12 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Jogo dos Biomas</title>
+  <title>Jogo dos Biomas - Expedição Geográfica</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
   <style>
     body {
       font-family: 'Comic Sans MS', sans-serif;
@@ -11,15 +16,17 @@
       background-image: url('biomas.png');
       background-size: cover;
       margin: 0;
+      min-height: 100vh;
     }
 
     .container {
       background: white;
-      max-width: 600px;
+      max-width: 650px;
       margin: 40px auto;
       padding: 30px;
       border-radius: 15px;
       border: 5px solid #00695c;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     }
 
     input, button {
@@ -34,11 +41,10 @@
       background-color: #00796b;
       color: white;
       cursor: pointer;
+      transition: 0.3s;
     }
 
-    button:hover {
-      background-color: #004d40;
-    }
+    button:hover { background-color: #004d40; transform: scale(1.05); }
 
     #memory-game {
       margin: 20px auto;
@@ -54,15 +60,20 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 14px;
+      font-weight: bold;
       cursor: pointer;
       border-radius: 10px;
       user-select: none;
+      border: 2px solid #00695c;
+      transition: background-color 0.3s, transform 0.5s;
     }
 
+    /* Removido o rotateY(180deg) que causava o efeito de espelho */
     .card.flipped {
       background-color: #004d40;
       color: white;
+      transform: scale(1.05);
     }
 
     #explanation {
@@ -75,24 +86,16 @@
     }
 
     #explanation img {
-      max-width: 100%;
+      max-width: 200px;
       margin-top: 10px;
       border-radius: 10px;
+      border: 2px solid #00695c;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    #congrats {
-      display: none;
-      font-size: 20px;
-      color: green;
-      margin-top: 30px;
-    }
-
-    #next-phase {
-      display: none;
-      font-size: 20px;
-      color: white;
-      margin-top: 30px;
-    }
+    #chart-container { width: 100%; height: 300px; margin-top: 20px; }
 
     #score-card {
       background-color: #e0f2f1;
@@ -111,61 +114,61 @@
     <br> 
     <input type="text" id="player-name" placeholder="Digite seu nome">
     <br>
-    <button onclick="startGame()">Iniciar</button>
+    <button onclick="startGame()">Iniciar Jornada</button>
   </div>
 
   <div id="game-container" class="container" style="display:none;">
     <div id="score-card">
-      <strong>Jogador:</strong> <span id="player-display"></span> |
-      <strong>Pontuação:</strong> <span id="score">0</span>/100
+      <strong>Explorador:</strong> <span id="player-display"></span> |
+      <strong>Pontos:</strong> <span id="score">0</span>
     </div>
     <h3 id="greeting"></h3>
     <div id="memory-game"></div>
+    
     <div id="explanation"></div>
-    <div id="congrats">
-      <p>Parabéns! Você completou todas as fases!</p>
-      <button onclick="restartGame()">Jogar Novamente</button>
-      <button onclick="goToNextModule()">Ir para o Próximo Módulo</button>
+    
+    <div id="congrats" style="display: none;">
+      <h3>🌳 Expedição Concluída com Sucesso!</h3>
+      <div id="chart-container"><canvas id="biomaChart"></canvas></div>
+      <button onclick="generatePDF()" style="background-color: #2e7d32;">📄 Baixar Boletim Geográfico</button>
+      <br>
+      <button onclick="location.reload()" style="background-color: #555; color: white; padding: 10px; margin-top: 10px; border-radius: 5px; border: none; cursor: pointer;">🔄 Reiniciar</button>
+      <button onclick="goToNextModule()" style="background-color: #00796b;">➡️ Próximo Módulo</button>
     </div>
-    <button id="next-phase" onclick="nextPhase()">Próxima Fase</button>
+    
+    <button id="next-phase" style="display:none;" onclick="nextPhase()">Próxima Fase ➔</button>
   </div>
 
   <script>
     const allBiomas = [
-      { name: "Amazônia", explanation: "Maior bioma do Brasil, rica em biodiversidade e abriga a maior floresta tropical do mundo.", image: "amazonia.jpg" },
-      { name: "Caatinga", explanation: "Bioma exclusivamente brasileiro, com clima semiárido e vegetação adaptada à seca.", image: "caatinga.jpg" },
-      { name: "Pampas", explanation: "Predomina no sul do Brasil, com campos naturais ideais para a pecuária.", image: "pampas.jpg" },
-      { name: "Cerrado", explanation: "Segundo maior bioma do Brasil, conhecido por sua vegetação retorcida e rica fauna.", image: "cerrado.jpg" },
-      { name: "Pantanal", explanation: "Maior planície alagável do planeta, com fauna abundante, especialmente aves e jacarés.", image: "pantanal.jpg" },
-      { name: "Mata Atlântica", explanation: "Bioma litorâneo muito devastado, com grande biodiversidade e importância ecológica.", image: "mata_atlantica.jpg" },
-      { name: "Manguezal", explanation: "Bioma costeiro com solo lodoso, importante para a reprodução de várias espécies marinhas.", image: "manguezal.jpg" },
-      { name: "Mata dos Cocais", explanation: "Bioma de transição entre a Amazônia, o Cerrado e a Caatinga, com presença marcante de palmeiras como babaçu e carnaúba.", image: "mata_dos_cocais.jpg" },
-      { name: "Mata das Araucárias", explanation: "Bioma do sul brasileiro, com clima mais frio e presença da árvore símbolo: araucária.", image: "mata_das_araucarias.jpg" },
-      { name: "Restinga", explanation: "Vegetação litorânea adaptada ao solo arenoso e salinidade elevada.", image: "restinga.jpg" }
+      { name: "Amazônia", explanation: "Maior floresta tropical do mundo, essencial para o equilíbrio climático.", image: "amazonia.jpg" },
+      { name: "Caatinga", explanation: "Bioma semiárido exclusivo do Brasil, com plantas que armazenam água.", image: "caatinga.jpg" },
+      { name: "Pampas", explanation: "Campos do Sul, com vegetação rasteira e clima mais frio.", image: "pampas.jpg" },
+      { name: "Cerrado", explanation: "A savana brasileira, com árvores de troncos retorcidos e solo ácido.", image: "cerrado.jpg" },
+      { name: "Pantanal", explanation: "Maior planície inundável do mundo e refúgio de muitas espécies.", image: "pantanal.jpg" },
+      { name: "Mata Atlântica", explanation: "Floresta litorânea rica em biodiversidade, hoje protegida em áreas de preservação.", image: "mata_atlantica.jpg" }
     ];
 
     const phases = [
       { pairs: 2, points: 20, columns: 2 },
-      { pairs: 3, points: 30, columns: 3 },
-      { pairs: 5, points: 50, columns: 5 }
+      { pairs: 4, points: 40, columns: 4 },
+      { pairs: 6, points: 40, columns: 4 }
     ];
 
-    let usedBiomas = [];
     let currentPhase = 0;
     let playerName = "";
     let score = 0;
-    let firstCard = null;
-    let secondCard = null;
+    let firstCard = null, secondCard = null;
     let lockBoard = false;
     let matchedPairs = 0;
+    
+    let totalClicksPerPhase = [];
+    let currentPhaseClicks = 0;
+    let biomasEncontradosSet = new Set();
 
     function startGame() {
       playerName = document.getElementById("player-name").value.trim();
-      if (playerName === "") {
-        alert("Por favor, digite seu nome!");
-        return;
-      }
-
+      if (!playerName) return alert("Por favor, digite seu nome!");
       document.getElementById("start-screen").style.display = "none";
       document.getElementById("game-container").style.display = "block";
       document.getElementById("player-display").innerText = playerName;
@@ -173,111 +176,155 @@
     }
 
     function loadPhase() {
-      const phase = phases[currentPhase];
       matchedPairs = 0;
+      currentPhaseClicks = 0;
       resetTurn();
-      const availableBiomas = allBiomas.filter(b => !usedBiomas.includes(b.name));
-      const selected = availableBiomas.sort(() => 0.5 - Math.random()).slice(0, phase.pairs);
-      usedBiomas.push(...selected.map(b => b.name));
+      document.getElementById("explanation").style.display = "none";
+      
+      const phase = phases[currentPhase];
+      const selected = allBiomas.slice(0, phase.pairs);
       const cards = [...selected, ...selected].sort(() => 0.5 - Math.random());
+      
       const grid = document.getElementById("memory-game");
       grid.innerHTML = "";
       grid.style.gridTemplateColumns = `repeat(${phase.columns}, 100px)`;
-
-      document.getElementById("greeting").innerText = `Fase ${currentPhase + 1}: Encontre os pares dos Biomas!`;
-      document.getElementById("next-phase").style.display = "none";
-      document.getElementById("congrats").style.display = "none";
+      document.getElementById("greeting").innerText = `Fase ${currentPhase + 1}: Encontre os pares!`;
 
       cards.forEach((card, index) => {
         const el = document.createElement("div");
         el.classList.add("card");
         el.dataset.name = card.name;
-        el.dataset.index = index;
         el.textContent = "?";
-        el.addEventListener("click", () => flipCard(el, card));
+        el.onclick = () => flipCard(el, card);
         grid.appendChild(el);
       });
     }
 
-    function flipCard(cardElement, card) {
-      if (lockBoard || cardElement.classList.contains("flipped")) return;
-
-      cardElement.classList.add("flipped");
-      cardElement.textContent = card.name;
+    function flipCard(el, card) {
+      if (lockBoard || el.classList.contains("flipped")) return;
+      
+      currentPhaseClicks++;
+      el.classList.add("flipped");
+      el.textContent = card.name;
 
       if (!firstCard) {
-        firstCard = { cardElement, card };
+        firstCard = { el, card };
       } else {
-        secondCard = { cardElement, card };
+        secondCard = { el, card };
         lockBoard = true;
-
-        if (firstCard.card.name === secondCard.card.name &&
-            firstCard.cardElement.dataset.index !== secondCard.cardElement.dataset.index) {
-          matchedPairs++;
-          showExplanation(card.explanation, card.image);
-          resetTurn();
-
-          if (matchedPairs === phases[currentPhase].pairs) {
-            score += phases[currentPhase].points;
-            document.getElementById("score").innerText = score;
-            if (currentPhase < phases.length - 1) {
-              document.getElementById("next-phase").style.display = "inline-block";
-            } else {
-              document.getElementById("congrats").style.display = "block";
-            }
-          }
-        } else {
-          setTimeout(() => {
-            firstCard.cardElement.classList.remove("flipped");
-            firstCard.cardElement.textContent = "?";
-            secondCard.cardElement.classList.remove("flipped");
-            secondCard.cardElement.textContent = "?";
-            hideExplanation();
-            resetTurn();
-          }, 1000);
-        }
+        checkMatch();
       }
     }
 
-    function resetTurn() {
-      [firstCard, secondCard] = [null, null];
-      lockBoard = false;
+    function checkMatch() {
+      if (firstCard.card.name === secondCard.card.name) {
+        matchedPairs++;
+        score += 10;
+        document.getElementById("score").innerText = score;
+        
+        showExplanation(secondCard.card);
+        biomasEncontradosSet.add(secondCard.card.name);
+
+        if (matchedPairs === phases[currentPhase].pairs) {
+          totalClicksPerPhase.push(currentPhaseClicks);
+          setTimeout(() => {
+            if (currentPhase < phases.length - 1) {
+              document.getElementById("next-phase").style.display = "inline-block";
+            } else {
+              showFinalScreen();
+            }
+          }, 1000);
+        }
+        resetTurn();
+      } else {
+        setTimeout(() => {
+          firstCard.el.classList.remove("flipped");
+          firstCard.el.textContent = "?";
+          secondCard.el.classList.remove("flipped");
+          secondCard.el.textContent = "?";
+          resetTurn();
+        }, 1000);
+      }
     }
 
-    function showExplanation(text, imagePath) {
+    function resetTurn() { [firstCard, secondCard, lockBoard] = [null, null, false]; }
+
+    function showExplanation(card) {
       const container = document.getElementById("explanation");
       container.innerHTML = `
-        <p>${text}</p>
-        <img src="${imagePath}" alt="Imagem do bioma">
+        <h4 style="color: #00695c; margin-bottom: 5px;">✅ Descoberta: ${card.name}</h4>
+        <p style="margin-bottom: 10px;">${card.explanation}</p>
+        <img src="${card.image}" alt="Imagem de ${card.name}">
       `;
       container.style.display = "block";
     }
 
-    function hideExplanation() {
-      document.getElementById("explanation").style.display = "none";
-    }
-
     function nextPhase() {
       currentPhase++;
-      const explanationDiv = document.getElementById("explanation");
-      explanationDiv.innerHTML = "";              // limpa o conteúdo
-      explanationDiv.style.display = "none";      // oculta completamente
-      loadPhase();
-    }
-    function restartGame() {
-      // Reinicia todas as variáveis
-      score = 0;
-      currentPhase = 0;
-      usedBiomas = [];
-      document.getElementById("score").innerText = score;
-      document.getElementById("congrats").style.display = "none";
+      document.getElementById("next-phase").style.display = "none";
       loadPhase();
     }
 
-    function goToNextModule() {
-      // Redireciona para outro módulo ou página
-      window.location.href = "paises.html"; // Troque pelo link real do próximo módulo
+    function showFinalScreen() {
+      document.getElementById("memory-game").style.display = "none";
+      document.getElementById("explanation").style.display = "none";
+      document.getElementById("greeting").style.display = "none";
+      document.getElementById("congrats").style.display = "block";
+
+      const ctx = document.getElementById('biomaChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Fase 1', 'Fase 2', 'Fase 3'],
+          datasets: [{
+            label: 'Número de Cliques',
+            data: totalClicksPerPhase,
+            backgroundColor: '#80cbc4',
+            borderColor: '#00695c',
+            borderWidth: 2
+          }]
+        },
+        options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } } 
+        }
+      });
     }
+
+    function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFillColor(0, 105, 92);
+      doc.rect(0, 0, 210, 20, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.text("BOLETIM DE EXPEDIÇÃO: BIOMAS BRASILEIROS", 15, 13);
+
+      doc.setTextColor(0,0,0);
+      doc.setFontSize(12);
+      doc.text(`Explorador: ${playerName}`, 15, 30);
+      doc.text(`Pontuação Final: ${score} pontos`, 15, 38);
+
+      const biomasArray = Array.from(biomasEncontradosSet);
+      const tableRows = biomasArray.map(name => {
+        const b = allBiomas.find(bio => bio.name === name);
+        return [b.name, b.explanation, "Concluído"];
+      });
+
+      doc.autoTable({
+        startY: 45,
+        head: [['Bioma', 'Características Principais', 'Resultado']],
+        body: tableRows,
+        headStyles: { fillColor: [128, 203, 196], textColor: [0, 77, 64] },
+        theme: 'striped'
+      });
+
+      doc.save(`expedicao_biomas_${playerName}.pdf`);
+    }
+
+    function goToNextModule() { window.location.href = "paises.html"; }
   </script>
 </body>
 </html>

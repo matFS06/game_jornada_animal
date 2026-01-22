@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🌱 Jogo dos Nutrientes 🌽</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -13,7 +18,7 @@
       background-image: url(nutrientes.png);
       background-size: cover;
       background-position: center;
-      height: 100vh;
+      min-height: 100vh;
     }
 
     .quiz-box {
@@ -26,14 +31,8 @@
       border: 3px dashed #a3c586;
     }
 
-    h3, h4 {
-      color: #4e944f;
-    }
-
-    .vidas {
-      color: #d62828;
-      font-weight: bold;
-    }
+    h3, h4 { color: #4e944f; }
+    .vidas { color: #d62828; font-weight: bold; }
 
     .btn-option {
       margin-bottom: 10px;
@@ -45,28 +44,10 @@
       transition: transform 0.2s, background-color 0.3s;
     }
 
-    .btn-option:hover {
-      background-color: #a3c586;
-      transform: scale(1.02);
-    }
+    .btn-option:hover { background-color: #a3c586; transform: scale(1.02); }
 
-    .btn-option:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    #explicacao {
-      display: none;
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    #explicacao img {
-      max-width: 200px;
-      margin-top: 10px;
-      border-radius: 12px;
-      border: 2px solid #4e944f;
-    }
+    #explicacao { display: none; margin-top: 20px; text-align: center; }
+    #explicacao img { max-width: 200px; margin-top: 10px; border-radius: 12px; border: 2px solid #4e944f; }
 
     .header-box {
       background-color: #a3c586;
@@ -79,52 +60,28 @@
       font-weight: bold;
     }
 
-    .btn-success {
-      background-color: #4e944f;
-      border: none;
-    }
-
-    .btn-success:hover {
-      background-color: #3c7d3c;
-    }
-
-    input.form-control {
-      border: 2px solid #4e944f;
-    }
-    .container {
-      max-width: 600px;
+    .container-final {
+      max-width: 700px;
       margin: 30px auto;
       background-color: white;
       padding: 20px;
       border-radius: 15px;
-      border: 5px solid #1177d1;
+      border: 5px solid #4e944f;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    #nome-jogador {
-      font-size: 18px;
-      padding: 8px;
-      width: 80%;
-      max-width: 300px;
-      margin-bottom: 20px;
-    }
-    #tela-nome {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+
+    #chart-container { width: 100%; height: 300px; margin: 20px 0; }
   </style>
 </head>
 <body>
-  <div class="quiz-box">
+  <div class="quiz-box" id="caixa-principal">
     <div class="header-box">🌿 Módulo dos Nutrientes 🍓</div>
 
-    <div id="tela-nome">
+    <div id="tela-nome" class="text-center">
       <img src="logo_nutrientes.png" alt="Logo" style="max-width: 250px; margin-bottom: 20px; border-radius: 10%;"/>
       <br>
       <h3>👩‍🌾 Digite seu nome para começar:</h3>
-      <input type="text" id="nome-jogador" placeholder="Seu nome" />
-      <br>
+      <input type="text" id="nome-jogador" class="form-control mb-3" style="max-width:300px; margin:auto; border: 2px solid #4e944f;" placeholder="Seu nome" />
       <button class="btn btn-success" onclick="iniciarJogo()">Começar</button>
     </div>
 
@@ -148,104 +105,26 @@
     </div>
   </div>
 
-  <!-- Tela de Reinício -->
-  <div id="restart-container" class="container text-center" style="display: none; margin-top: 30px;">
-    <h2>🎉 Parabéns! Você completou todas as perguntas!</h2>
-    <p class="mb-4">Pontuação final: <strong><span id="pontuacao-final"></span> pontos</strong></p>
-    <button class="btn btn-success me-2" onclick="restartGame()">🔄 Jogar Novamente</button>
-    <button class="btn btn-primary" onclick="goToNextModule()">➡️ Próximo Módulo</button>
+  <div id="restart-container" class="container-final text-center" style="display: none;">
+    <h2>🎉 Parabéns, <span id="final-nome"></span>!</h2>
+    <p>Você completou o módulo de Nutrientes.</p>
+    <div id="chart-container"><canvas id="graficoPontos"></canvas></div>
+    <button class="btn btn-dark mb-2" onclick="gerarPDF()">📄 Gerar Boletim Detalhado</button>
+    <br>
+    <button class="btn btn-success me-2" onclick="location.reload()">🔄 Reiniciar</button>
+    <button class="btn btn-primary" onclick="goToNextModule()">➡️ Voltar ao Início</button>
   </div>
 
   <script>
     const perguntas = [
-      {
-        pistas: [
-          "1. Sou uma fruta tropical rica em potássio. (10 pts)",
-          "2. Ajudo a prevenir câimbras musculares. (7 pts)",
-          "3. Tenho uma casca amarela e sou muito consumida no Brasil. (5 pts)"
-        ],
-        resposta: "Banana",
-        opcoes: ["Maçã", "Banana", "Laranja", "Abacaxi", "Melão"],
-        explicacao: "A banana é rica em potássio e excelente para os músculos.",
-        imagem: "banana.png"
-      },
-      {
-        pistas: [
-          "1. Sou verde, folhoso e cheio de ferro. (10 pts)",
-          "2. Ajudo na prevenção da anemia. (7 pts)",
-          "3. Sou muito usado em saladas e sucos detox. (5 pts)"
-        ],
-        resposta: "Espinafre",
-        opcoes: ["Alface", "Couve", "Espinafre", "Agrião", "Rúcula"],
-        explicacao: "O espinafre é uma excelente fonte de ferro e outros nutrientes.",
-        imagem: "espinafre.png"
-      },
-      {
-        pistas: [
-          "1. Sou um tubérculo e fonte de energia. (10 pts)",
-          "2. Sou rico em carboidratos e vitaminas do complexo B. (7 pts)",
-          "3. Frito, cozido ou purê, estou sempre presente nas refeições. (5 pts)"
-        ],
-        resposta: "Batata",
-        opcoes: ["Inhame", "Batata", "Mandioquinha", "Cenoura", "Cará"],
-        explicacao: "A batata é rica em carboidratos e fornece energia rapidamente.",
-        imagem: "batata.png"
-      },
-      {
-        pistas: [
-          "1. Sou uma leguminosa rica em proteínas vegetais. (10 pts)",
-          "2. Sou muito usada em feijoadas e pratos brasileiros. (7 pts)",
-          "3. Tenho uma casca escura e sou muito popular no Brasil. (5 pts)"
-        ],
-        resposta: "Feijão",
-        opcoes: ["Lentilha", "Grão-de-bico", "Feijão", "Ervilha", "Soja"],
-        explicacao: "O feijão é fonte de proteína vegetal e ferro, essencial na dieta brasileira.",
-        imagem: "feijao.png"
-      },
-      {
-        pistas: [
-          "1. Sou uma fruta cítrica rica em vitamina C. (10 pts)",
-          "2. Ajudar na imunidade é comigo mesmo! (7 pts)",
-          "3. Sou muito usada em sucos no café da manhã. (5 pts)"
-        ],
-        resposta: "Laranja",
-        opcoes: ["Limão", "Tangerina", "Abacaxi", "Laranja", "Caju"],
-        explicacao: "A laranja é excelente fonte de vitamina C, fortalecendo o sistema imunológico.",
-        imagem: "laranja.png"
-      },
-      {
-        pistas: [
-          "1. Sou uma raiz rica em betacaroteno. (10 pts)",
-          "2. Sou boa para a visão e a pele. (7 pts)",
-          "3. Minha cor é laranja vibrante! (5 pts)"
-        ],
-        resposta: "Cenoura",
-        opcoes: ["Abóbora", "Cenoura", "Mandioquinha", "Inhame", "Beterraba"],
-        explicacao: "A cenoura é rica em betacaroteno, essencial para a saúde dos olhos.",
-        imagem: "cenoura.png"
-      },
-      {
-        pistas: [
-          "1. Sou um vegetal roxo e cheio de antioxidantes. (10 pts)",
-          "2. Sou usado em saladas, sucos e até sobremesas. (7 pts)",
-          "3. Posso ajudar na pressão e circulação. (5 pts)"
-        ],
-        resposta: "Beterraba",
-        opcoes: ["Uva", "Cenoura", "Beterraba", "Repolho Roxo", "Amora"],
-        explicacao: "A beterraba é rica em nitratos naturais que ajudam a regular a pressão arterial.",
-        imagem: "beterraba.png"
-      },
-      {
-        pistas: [
-          "1. Sou um cereal integral muito nutritivo. (10 pts)",
-          "2. Ajudo no funcionamento do intestino. (7 pts)",
-          "3. Costumo ser consumido com iogurte ou frutas. (5 pts)"
-        ],
-        resposta: "Aveia",
-        opcoes: ["Granola", "Farinha de trigo", "Centeio", "Aveia", "Quinoa"],
-        explicacao: "A aveia é rica em fibras e ideal para a saúde digestiva e controle de colesterol.",
-        imagem: "aveia.png"
-      }
+      { pistas: ["1. Sou uma fruta tropical rica em potássio. (10 pts)", "2. Ajudo a prevenir câimbras musculares. (7 pts)", "3. Tenho uma casca amarela e sou muito consumida no Brasil. (5 pts)"], resposta: "Banana", opcoes: ["Maçã", "Banana", "Laranja", "Abacaxi", "Melão"], explicacao: "A banana é rica em potássio e excelente para os músculos.", imagem: "banana.png" },
+      { pistas: ["1. Sou verde, folhoso e cheio de ferro. (10 pts)", "2. Ajudo na prevenção da anemia. (7 pts)", "3. Sou muito usado em saladas e sucos detox. (5 pts)"], resposta: "Espinafre", opcoes: ["Alface", "Couve", "Espinafre", "Agrião", "Rúcula"], explicacao: "O espinafre é uma excelente fonte de ferro e outros nutrientes.", imagem: "espinafre.png" },
+      { pistas: ["1. Sou um tubérculo e fonte de energia. (10 pts)", "2. Sou rico em carboidratos e vitaminas do complexo B. (7 pts)", "3. Frito, cozido ou purê, estou sempre presente nas refeições. (5 pts)"], resposta: "Batata", opcoes: ["Inhame", "Batata", "Mandioquinha", "Cenoura", "Cará"], explicacao: "A batata é rica em carboidratos e fornece energia rapidamente.", imagem: "batata.png" },
+      { pistas: ["1. Sou uma leguminosa rica em proteínas vegetais. (10 pts)", "2. Sou muito usada em feijoadas e pratos brasileiros. (7 pts)", "3. Tenho uma casca escura e sou muito popular no Brasil. (5 pts)"], resposta: "Feijão", opcoes: ["Lentilha", "Grão-de-bico", "Feijão", "Ervilha", "Soja"], explicacao: "O feijão é fonte de proteína vegetal e ferro, essencial na dieta brasileira.", imagem: "feijao.png" },
+      { pistas: ["1. Sou uma fruta cítrica rica em vitamina C. (10 pts)", "2. Ajudar na imunidade é comigo mesmo! (7 pts)", "3. Sou muito usada em sucos no café da manhã. (5 pts)"], resposta: "Laranja", opcoes: ["Limão", "Tangerina", "Abacaxi", "Laranja", "Caju"], explicacao: "A laranja é excelente fonte de vitamina C, fortalecendo o sistema imunológico.", imagem: "laranja.png" },
+      { pistas: ["1. Sou uma raiz rica em betacaroteno. (10 pts)", "2. Sou boa para a visão e a pele. (7 pts)", "3. Minha cor é laranja vibrante! (5 pts)"], resposta: "Cenoura", opcoes: ["Abóbora", "Cenoura", "Mandioquinha", "Inhame", "Beterraba"], explicacao: "A cenoura é rica em betacaroteno, essencial para a saúde dos olhos.", imagem: "cenoura.png" },
+      { pistas: ["1. Sou um vegetal roxo e cheio de antioxidantes. (10 pts)", "2. Sou usado em saladas, sucos e até sobremesas. (7 pts)", "3. Posso ajudar na pressão e circulação. (5 pts)"], resposta: "Beterraba", opcoes: ["Uva", "Cenoura", "Beterraba", "Repolho Roxo", "Amora"], explicacao: "A beterraba é rica em nitratos naturais que ajudam a regular a pressão arterial.", imagem: "beterraba.png" },
+      { pistas: ["1. Sou um cereal integral muito nutritivo. (10 pts)", "2. Ajudo no funcionamento do intestino. (7 pts)", "3. Costumo ser consumido com iogurte ou frutas. (5 pts)"], resposta: "Aveia", opcoes: ["Granola", "Farinha de trigo", "Centeio", "Aveia", "Quinoa"], explicacao: "A aveia é rica em fibras e ideal para a saúde digestiva.", imagem: "aveia.png" }
     ];
 
     let indice = 0;
@@ -253,16 +132,18 @@
     let vidas = 5;
     let etapaPista = 0;
     let nome = "";
-    let opcoesErradas = []; // 👉 NOVO: armazena opções erradas da pergunta atual
+    let opcoesErradas = [];
+    
+    // VARIÁVEIS PARA LOG E GRÁFICO
+    let logRespostas = [];
+    let historicoPontos = [0];
 
     function iniciarJogo() {
       nome = document.getElementById("nome-jogador").value;
       if (!nome) return alert("🌼 Digite seu nome para começar!");
-
       document.getElementById("tela-nome").style.display = "none";
       document.getElementById("jogo").style.display = "block";
       document.getElementById("jogador").textContent = nome;
-
       carregarPergunta();
     }
 
@@ -277,7 +158,7 @@
         const btn = document.createElement("button");
         btn.className = "btn btn-option w-100";
         btn.textContent = opcao;
-        btn.disabled = opcoesErradas.includes(opcao); // 👉 NOVO: desabilita se já errou
+        btn.disabled = opcoesErradas.includes(opcao);
         btn.onclick = () => verificarResposta(opcao);
         opcoesContainer.appendChild(btn);
       });
@@ -285,20 +166,43 @@
 
     function verificarResposta(opcao) {
       const pergunta = perguntas[indice];
+      const correta = (opcao === pergunta.resposta);
 
-      if (opcao === pergunta.resposta) {
+      // Salva a tentativa no Log
+      logRespostas.push({
+        pergunta: indice + 1,
+        tentativa: opcao,
+        resultado: correta ? "Correto" : "Errado",
+        pistaNivel: etapaPista + 1
+      });
+
+      if (correta) {
         const pontosGanhos = etapaPista === 0 ? 10 : etapaPista === 1 ? 7 : 5;
         pontuacao += pontosGanhos;
+        historicoPontos.push(pontuacao);
         document.getElementById("pontos").textContent = pontuacao;
+        
+        // Adiciona Gabarito ao Log para conferência
+        logRespostas.push({
+          pergunta: indice + 1,
+          tentativa: "GABARITO",
+          resultado: "Oficial",
+          pistaNivel: pergunta.resposta
+        });
+
         mostrarExplicacao(pergunta);
       } else {
-        opcoesErradas.push(opcao); // 👉 NOVO: marca como errada
+        opcoesErradas.push(opcao);
         etapaPista++;
         if (etapaPista >= 3) {
           vidas--;
           document.getElementById("vidas").textContent = vidas;
+          historicoPontos.push(pontuacao); // Ponto não sobe
           mostrarExplicacao(pergunta);
-          if (vidas <= 0) fimDeJogo();
+          if (vidas <= 0) {
+              alert("As vidas acabaram! Tente novamente.");
+              location.reload();
+          }
         } else {
           carregarPergunta();
         }
@@ -320,34 +224,90 @@
       if (indice < perguntas.length) {
         carregarPergunta();
       } else {
-        // Mostrar tela de finalização personalizada
-        document.getElementById("jogo").style.display = "none";
-        document.getElementById("restart-container").style.display = "block";
-        document.getElementById("pontuacao-final").textContent = pontuacao;
+        finalizarModulo();
       }
     }
 
-    function restartGame() {
-      // Reiniciar o jogo do zero
-      indice = 0;
-      pontuacao = 0;
-      vidas = 5;
-      etapaPista = 0;
-      opcoesErradas = [];
+    function finalizarModulo() {
+      document.getElementById("caixa-principal").style.display = "none";
+      document.getElementById("restart-container").style.display = "block";
+      document.getElementById("final-nome").textContent = nome;
 
-      // Esconde a tela final e mostra o jogo novamente
-      document.getElementById("restart-container").style.display = "none";
-      document.getElementById("jogo").style.display = "block";
-      document.getElementById("pontos").textContent = pontuacao;
-      document.getElementById("vidas").textContent = vidas;
-
-      carregarPergunta();
+      // Criar Gráfico
+      const ctx = document.getElementById('graficoPontos').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: historicoPontos.map((_, i) => i === 0 ? "Início" : `Questão ${i}`),
+          datasets: [{
+            label: 'Pontuação Acumulada',
+            data: historicoPontos,
+            borderColor: '#4e944f',
+            backgroundColor: 'rgba(78, 148, 79, 0.2)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      });
     }
 
-    function goToNextModule() {
-      window.location.href = "index.html"; 
-    }
+    function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Cabeçalho Verde Temático
+      doc.setFillColor(78, 148, 79);
+      doc.rect(0, 0, 210, 20, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.text("BOLETIM - MÓDULO NUTRIENTES", 15, 13);
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(12);
+      doc.text(`Aluno: ${nome}`, 15, 30);
+      doc.text(`Pontuação Total: ${pontuacao} pontos`, 15, 38);
 
+      // Preparando os dados: Questão | Escolha | Gabarito | Resultado
+      const tableData = logRespostas.filter(item => item.resultado !== "Oficial").map(item => {
+        const perguntaOriginal = perguntas[item.pergunta - 1];
+        return [
+          item.pergunta,
+          item.tentativa,
+          perguntaOriginal.resposta, // Coluna Gabarito
+          item.resultado
+        ];
+      });
+
+      doc.autoTable({
+        startY: 45,
+        head: [['Qst.', 'Sua Escolha', 'Gabarito Oficial', 'Resultado']],
+        body: tableData,
+        headStyles: { fillColor: [78, 148, 79] },
+        styles: { fontSize: 9 },
+        theme: 'striped',
+        didParseCell: function(data) {
+          // Destaca a coluna Resultado (índice 3)
+          if (data.section === 'body' && data.column.index === 3) {
+            if (data.cell.raw === 'Correto') {
+              data.cell.styles.textColor = [0, 128, 0];
+              data.cell.styles.fontStyle = 'bold';
+            }
+            if (data.cell.raw === 'Errado') {
+              data.cell.styles.textColor = [200, 0, 0];
+            }
+          }
+          // Destaca a coluna Gabarito (índice 2) para facilitar a leitura
+          if (data.section === 'body' && data.column.index === 2) {
+            data.cell.styles.fontStyle = 'italic';
+            data.cell.styles.textColor = [50, 50, 50];
+          }
+        }
+      });
+
+      doc.save(`boletim_nutrientes_${nome}.pdf`);
+    }
+    function goToNextModule() { window.location.href = "index.html"; }
   </script>
-</body>
+</body> 
 </html>
